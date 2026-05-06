@@ -549,7 +549,16 @@ function rInvDetail(c,inv){
     +(isA?'<button class="dbtn" style="width:100%;justify-content:center;margin-top:10px;padding:11px;font-size:13px;font-weight:700;gap:6px;color:var(--re)" onclick="dInv(\''+inv.id+'\');selInv=null">'+ico('del')+' Supprimer cette facture</button>':'')
     +'</div></div>';
 }
-function dlPdf(id){window.open('/api/invoice-pdf/'+id,'_blank');}
+function dlPdf(id){
+  // Create a temporary link with auth token as query param
+  var a=document.createElement('a');
+  a.href='/api/invoice-pdf/'+id+'?token='+encodeURIComponent(S.token||'');
+  a.download='facture.pdf';
+  a.target='_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
 async function dInv(id){
   if(!confirm('Supprimer cette facture ?'))return;
   try{await api('DELETE','/invoices/'+id);D.invoices=D.invoices.filter(function(i){return i.id!==id;});toast('Supprimée','ok');rInvoices(document.getElementById('scr'));}
@@ -619,8 +628,8 @@ async function rAdmin(c){
     +'<div class="ahero"><div class="aheroval">'+(stats.totalRevenue||0).toLocaleString()+' DT</div><div class="aherolbl">Total revenus nets cumulés</div></div>'
     +'<div class="sgrid"><div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div><div class="sval">'+(stats.totalOwners||0)+'</div><div class="slbl">Propriétaires</div></div>'
     +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div><div class="sval">'+(stats.totalInvoices||0)+'</div><div class="slbl">Factures totales</div></div></div>'
-    +'<div class="sgrid"><div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div><div class="sval" style="color:var(--terra)">'+(stats.pendingInvoices||0)+'</div><div class="slbl">En attente</div></div>'
-    +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div><div class="sval" style="color:var(--amber)">'+(stats.maintenancePending||0)+'</div><div class="slbl">Entretiens planifiés</div></div></div>'
+    +'<div class="sgrid"><div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div><div class="sval" style="color:var(--T)">'+(stats.pendingInvoices||0)+'</div><div class="slbl">Factures en attente</div></div>'
+    +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div><div class="sval" style="color:var(--am)">'+(stats.maintenancePending||0)+'</div><div class="slbl">Entretiens planifiés</div></div></div>'
     +'<div class="tab-pills" id="agTabs">'
     +'<button class="tab-pill active" id="ag-prop" onclick="adminGTab(&quot;prop&quot;)">Propriétaires</button>'
     +'<button class="tab-pill" id="ag-inv" onclick="adminGTab(&quot;inv&quot;)">Factures</button>'
@@ -631,7 +640,6 @@ async function rAdmin(c){
     +'</div>';
   adminGTab('prop');
 }
-
 
 async function adminGTab(tab){
   ['prop','inv','rev','maint'].forEach(function(t){
@@ -644,42 +652,39 @@ async function adminGTab(tab){
   var owners=window._ow||[];
 
   if(tab==='prop'){
-    if(!owners.length){body.innerHTML='<p style="color:var(--text2);font-size:13px;margin-top:10px">Aucun propriétaire inscrit</p>';return;}
-    var h='';
-    owners.forEach(function(o){
-      h+='<div class="owner-card" onclick="openOwner(this.dataset.id)" data-id="'+o.id+'">'
-        +'<div class="owner-card-head">'
-        +'<div class="owner-avatar">👤</div>'
-        +'<div class="owner-info"><div class="owner-name">'+o.prenom+' '+o.nom+'</div><div class="owner-email">'+o.email+'</div></div>'
-        +'<span style="color:var(--text3);font-size:18px">›</span>'
-        +'</div>'
-        +'<div class="owner-stats">'
-        +'<div class="owner-stat"><div class="owner-stat-val">'+(o.ville||'—')+'</div><div class="owner-stat-label">Ville</div></div>'
-        +'<div class="owner-stat"><div class="owner-stat-val">'+(o.typeLogement||'—')+'</div><div class="owner-stat-label">Bien</div></div>'
-        +'<div class="owner-stat"><div class="owner-stat-val" style="font-size:10px">'+(o.tel||'—')+'</div><div class="owner-stat-label">Tél</div></div>'
-        +'</div></div>';
-    });
-    body.innerHTML=h;
+    if(!owners.length){body.innerHTML='<p style="color:var(--t2);font-size:13px;margin-top:10px">Aucun propriétaire inscrit</p>';return;}
+    body.innerHTML='<h3 class="stitle">Propriétaires ('+owners.length+')</h3>'
+      +owners.map(function(o){
+        return'<div class="ocard" onclick="openOwner(this.dataset.id)" data-id="'+o.id+'">'
+          +'<div class="ohead"><div class="oavt"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div>'
+          +'<div class="oinf"><div class="oname">'+o.prenom+' '+o.nom+'</div><div class="oemail">'+o.email+'</div></div>'
+          +'<div class="ochev"><svg viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div></div>'
+          +'<div class="opills">'
+          +'<div class="opill"><div class="opval">'+(o.ville||'—')+'</div><div class="oplbl">Ville</div></div>'
+          +'<div class="opill"><div class="opval">'+(o.typeLogement||'—')+'</div><div class="oplbl">Bien</div></div>'
+          +'<div class="opill"><div class="opval" style="font-size:10px">'+(o.tel||'—')+'</div><div class="oplbl">Tél</div></div>'
+          +'</div></div>';
+      }).join('');
   }
 
   if(tab==='inv'){
     try{
       var invs=await api('GET','/all-invoices');
-      var h='<h3 class="section-title">Factures ('+invs.length+')</h3>';
+      var h='<h3 class="stitle">Factures ('+invs.length+')</h3>';
       invs.forEach(function(inv){
         var paid=inv.status==='payée';
         h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">'
           +'<div class="inv-item" style="flex:1;cursor:default">'
-          +'<div class="inv-icon" style="background:'+(paid?'var(--green-bg)':'var(--amber-bg)')+'">'+( paid?'✅':'⏳')+'</div>'
+          +'<div class="inv-icon" style="background:'+(paid?'var(--green-bg)':'var(--amber-bg)')+'"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:'+(paid?'var(--green)':'var(--amber)')+';stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>'
           +'<div class="inv-meta">'
-          +'<div style="font-size:11px;color:var(--text3);font-weight:600">'+inv.ownerName+'</div>'
+          +'<div style="font-size:11px;color:var(--t3);font-weight:600">'+inv.ownerName+'</div>'
           +'<div class="inv-name">'+(inv.month||inv.mois)+' · '+inv.numero+'</div>'
           +'</div>'
           +'<div style="text-align:right">'
           +'<div class="inv-amount">'+(inv.amount||0).toLocaleString()+' DT</div>'
           +'<span class="badge '+(paid?'badge-green':'badge-amber')+'" style="margin-top:3px">'+(paid?'✓ Payée':'⏳ Attente')+'</span>'
           +'</div></div>'
-          +'<button data-id="'+inv.id+'" onclick="agDelInv(this.dataset.id)" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.2);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0;font-size:14px">🗑</button>'
+          +'<button data-id="'+inv.id+'" onclick="agDelInv(this.dataset.id)" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.15);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0;font-size:14px">🗑</button>'
           +'</div>';
       });
       body.innerHTML=h;
@@ -689,20 +694,20 @@ async function adminGTab(tab){
   if(tab==='rev'){
     try{
       var revs=await api('GET','/all-revenues');
-      var h='<h3 class="section-title">Revenus ('+revs.length+')</h3>';
+      var h='<h3 class="stitle">Revenus ('+revs.length+')</h3>';
       revs.forEach(function(r){
         h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">'
           +'<div class="rev-hero" style="flex:1;margin-bottom:0;padding:13px">'
-          +'<div style="font-size:11px;color:var(--text2);font-weight:600;margin-bottom:3px">'+r.ownerName+'</div>'
+          +'<div style="font-size:11px;color:var(--t2);font-weight:600;margin-bottom:3px">'+r.ownerName+'</div>'
           +'<div style="display:flex;justify-content:space-between;align-items:center">'
-          +'<span style="font-size:14px;font-weight:700">'+r.mois+' '+r.annee+'</span>'
+          +'<span style="font-size:14px;font-weight:700;color:var(--tx)">'+r.mois+' '+r.annee+'</span>'
           +'<span class="badge badge-terra">'+r.tauxOccupation+'% occ.</span>'
           +'</div>'
           +'<div style="display:flex;justify-content:space-between;margin-top:5px">'
-          +'<span style="font-family:var(--font-serif);font-size:18px;font-weight:700;color:var(--terra)">'+r.revenuNet.toLocaleString()+' DT</span>'
-          +'<span style="font-size:11px;color:var(--text2)">'+r.nbLocataires+' loc. · '+r.nbNuits+' nuits</span>'
+          +'<span style="font-family:var(--fs);font-size:18px;font-weight:700;color:var(--T)">'+r.revenuNet.toLocaleString()+' DT</span>'
+          +'<span style="font-size:11px;color:var(--t2)">'+r.nbLocataires+' loc. · '+r.nbNuits+' nuits</span>'
           +'</div></div>'
-          +'<button data-id="'+r.id+'" onclick="agDelRev(this.dataset.id)" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.2);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0;font-size:14px">🗑</button>'
+          +'<button data-id="'+r.id+'" onclick="agDelRev(this.dataset.id)" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.15);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0;font-size:14px">🗑</button>'
           +'</div>';
       });
       body.innerHTML=h;
@@ -717,7 +722,7 @@ async function adminGTab(tab){
       var h='<div class="sgrid" style="margin-bottom:12px">'
         +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></div><div class="sval">'+done+'</div><div class="slbl">Effectués</div></div>'
         +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div><div class="sval">'+plan+'</div><div class="slbl">Planifiés</div></div>'
-        +'</div><h3 class="section-title">Entretiens ('+maints.length+')</h3>';
+        +'</div><h3 class="stitle">Entretiens ('+maints.length+')</h3>';
       maints.forEach(function(m){
         var d=m.statut==='effectué';
         var ic={Ménage:'🧹',Plomberie:'🔧','Électricité':'⚡',Peinture:'🎨',Climatisation:'❄️',Autre:'🔨'};
@@ -726,14 +731,14 @@ async function adminGTab(tab){
           +'<div class="main-head"><div class="main-icon-wrap">'
           +'<div class="main-icon" style="background:'+(d?'var(--green-bg)':'var(--terra-light)')+'">'+(ic[m.type]||'🔨')+'</div>'
           +'<div><div class="main-type">'+m.type+'</div>'
-          +'<div class="main-date">'+(m.date||'').slice(0,10)+' · <b style="color:var(--terra)">'+m.ownerName+'</b></div>'
+          +'<div class="main-date">'+(m.date||'').slice(0,10)+' · <b style="color:var(--T)">'+m.ownerName+'</b></div>'
           +'</div></div>'
           +'<span class="badge '+(d?'badge-green':'badge-amber')+'">'+(d?'✓ Fait':'⏳ Planifié')+'</span>'
           +'</div>'
           +'<p class="main-note">'+(m.note||'')+'</p>'
           +(m.technicien?'<div class="main-tech"><span class="tech-chip">👤 '+m.technicien+'</span></div>':'')
           +'</div>'
-          +'<button data-id="'+m.id+'" onclick="agDelMaint(this.dataset.id)" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.2);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0;font-size:14px;margin-top:3px">🗑</button>'
+          +'<button data-id="'+m.id+'" onclick="agDelMaint(this.dataset.id)" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.15);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0;font-size:14px;margin-top:3px">🗑</button>'
           +'</div>';
       });
       body.innerHTML=h;
@@ -741,17 +746,10 @@ async function adminGTab(tab){
   }
 }
 
-async function agDelInv(id){if(!confirm('Supprimer ?'))return;try{await api('DELETE','/invoices/'+id);toast('Supprimée ✓');adminGTab('inv');}catch(e){toast(e.message,'error');}}
-async function agDelRev(id){if(!confirm('Supprimer ?'))return;try{await api('DELETE','/revenues/'+id);toast('Supprimé ✓');adminGTab('rev');}catch(e){toast(e.message,'error');}}
-async function agDelMaint(id){if(!confirm('Supprimer ?'))return;try{await api('DELETE','/maintenances/'+id);toast('Supprimé ✓');adminGTab('maint');}catch(e){toast(e.message,'error');}}
+async function agDelInv(id){if(!confirm('Supprimer ?'))return;try{await api('DELETE','/invoices/'+id);toast('Supprimée','ok');adminGTab('inv');}catch(e){toast(e.message,'err');}}
+async function agDelRev(id){if(!confirm('Supprimer ?'))return;try{await api('DELETE','/revenues/'+id);toast('Supprimé','ok');adminGTab('rev');}catch(e){toast(e.message,'err');}}
+async function agDelMaint(id){if(!confirm('Supprimer ?'))return;try{await api('DELETE','/maintenances/'+id);toast('Supprimé','ok');adminGTab('maint');}catch(e){toast(e.message,'err');}}
 
-
-async function openOwner(id){
-  var c=document.getElementById('scr');
-  c.innerHTML='<div class="pg"><div class="spin"></div></div>';
-  try{var d=await api('GET','/owner-data/'+id);ownerData=d;oTab2='inv';rOwnerDetail(c,d);}
-  catch(e){toast(e.message,'err');}
-}
 
 function rOwnerDetail(c,d){
   var o=d.owner||{};
@@ -952,7 +950,16 @@ function onPdfSelected(){
   }
 }
 
-function dlPdf(id){window.open('/api/invoice-pdf/'+id,'_blank');}
+function dlPdf(id){
+  // Create a temporary link with auth token as query param
+  var a=document.createElement('a');
+  a.href='/api/invoice-pdf/'+id+'?token='+encodeURIComponent(S.token||'');
+  a.download='facture.pdf';
+  a.target='_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
 async function aDelInv(id,oid){
   if(!confirm('Supprimer cette facture ?'))return;
   try{await api('DELETE','/invoices/'+id);ownerData.invoices=ownerData.invoices.filter(function(i){return i.id!==id;});toast('Supprimée','ok');oSwitch('inv');}catch(e){toast(e.message,'err');}

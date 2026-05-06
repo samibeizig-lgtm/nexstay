@@ -270,11 +270,16 @@ async function handleAPI(req, res, method, pathname, token) {
     return send(res,200,{pdfFile:fname});
   }
 
-  // PDF DOWNLOAD
+  // PDF DOWNLOAD (token via header OR query param for direct link)
   if (parts[1]==='invoice-pdf'&&parts[2]&&method==='GET') {
+    // Accept token from Authorization header or query string
+    const qtoken = parsed.query&&parsed.query.token ? parsed.query.token : '';
+    const authToken = token || ('Bearer '+qtoken);
+    const dlUser = authUser(authToken) || authUser('Bearer '+qtoken);
+    if (!dlUser) return send(res,401,{error:'Non autorisé'});
     const inv=DB.invoices.find(i=>i.id===parts[2]);
     if (!inv||!inv.pdfFile) return send(res,404,{error:'PDF non disponible'});
-    if (user.role!=='admin'&&inv.ownerId!==user.id) return send(res,403,{error:'Accès refusé'});
+    if (dlUser.role!=='admin'&&inv.ownerId!==dlUser.id) return send(res,403,{error:'Accès refusé'});
     const UPD=process.env.RAILWAY_ENVIRONMENT?'/tmp/uploads':path.join(__dirname,'uploads');
     const fp=path.join(UPD,inv.pdfFile);
     if (!fs.existsSync(fp)) return send(res,404,{error:'Fichier introuvable'});
