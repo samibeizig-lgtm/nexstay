@@ -4,232 +4,241 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#FAFAF8">
-<title>Nexstay · Conciergerie</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>Nexstay</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  --terra:#C17F5A;--terra-dark:#9E6240;--terra-light:rgba(193,127,90,0.12);--terra-mid:rgba(193,127,90,0.25);
-  --bg:#FAFAF8;--bg2:#F4F2EE;--bg3:#EDE9E2;--bg4:#E2DDD6;
-  --text:#1A1612;--text2:#6B6158;--text3:#B0A89E;
-  --green:#3D8C6E;--green-bg:rgba(61,140,110,0.1);
-  --red:#C0392B;--red-bg:rgba(192,57,43,0.09);
-  --amber:#B8860B;--amber-bg:rgba(184,134,11,0.1);
-  --border:rgba(26,22,18,0.08);
-  --shadow:0 2px 12px rgba(26,22,18,0.07);--shadow-md:0 4px 24px rgba(26,22,18,0.1);
-  --serif:'Cormorant Garamond',serif;--sans:'DM Sans',sans-serif;
+  --T:#C17F5A;--TD:#9E6240;--TL:rgba(193,127,90,0.13);
+  --bg:#F7F5F2;--w:#FFFFFF;--b2:#EDE9E3;--b3:#E2DDD6;
+  --tx:#1A1612;--t2:#6B6158;--t3:#ABA39A;
+  --gr:#3D8C6E;--gbg:rgba(61,140,110,0.11);
+  --re:#C0392B;--rbg:rgba(192,57,43,0.09);
+  --am:#B8860B;--abg:rgba(184,134,11,0.1);
+  --bd:rgba(0,0,0,0.07);--sh:0 1px 8px rgba(0,0,0,0.07);
+  --f:'DM Sans',sans-serif;--fs:'Cormorant Garamond',serif;
 }
-html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased}
-::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
-input,select,textarea{font-family:var(--sans)}
-input::placeholder,textarea::placeholder{color:var(--text3)}
-button{cursor:pointer;font-family:var(--sans)}
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);overflow:hidden;-webkit-font-smoothing:antialiased}
 
-/* LOGO */
-.logo{display:flex;align-items:baseline;line-height:1}
-.logo .nex{font-family:var(--serif);font-weight:700;color:var(--text)}
-.logo .stay{font-family:var(--serif);font-weight:700;color:var(--terra)}
-.logo .sub{font-family:var(--sans);font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:2.5px;margin-left:8px;align-self:center}
-.logo-lg .nex,.logo-lg .stay{font-size:40px}
-.logo-lg .sub{font-size:10px;letter-spacing:3.5px}
-.logo-sm .nex,.logo-sm .stay{font-size:20px}
-.logo-sm .sub{font-size:7.5px;letter-spacing:1.8px;margin-bottom:1px}
+/* ─ APP SHELL ─ */
+#app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;background:var(--bg)}
+#hdr{background:var(--w);border-bottom:1px solid var(--bd);padding:10px 15px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:50}
+#scr{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;background:var(--b2)}
 
-/* LAYOUT */
-#app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;overflow:hidden;background:var(--bg)}
-#header{flex-shrink:0;background:rgba(250,250,248,0.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:11px 16px;display:flex;align-items:center;justify-content:space-between;z-index:100}
-#content{flex:1;overflow-y:auto;overflow-x:hidden;background:var(--bg2)}
-/* NAVBAR — scrollable sur mobile quand admin (6 onglets) */
-#navbar{flex-shrink:0;background:rgba(250,250,248,0.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;overflow-x:auto;overflow-y:hidden;padding:6px 0 env(safe-area-inset-bottom,8px);z-index:100;box-shadow:0 -4px 20px rgba(26,22,18,0.05);-webkit-overflow-scrolling:touch;scrollbar-width:none}
-#navbar::-webkit-scrollbar{display:none}
-.nav-item{flex:0 0 auto;min-width:64px;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--text3);padding:5px 8px;font-size:9.5px;font-weight:600;transition:color .2s;position:relative;white-space:nowrap}
-.nav-item.active{color:var(--terra)}
-.nav-item svg{width:20px;height:20px;stroke-width:1.8}
-.nav-dot{width:4px;height:4px;border-radius:50%;background:var(--terra);position:absolute;top:3px;right:22%}
-.nav-bar{width:16px;height:2px;background:var(--terra);border-radius:1px;margin-top:1px;opacity:0;transition:opacity .2s}
-.nav-item.active .nav-bar{opacity:1}
+/* ─ NAVBAR ─ KEY FIX: fixed height, equal flex items, no overflow needed ─ */
+#nav{
+  background:var(--w);
+  border-top:1px solid var(--bd);
+  display:flex;
+  flex-direction:row;
+  flex-shrink:0;
+  height:58px;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  box-shadow:0 -2px 12px rgba(0,0,0,0.06);
+  z-index:50;
+}
+/* Each nav button takes equal space */
+.nb{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  border:none;
+  background:none;
+  color:var(--t3);
+  font-size:9px;
+  font-weight:700;
+  font-family:var(--f);
+  padding:0;
+  cursor:pointer;
+  position:relative;
+  transition:color .15s;
+  min-width:0;
+  overflow:hidden;
+}
+.nb svg{width:20px;height:20px;flex-shrink:0}
+.nb span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;padding:0 2px}
+.nb.on{color:var(--T)}
+.nb.on::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:20px;height:2px;background:var(--T);border-radius:1px}
+.ndot{position:absolute;top:6px;right:25%;width:6px;height:6px;border-radius:50%;background:var(--T);border:1.5px solid var(--w)}
 
-/* AUTH */
-#auth{position:fixed;inset:0;background:linear-gradient(160deg,#FAFAF8 0%,#EFE8DF 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;z-index:999;overflow-y:auto}
-.auth-wrap{width:100%;max-width:400px}
-.auth-logo-block{text-align:center;margin-bottom:32px}
-.auth-tagline{color:var(--text3);font-size:13px;margin-top:10px}
-.auth-card{background:#fff;border:1px solid var(--border);border-radius:24px;padding:26px;box-shadow:var(--shadow-md)}
-.progress-bar{display:flex;gap:8px;margin-bottom:24px}
-.progress-bar span{flex:1;height:2px;border-radius:2px;background:var(--bg3);transition:background .4s}
-.progress-bar span.active{background:var(--terra)}
-.step-title{font-family:var(--serif);font-size:22px;font-weight:700;margin-bottom:4px}
-.step-sub{color:var(--text2);font-size:13px;margin-bottom:20px}
-.form-row{display:flex;gap:10px}
-.form-group{display:flex;flex-direction:column;gap:11px}
-.field{width:100%;background:var(--bg2);border:1.5px solid var(--bg4);border-radius:12px;padding:13px 15px;color:var(--text);font-size:15px;outline:none;transition:border-color .25s,background .25s}
-.field:focus{border-color:var(--terra);background:#fff}
-select.field option{background:#fff;color:var(--text)}
-.btn-terra{width:100%;padding:14px;background:var(--terra);border:none;border-radius:13px;color:#fff;font-size:15px;font-weight:700;letter-spacing:0.3px;transition:background .2s;margin-top:18px}
-.btn-terra:active{background:var(--terra-dark)}
-.auth-switch{text-align:center;color:var(--text2);font-size:13px;margin-top:16px}
-.auth-switch span{color:var(--terra);cursor:pointer;font-weight:600}
-.auth-demo{text-align:center;color:var(--text3);font-size:11px;margin-top:8px}
+/* ─ AUTH ─ */
+#auth{position:fixed;inset:0;background:linear-gradient(150deg,#FAFAF8,#EDE8DF);display:flex;align-items:center;justify-content:center;padding:20px;z-index:200;overflow-y:auto}
+.ac{width:100%;max-width:390px}
+.al{text-align:center;margin-bottom:30px}
+.logo-xl .n{font-family:var(--fs);font-size:42px;font-weight:700;color:var(--tx)}
+.logo-xl .s{font-family:var(--fs);font-size:42px;font-weight:700;color:var(--T)}
+.logo-xl .c{display:block;font-size:10px;letter-spacing:4px;color:var(--t3);margin-top:4px;font-weight:500}
+.acard{background:var(--w);border-radius:22px;padding:26px;box-shadow:0 4px 24px rgba(0,0,0,0.1)}
+.pb{display:flex;gap:7px;margin-bottom:22px}
+.pb i{flex:1;height:2px;border-radius:1px;background:var(--b3);transition:background .3s}
+.pb i.on{background:var(--T)}
+.at{font-family:var(--fs);font-size:21px;font-weight:700;margin-bottom:3px}
+.as{color:var(--t2);font-size:13px;margin-bottom:18px}
+.fg{display:flex;flex-direction:column;gap:10px}
+.fr{display:flex;gap:9px}
+.fi{width:100%;background:var(--b2);border:1.5px solid var(--b3);border-radius:11px;padding:12px 14px;color:var(--tx);font-size:15px;font-family:var(--f);outline:none;transition:border-color .2s}
+.fi:focus{border-color:var(--T);background:var(--w)}
+select.fi option{background:#fff}
+.bt{width:100%;padding:14px;background:var(--T);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;font-family:var(--f);margin-top:16px;transition:background .2s}
+.bt:active{background:var(--TD)}
+.aswitch{text-align:center;color:var(--t2);font-size:13px;margin-top:15px}
+.aswitch b{color:var(--T);cursor:pointer;font-weight:600}
+.ahint{text-align:center;color:var(--t3);font-size:11px;margin-top:8px}
 
-/* HEADER BTNS */
-.header-actions{display:flex;gap:7px}
-.icon-btn{width:34px;height:34px;border:1.5px solid var(--border);border-radius:10px;background:#fff;color:var(--text2);display:flex;align-items:center;justify-content:center;position:relative;box-shadow:var(--shadow)}
-.badge-dot{position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--terra);border:1.5px solid #fff}
+/* ─ LOGO SMALL ─ */
+.logo-sm .n{font-family:var(--fs);font-size:20px;font-weight:700;color:var(--tx)}
+.logo-sm .s{font-family:var(--fs);font-size:20px;font-weight:700;color:var(--T)}
+.logo-sm .c{font-size:7.5px;letter-spacing:2px;color:var(--t3);font-weight:500;margin-left:7px;align-self:center;text-transform:uppercase}
+.logo-sm{display:flex;align-items:baseline}
 
-/* PAGE */
-.page{padding:16px 14px 32px;min-height:100%}
-.section-title{font-family:var(--serif);font-size:18px;font-weight:700;color:var(--text);margin-bottom:12px}
+/* ─ ICON BTNS ─ */
+.hbtn{width:33px;height:33px;border:1.5px solid var(--bd);border-radius:9px;background:var(--w);color:var(--t2);display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;box-shadow:var(--sh)}
+.hdot{position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--T);border:1.5px solid var(--w)}
 
-/* HERO */
-.hero-card{background:linear-gradient(135deg,var(--terra) 0%,var(--terra-dark) 100%);border-radius:20px;padding:22px;margin-bottom:14px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(193,127,90,0.28)}
-.hero-card::before{content:'';position:absolute;top:-50px;right:-50px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,0.1);pointer-events:none}
-.hero-greeting{color:rgba(255,255,255,0.7);font-size:13px}
-.hero-name{color:#fff;font-family:var(--serif);font-size:24px;font-weight:700;margin-top:3px}
-.hero-contract{display:inline-flex;align-items:center;gap:7px;margin-top:12px;background:rgba(255,255,255,0.18);border-radius:9px;padding:6px 12px;color:#fff;font-size:12px;font-weight:600}
+/* ─ PAGE ─ */
+.pg{padding:15px 13px 28px}
+.st{font-family:var(--fs);font-size:18px;font-weight:700;margin-bottom:11px}
 
-/* STATS */
-.stats-row{display:flex;gap:9px;margin-bottom:9px}
-.stat-card{flex:1;min-width:0;background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
-.stat-icon{font-size:18px;margin-bottom:7px}
-.stat-value{font-size:21px;font-weight:700;color:var(--text);line-height:1}
-.stat-label{font-size:11px;color:var(--text2);margin-top:4px}
-.stat-sub{font-size:11px;margin-top:3px;color:var(--terra);font-weight:600}
+/* ─ HERO CARD ─ */
+.hc{background:linear-gradient(135deg,var(--T),var(--TD));border-radius:18px;padding:20px;margin-bottom:13px;position:relative;overflow:hidden;box-shadow:0 6px 24px rgba(193,127,90,0.28)}
+.hc::before{content:'';position:absolute;top:-40px;right:-40px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,0.1);pointer-events:none}
+.hg{color:rgba(255,255,255,0.72);font-size:12px}
+.hn{color:#fff;font-family:var(--fs);font-size:23px;font-weight:700;margin-top:3px}
+.hco{display:inline-flex;align-items:center;gap:6px;margin-top:11px;background:rgba(255,255,255,0.18);border-radius:8px;padding:6px 11px;color:#fff;font-size:11px;font-weight:600}
 
-/* FEED */
-.feed-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:4px 14px;box-shadow:var(--shadow);margin-bottom:10px}
-.feed-item{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--bg2)}
-.feed-item:last-child{border-bottom:none}
-.feed-icon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px}
-.feed-text{flex:1;font-size:13px;font-weight:500;color:var(--text);line-height:1.4}
-.feed-time{font-size:11px;color:var(--text3);flex-shrink:0}
+/* ─ STAT CARDS ─ */
+.sr{display:flex;gap:8px;margin-bottom:8px}
+.sc{flex:1;min-width:0;background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:13px;box-shadow:var(--sh)}
+.si{font-size:17px;margin-bottom:7px}
+.sv{font-size:20px;font-weight:700;line-height:1}
+.sl{font-size:10px;color:var(--t2);margin-top:4px}
+.ss{font-size:10px;color:var(--T);font-weight:600;margin-top:3px}
 
-/* BADGES */
-.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
-.badge-green{background:var(--green-bg);color:var(--green)}
-.badge-amber{background:var(--amber-bg);color:var(--amber)}
-.badge-red{background:var(--red-bg);color:var(--red)}
-.badge-terra{background:var(--terra-light);color:var(--terra)}
+/* ─ FEED ─ */
+.fc{background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:3px 13px;box-shadow:var(--sh)}
+.fi2{display:flex;align-items:center;gap:11px;padding:12px 0;border-bottom:1px solid var(--b2)}
+.fi2:last-child{border-bottom:none}
+.fic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
+.ft{flex:1;font-size:13px;font-weight:500;line-height:1.4}
+.ftm{font-size:10px;color:var(--t3);flex-shrink:0}
 
-/* ALERTS */
-.alert{border-radius:13px;padding:13px 15px;display:flex;gap:11px;align-items:flex-start;margin-bottom:13px}
-.alert-amber{background:var(--amber-bg);border:1px solid rgba(184,134,11,0.2)}
-.alert-red{background:var(--red-bg);border:1px solid rgba(192,57,43,0.15)}
-.alert-green{background:var(--green-bg);border:1px solid rgba(61,140,110,0.2)}
-.alert-title{font-size:13px;font-weight:700;color:var(--text)}
-.alert-sub{font-size:12px;color:var(--text2);margin-top:2px;line-height:1.5}
+/* ─ BADGES ─ */
+.bg{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
+.bg-g{background:var(--gbg);color:var(--gr)}
+.bg-a{background:var(--abg);color:var(--am)}
+.bg-r{background:var(--rbg);color:var(--re)}
+.bg-t{background:var(--TL);color:var(--T)}
 
-/* INVOICES */
-.inv-item{display:flex;align-items:center;gap:12px;padding:14px;background:#fff;border:1px solid var(--border);border-radius:14px;margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow);transition:border-color .2s}
-.inv-item:active{border-color:var(--terra)}
-.inv-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px}
-.inv-meta{flex:1;min-width:0}
-.inv-name{font-size:14px;font-weight:600;color:var(--text)}
-.inv-num{font-size:11px;color:var(--text3);margin-top:2px}
-.inv-amount{font-size:15px;font-weight:700;color:var(--terra)}
+/* ─ ALERTS ─ */
+.al2{border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+.al-a{background:var(--abg);border:1px solid rgba(184,134,11,0.2)}
+.al-r{background:var(--rbg);border:1px solid rgba(192,57,43,0.15)}
+.al-g{background:var(--gbg);border:1px solid rgba(61,140,110,0.2)}
+.alt{font-size:13px;font-weight:700}
+.als{font-size:11px;color:var(--t2);margin-top:2px;line-height:1.5}
 
-/* DELETE BTN */
-.btn-delete{background:var(--red-bg);border:1px solid rgba(192,57,43,0.2);color:var(--red);border-radius:10px;padding:7px 13px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px;flex-shrink:0}
-.btn-delete:active{background:rgba(192,57,43,0.18)}
+/* ─ INVOICES ─ */
+.ii{display:flex;align-items:center;gap:11px;padding:13px;background:var(--w);border:1px solid var(--bd);border-radius:13px;box-shadow:var(--sh);transition:border-color .2s}
+.ii:active{border-color:var(--T)}
+.iic{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:19px}
+.iim{flex:1;min-width:0}
+.iin{font-size:14px;font-weight:600}
+.iis{font-size:11px;color:var(--t3);margin-top:1px}
+.iia{font-size:14px;font-weight:700;color:var(--T)}
 
-/* INV DETAIL */
-.inv-detail{padding:0 14px 32px;background:var(--bg2);min-height:100%}
-.back-btn{display:flex;align-items:center;gap:8px;background:none;border:none;color:var(--terra);font-size:14px;font-weight:600;padding:16px 0 14px}
-.inv-detail-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:22px;box-shadow:var(--shadow-md)}
-.inv-detail-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
-.inv-detail-label{color:var(--text3);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
-.inv-detail-id{font-family:var(--serif);color:var(--text);font-size:21px;font-weight:700}
-.dashed{border-top:1px dashed var(--bg4);border-bottom:1px dashed var(--bg4);padding:13px 0;margin:14px 0}
-.detail-row{display:flex;justify-content:space-between;padding:7px 0;font-size:14px}
-.detail-row-label{color:var(--text2)}
-.detail-row-val{font-weight:500;color:var(--text)}
-.inv-total-row{display:flex;justify-content:space-between;align-items:center;padding-top:4px}
-.inv-total-label{font-family:var(--serif);font-size:19px;font-weight:700;color:var(--text)}
-.inv-total-amount{font-family:var(--serif);font-size:28px;font-weight:700;color:var(--terra)}
-.btn-outline{width:100%;margin-top:18px;padding:13px;background:var(--terra-light);border:1.5px solid rgba(193,127,90,0.3);border-radius:12px;color:var(--terra);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px}
+/* ─ DEL BTN ─ */
+.dbt{background:var(--rbg);border:1px solid rgba(192,57,43,0.18);color:var(--re);border-radius:9px;padding:8px 10px;font-size:14px;flex-shrink:0;cursor:pointer;display:flex;align-items:center}
 
-/* REVENUES */
-.month-filter{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;scrollbar-width:none}
-.month-filter::-webkit-scrollbar{display:none}
-.month-btn{flex-shrink:0;padding:6px 14px;border-radius:20px;border:1.5px solid var(--bg4);background:#fff;color:var(--text2);font-size:12px;font-weight:600;transition:all .2s}
-.month-btn.active{background:var(--terra);border-color:var(--terra);color:#fff}
-.rev-hero{background:#fff;border:1px solid var(--border);border-radius:18px;padding:20px;margin-bottom:11px;box-shadow:var(--shadow)}
-.rev-hero-label{color:var(--text3);font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase}
-.rev-hero-amount{font-family:var(--serif);font-size:36px;font-weight:700;color:var(--text);line-height:1.1;margin:5px 0 4px}
-.rev-hero-amount span{color:var(--terra)}
-.rings-row{display:flex;gap:11px;align-items:center;margin-bottom:11px}
-.ring-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
-.ring-label{font-size:11px;color:var(--text2);font-weight:500}
-.chart-wrap{background:#fff;border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:11px;box-shadow:var(--shadow)}
-.bars{display:flex;align-items:flex-end;gap:7px;height:85px}
-.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
-.bar{width:100%;border-radius:5px 5px 0 0;transition:height .7s ease}
-.bar-label{font-size:10px;color:var(--text3);font-weight:500}
-.rev-breakdown{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
-.rev-row{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid var(--bg2);font-size:13px}
-.rev-row:last-child{border-bottom:none}
-.rev-dot{width:7px;height:7px;border-radius:50%;margin-right:9px;display:inline-block;flex-shrink:0}
+/* ─ MONTH PILLS ─ */
+.mf{display:flex;gap:6px;overflow-x:auto;padding-bottom:3px;margin-bottom:13px;scrollbar-width:none}
+.mf::-webkit-scrollbar{display:none}
+.mb{flex-shrink:0;padding:6px 13px;border-radius:18px;border:1.5px solid var(--b3);background:var(--w);color:var(--t2);font-size:12px;font-weight:600;font-family:var(--f);cursor:pointer;transition:all .2s}
+.mb.on{background:var(--T);border-color:var(--T);color:#fff}
 
-/* MAINTENANCE */
-.main-item{background:#fff;border:1px solid var(--border);border-radius:14px;padding:15px;margin-bottom:9px;box-shadow:var(--shadow)}
-.main-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px}
-.main-icon-wrap{display:flex;align-items:center;gap:10px}
-.main-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:19px}
-.main-type{font-size:14px;font-weight:700;color:var(--text)}
-.main-date{font-size:11px;color:var(--text3);margin-top:2px}
-.main-note{font-size:13px;color:var(--text2);line-height:1.6;padding-left:50px}
-.main-tech{display:flex;align-items:center;gap:7px;margin-top:9px;padding-left:50px}
-.tech-chip{background:var(--terra-light);color:var(--terra);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px}
+/* ─ REV HERO ─ */
+.rh{background:var(--w);border:1px solid var(--bd);border-radius:16px;padding:18px;margin-bottom:10px;box-shadow:var(--sh)}
+.rl{color:var(--t3);font-size:11px;font-weight:600;letter-spacing:.7px;text-transform:uppercase}
+.rv{font-family:var(--fs);font-size:34px;font-weight:700;line-height:1.1;margin:5px 0 3px}
+.rv span{color:var(--T)}
 
-/* INFOS */
-.info-section{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:11px;box-shadow:var(--shadow)}
-.info-section-head{display:flex;align-items:center;gap:9px;padding:12px 16px;border-bottom:1px solid var(--bg2);background:var(--bg)}
-.info-section-icon{font-size:16px}
-.info-section-title{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:1.2px;text-transform:uppercase}
-.info-row{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--bg2);font-size:13px}
-.info-row:last-child{border-bottom:none}
-.info-label{color:var(--text2)}
-.info-value{color:var(--text);font-weight:500;text-align:right;max-width:55%;line-height:1.4}
-.info-value.hi{color:var(--terra);font-weight:700}
+/* ─ BARS ─ */
+.cw{background:var(--w);border:1px solid var(--bd);border-radius:15px;padding:16px;margin-bottom:10px;box-shadow:var(--sh)}
+.bs{display:flex;align-items:flex-end;gap:6px;height:80px}
+.bc{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+.br{width:100%;border-radius:4px 4px 0 0;transition:height .6s ease}
+.bl{font-size:9px;color:var(--t3);font-weight:500}
 
-/* ADMIN */
-.tab-pills{display:flex;background:var(--bg3);border-radius:12px;padding:3px;margin-bottom:14px;gap:2px}
-.tab-pill{flex:1;text-align:center;padding:8px 2px;border-radius:10px;border:none;background:transparent;color:var(--text2);font-size:11px;font-weight:700;transition:all .2s}
-.tab-pill.active{background:#fff;color:var(--terra);box-shadow:var(--shadow)}
-.admin-form{display:flex;flex-direction:column;gap:9px;margin-top:11px}
-.stats-hero{background:linear-gradient(135deg,var(--terra),var(--terra-dark));border-radius:16px;padding:20px;color:#fff;margin-bottom:11px;box-shadow:0 6px 24px rgba(193,127,90,0.28)}
-.stats-hero-val{font-family:var(--serif);font-size:34px;font-weight:700}
-.stats-hero-label{font-size:12px;opacity:.8;margin-top:3px}
-.table-card{background:#fff;border:1px solid var(--border);border-radius:13px;overflow:hidden;box-shadow:var(--shadow)}
-.table-row{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--bg2);font-size:13px}
-.table-row:last-child{border-bottom:none}
+/* ─ RING ─ */
+.rr{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.rw{display:flex;flex-direction:column;align-items:center;gap:4px}
+.rwl{font-size:10px;color:var(--t2);font-weight:500}
 
-/* OWNER CARD */
-.owner-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:15px;margin-bottom:9px;box-shadow:var(--shadow);cursor:pointer;transition:border-color .2s}
-.owner-card:active{border-color:var(--terra)}
-.owner-card-head{display:flex;justify-content:space-between;align-items:center}
-.owner-avatar{width:40px;height:40px;border-radius:12px;background:var(--terra-light);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.owner-info{flex:1;margin-left:11px}
-.owner-name{font-size:15px;font-weight:700;color:var(--text)}
-.owner-email{font-size:11px;color:var(--text3);margin-top:2px}
-.owner-stats{display:flex;gap:8px;margin-top:10px}
-.owner-stat{flex:1;background:var(--bg2);border-radius:9px;padding:8px;text-align:center}
-.owner-stat-val{font-size:14px;font-weight:700;color:var(--terra)}
-.owner-stat-label{font-size:10px;color:var(--text2);margin-top:2px}
+/* ─ REV BREAKDOWN ─ */
+.rb{background:var(--w);border:1px solid var(--bd);border-radius:15px;overflow:hidden;box-shadow:var(--sh)}
+.rr2{display:flex;justify-content:space-between;align-items:center;padding:12px 15px;border-bottom:1px solid var(--b2);font-size:13px}
+.rr2:last-child{border-bottom:none}
+.rd{width:7px;height:7px;border-radius:50%;margin-right:8px;display:inline-block;flex-shrink:0}
 
-/* MODAL-LIKE DETAIL */
-.detail-page{padding:0 14px 32px;background:var(--bg2);min-height:100%}
+/* ─ MAINTENANCE ─ */
+.mi{background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:14px;box-shadow:var(--sh)}
+.mih{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.miw{display:flex;align-items:center;gap:9px}
+.mic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+.mity{font-size:14px;font-weight:700}
+.mida{font-size:11px;color:var(--t3);margin-top:1px}
+.mino{font-size:12px;color:var(--t2);line-height:1.55;padding-left:47px}
+.mite{display:flex;align-items:center;gap:6px;margin-top:8px;padding-left:47px}
+.tc{background:var(--TL);color:var(--T);font-size:11px;font-weight:600;padding:2px 9px;border-radius:18px}
 
-/* UTILS */
-.spinner{width:28px;height:28px;border:2.5px solid var(--bg3);border-top-color:var(--terra);border-radius:50%;animation:spin .7s linear infinite;margin:40px auto}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.fade-up{animation:fadeUp .3s ease both}
-#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--text);color:#fff;border-radius:11px;padding:10px 18px;font-size:13px;font-weight:500;z-index:9999;transition:transform .3s ease;white-space:nowrap;box-shadow:var(--shadow-md)}
+/* ─ INFOS ─ */
+.is{background:var(--w);border:1px solid var(--bd);border-radius:15px;overflow:hidden;margin-bottom:10px;box-shadow:var(--sh)}
+.ish{display:flex;align-items:center;gap:8px;padding:11px 15px;border-bottom:1px solid var(--b2);background:var(--bg)}
+.ist{font-size:11px;font-weight:700;color:var(--t2);letter-spacing:1px;text-transform:uppercase}
+.ir{display:flex;justify-content:space-between;align-items:center;padding:11px 15px;border-bottom:1px solid var(--b2);font-size:13px}
+.ir:last-child{border-bottom:none}
+.irl{color:var(--t2)}
+.irv{color:var(--tx);font-weight:500;text-align:right;max-width:55%;line-height:1.4;font-size:12px}
+.irv.hi{color:var(--T);font-weight:700;font-size:13px}
+
+/* ─ ADMIN ─ */
+.tp{display:flex;background:var(--b2);border-radius:11px;padding:3px;margin-bottom:13px;gap:2px}
+.tpb{flex:1;text-align:center;padding:8px 2px;border-radius:9px;border:none;background:transparent;color:var(--t2);font-size:11px;font-weight:700;font-family:var(--f);cursor:pointer;transition:all .18s}
+.tpb.on{background:var(--w);color:var(--T);box-shadow:var(--sh)}
+.sh2{background:linear-gradient(135deg,var(--T),var(--TD));border-radius:15px;padding:18px;color:#fff;margin-bottom:10px;box-shadow:0 5px 20px rgba(193,127,90,0.28)}
+.shv{font-family:var(--fs);font-size:32px;font-weight:700}
+.shl{font-size:12px;opacity:.8;margin-top:3px}
+.oc{background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:14px;margin-bottom:8px;box-shadow:var(--sh);cursor:pointer}
+.och{display:flex;justify-content:space-between;align-items:center}
+.oa{width:38px;height:38px;border-radius:11px;background:var(--TL);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.oi{flex:1;margin-left:10px}
+.on2{font-size:14px;font-weight:700}
+.oe{font-size:11px;color:var(--t3);margin-top:1px}
+
+/* ─ FORM SECTION ─ */
+.fs2{background:var(--w);border:1px solid var(--bd);border-radius:13px;overflow:hidden;margin-bottom:12px;box-shadow:var(--sh)}
+.fs2h{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--b2);background:var(--bg)}
+.fs2t{font-size:11px;font-weight:700;color:var(--t2);letter-spacing:1px;text-transform:uppercase}
+.fs2b{padding:13px;display:flex;flex-direction:column;gap:9px}
+.sep{background:var(--b2);border-radius:8px;padding:9px 11px;font-size:10px;font-weight:700;color:var(--t2);letter-spacing:.8px;text-transform:uppercase}
+
+/* ─ BACK BTN ─ */
+.bk{display:flex;align-items:center;gap:7px;background:none;border:none;color:var(--T);font-size:13px;font-weight:600;font-family:var(--f);padding:15px 0 13px;cursor:pointer}
+
+/* ─ UTILS ─ */
+.spin{width:26px;height:26px;border:2.5px solid var(--b3);border-top-color:var(--T);border-radius:50%;animation:sp .7s linear infinite;margin:36px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fu{animation:fu .28s ease both}
+#toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-70px);background:var(--tx);color:#fff;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:500;z-index:999;transition:transform .3s;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.2)}
 #toast.show{transform:translateX(-50%) translateY(0)}
-#toast.success{background:var(--green)}
-#toast.error{background:var(--red)}
+#toast.ok{background:var(--gr)}
+#toast.err{background:var(--re)}
+.tc2{background:var(--b3);border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;font-family:var(--f);cursor:pointer;color:var(--t2)}
 </style>
 </head>
 <body>
@@ -237,651 +246,561 @@ select.field option{background:#fff;color:var(--text)}
 
 <!-- AUTH -->
 <div id="auth">
-  <div class="auth-wrap">
-    <div class="auth-logo-block">
-      <div class="logo logo-lg" style="justify-content:center">
-        <span class="nex">Nex</span><span class="stay">stay</span><span class="sub">Conciergerie</span>
-      </div>
-      <p class="auth-tagline">Votre espace propriétaire · Tunisie</p>
-    </div>
-    <div class="auth-card" id="authCard"></div>
+<div class="ac">
+  <div class="al">
+    <div class="logo-xl"><span class="n">Nex</span><span class="s">stay</span><span class="c">Conciergerie · Tunisie</span></div>
   </div>
+  <div class="acard" id="ac2"></div>
+</div>
 </div>
 
 <!-- APP -->
 <div id="app" style="display:none">
-  <div id="header">
-    <div class="logo logo-sm">
-      <span class="nex">Nex</span><span class="stay">stay</span><span class="sub">Conciergerie</span>
-    </div>
-    <div class="header-actions">
-      <button class="icon-btn" id="notifBtn" onclick="goTab('invoices')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        <span class="badge-dot" id="notifDot" style="display:none"></span>
+  <div id="hdr">
+    <div class="logo-sm"><span class="n">Nex</span><span class="s">stay</span><span class="c">Conciergerie</span></div>
+    <div style="display:flex;gap:7px">
+      <button class="hbtn" onclick="goTab('invoices')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="hdot" id="ndot" style="display:none"></span>
       </button>
-      <button class="icon-btn" onclick="logout()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <button class="hbtn" onclick="logout()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </button>
     </div>
   </div>
-  <div id="content"></div>
-  <nav id="navbar">
-    <button class="nav-item active" id="nav-dashboard" onclick="goTab('dashboard')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
-      Accueil<div class="nav-bar"></div>
+  <div id="scr"></div>
+  <div id="nav">
+    <button class="nb on" id="nb-dashboard" onclick="goTab('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+      <span>Accueil</span>
     </button>
-    <button class="nav-item" id="nav-revenues" onclick="goTab('revenues')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-      Revenus<div class="nav-bar"></div>
+    <button class="nb" id="nb-revenues" onclick="goTab('revenues')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span>Revenus</span>
     </button>
-    <button class="nav-item" id="nav-invoices" onclick="goTab('invoices')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      Factures<div class="nav-bar"></div>
-      <span class="nav-dot" id="invDot" style="display:none"></span>
+    <button class="nb" id="nb-invoices" onclick="goTab('invoices')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span>Factures</span>
+      <span class="ndot" id="idot" style="display:none"></span>
     </button>
-    <button class="nav-item" id="nav-maintenance" onclick="goTab('maintenance')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-      Entretiens<div class="nav-bar"></div>
+    <button class="nb" id="nb-maintenance" onclick="goTab('maintenance')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      <span>Entretiens</span>
     </button>
-    <button class="nav-item" id="nav-infos" onclick="goTab('infos')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      Infos<div class="nav-bar"></div>
+    <button class="nb" id="nb-infos" onclick="goTab('infos')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span>Infos</span>
     </button>
-  </nav>
+  </div>
 </div>
 
 <script>
-let STATE={user:null,token:null,tab:'dashboard',authMode:'login',authStep:1,authTmp:{}};
-let DATA={invoices:[],revenues:[],maintenances:[],infos:null,contract:null};
-let selectedInvoice=null,selectedRevIdx=null,adminView=null;
+// ══ STATE ══════════════════════════════════════════════════════════════════════
+var S={user:null,token:null,authMode:'login',authStep:1,authTmp:{}};
+var D={invoices:[],revenues:[],maintenances:[],infos:null,contract:null};
+var selInv=null,selRevIdx=null,ownerData=null,ownerTabActive='inv';
 
+// ══ API ════════════════════════════════════════════════════════════════════════
 async function api(method,path,body){
-  const opts={method,headers:{'Content-Type':'application/json'}};
-  if(STATE.token)opts.headers['Authorization']='Bearer '+STATE.token;
+  var opts={method,headers:{'Content-Type':'application/json'}};
+  if(S.token)opts.headers['Authorization']='Bearer '+S.token;
   if(body)opts.body=JSON.stringify(body);
-  const res=await fetch('/api'+path,opts);
-  const data=await res.json().catch(()=>({}));
-  if(!res.ok)throw new Error(data.error||'Erreur serveur');
-  return data;
+  var res=await fetch('/api'+path,opts);
+  var d=await res.json().catch(function(){return{};});
+  if(!res.ok)throw new Error(d.error||'Erreur');
+  return d;
 }
 
-function toast(msg,type='info'){
-  const el=document.getElementById('toast');
-  el.className=type==='success'?'success':type==='error'?'error':'';
+// ══ TOAST ══════════════════════════════════════════════════════════════════════
+function toast(msg,type){
+  var el=document.getElementById('toast');
+  el.className=type==='ok'?'ok':type==='err'?'err':'';
   el.textContent=msg;el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'),3000);
+  setTimeout(function(){el.classList.remove('show')},3000);
 }
 
-/* ── AUTH ─────────────────────────────────────────────────────────────────── */
-function renderAuth(){
-  const card=document.getElementById('authCard');
-  if(STATE.authMode==='login'){
-    card.innerHTML=`
-      <h2 class="step-title">Connexion</h2>
-      <p class="step-sub">Accédez à votre espace propriétaire</p>
-      <div class="form-group">
-        <input id="lE" class="field" type="email" placeholder="Adresse email" value="demo@nexstay.tn">
-        <input id="lP" class="field" type="password" placeholder="Mot de passe" value="demo123">
-      </div>
-      <button class="btn-terra" onclick="doLogin()">Se connecter</button>
-      <p class="auth-switch">Pas encore inscrit ? <span onclick="switchAuth('register')">Créer un compte</span></p>
-      <p class="auth-demo">Admin : admin@nexstay.tn · admin123</p>`;
+// ══ AUTH ═══════════════════════════════════════════════════════════════════════
+function rAuth(){
+  var c=document.getElementById('ac2');
+  if(S.authMode==='login'){
+    c.innerHTML='<h2 class="at">Connexion</h2><p class="as">Accédez à votre espace propriétaire</p>'
+      +'<div class="fg"><input id="le" class="fi" type="email" placeholder="Email" value="demo@nexstay.tn">'
+      +'<input id="lp" class="fi" type="password" placeholder="Mot de passe" value="demo123"></div>'
+      +'<button class="bt" onclick="doLogin()">Se connecter</button>'
+      +'<p class="aswitch">Pas encore inscrit ? <b onclick="swAuth(\'register\')">Créer un compte</b></p>'
+      +'<p class="ahint">Admin : admin@nexstay.tn · admin123</p>';
   } else {
-    const s=STATE.authStep;
-    card.innerHTML=`
-      <div class="progress-bar"><span class="${s>=1?'active':''}"></span><span class="${s>=2?'active':''}"></span></div>
-      <h2 class="step-title">${s===1?'Créer votre compte':'Votre logement'}</h2>
-      <p class="step-sub">${s===1?'Informations personnelles':'Adresse de la propriété'}</p>
-      ${s===1?`<div class="form-group">
-        <div class="form-row"><input id="rPre" class="field" placeholder="Prénom"><input id="rNom" class="field" placeholder="Nom"></div>
-        <input id="rE" class="field" type="email" placeholder="Email">
-        <input id="rT" class="field" placeholder="Téléphone (+216...)">
-        <input id="rP" class="field" type="password" placeholder="Mot de passe">
-      </div><button class="btn-terra" onclick="nextStep()">Continuer →</button>`
-      :`<div class="form-group">
-        <input id="rA" class="field" placeholder="Adresse complète">
-        <input id="rV" class="field" placeholder="Ville">
-        <select id="rTy" class="field"><option value="">Type de bien</option><option>Appartement</option><option>Villa</option><option>Studio</option><option>Duplex</option></select>
-      </div><button class="btn-terra" onclick="doRegister()">Créer mon compte</button>`}
-      <p class="auth-switch">${s===2?'<span onclick="STATE.authStep=1;renderAuth()">← Retour</span> · ':''}Déjà inscrit ? <span onclick="switchAuth(\'login\')">Se connecter</span></p>`;
+    var s=S.authStep;
+    c.innerHTML='<div class="pb"><i class="'+(s>=1?'on':'')+'"></i><i class="'+(s>=2?'on':'')+'"></i></div>'
+      +'<h2 class="at">'+(s===1?'Créer votre compte':'Votre logement')+'</h2>'
+      +'<p class="as">'+(s===1?'Informations personnelles':'Adresse de la propriété')+'</p>'
+      +(s===1
+        ?'<div class="fg"><div class="fr"><input id="rpr" class="fi" placeholder="Prénom"><input id="rno" class="fi" placeholder="Nom"></div>'
+          +'<input id="rem" class="fi" type="email" placeholder="Email">'
+          +'<input id="rte" class="fi" placeholder="Téléphone (+216)">'
+          +'<input id="rpw" class="fi" type="password" placeholder="Mot de passe"></div>'
+          +'<button class="bt" onclick="nextStep()">Continuer →</button>'
+        :'<div class="fg"><input id="rad" class="fi" placeholder="Adresse complète">'
+          +'<input id="rvi" class="fi" placeholder="Ville">'
+          +'<select id="rty" class="fi"><option value="">Type de bien</option><option>Appartement</option><option>Villa</option><option>Studio</option><option>Duplex</option></select></div>'
+          +'<button class="bt" onclick="doRegister()">Créer mon compte</button>')
+      +'<p class="aswitch">'+(s===2?'<b onclick="S.authStep=1;rAuth()">← Retour</b> · ':'')+'Déjà inscrit ? <b onclick="swAuth(\'login\')">Se connecter</b></p>';
   }
 }
-function switchAuth(m){STATE.authMode=m;STATE.authStep=1;renderAuth();}
+function swAuth(m){S.authMode=m;S.authStep=1;rAuth();}
+function v(id){var el=document.getElementById(id);return el?el.value:'';}
 function nextStep(){
-  const email=document.getElementById('rE')?.value,pwd=document.getElementById('rP')?.value;
-  if(!email||!pwd){toast('Remplissez tous les champs','error');return;}
-  STATE.authTmp={prenom:document.getElementById('rPre').value,nom:document.getElementById('rNom').value,email,password:pwd,tel:document.getElementById('rT').value};
-  STATE.authStep=2;renderAuth();
+  if(!v('rem')||!v('rpw')){toast('Remplissez tous les champs','err');return;}
+  S.authTmp={prenom:v('rpr'),nom:v('rno'),email:v('rem'),password:v('rpw'),tel:v('rte')};
+  S.authStep=2;rAuth();
 }
 async function doRegister(){
-  try{const d=await api('POST','/auth/register',{...STATE.authTmp,adresse:document.getElementById('rA').value,ville:document.getElementById('rV').value,typeLogement:document.getElementById('rTy').value});
-  STATE.user=d.user;STATE.token=d.token;localStorage.setItem('nx_token',d.token);startApp();}catch(e){toast(e.message,'error');}
+  try{
+    var d=await api('POST','/auth/register',Object.assign({},S.authTmp,{adresse:v('rad'),ville:v('rvi'),typeLogement:v('rty')}));
+    S.user=d.user;S.token=d.token;localStorage.setItem('nxt',d.token);startApp();
+  }catch(e){toast(e.message,'err');}
 }
 async function doLogin(){
-  try{const d=await api('POST','/auth/login',{email:document.getElementById('lE').value,password:document.getElementById('lP').value});
-  STATE.user=d.user;STATE.token=d.token;localStorage.setItem('nx_token',d.token);startApp();}catch(e){toast(e.message,'error');}
+  try{
+    var d=await api('POST','/auth/login',{email:v('le'),password:v('lp')});
+    S.user=d.user;S.token=d.token;localStorage.setItem('nxt',d.token);startApp();
+  }catch(e){toast(e.message,'err');}
 }
-async function tryAutoLogin(){
-  const token=localStorage.getItem('nx_token');if(!token)return;
-  STATE.token=token;
-  try{STATE.user=await api('GET','/auth/me');startApp();}catch{localStorage.removeItem('nx_token');}
+async function tryAuto(){
+  var t=localStorage.getItem('nxt');if(!t)return;
+  S.token=t;
+  try{S.user=await api('GET','/auth/me');startApp();}
+  catch(e){localStorage.removeItem('nxt');}
 }
 function logout(){
-  localStorage.removeItem('nx_token');STATE.user=null;STATE.token=null;
+  localStorage.removeItem('nxt');S.user=null;S.token=null;
   document.getElementById('auth').style.display='flex';
   document.getElementById('app').style.display='none';
-  renderAuth();
+  rAuth();
 }
 
-/* ── APP START ────────────────────────────────────────────────────────────── */
+// ══ START APP ══════════════════════════════════════════════════════════════════
 async function startApp(){
   document.getElementById('auth').style.display='none';
   document.getElementById('app').style.display='flex';
-  // Ajouter onglet Admin si admin — TOUJOURS dans la navbar
-  if(STATE.user.role==='admin'){
-    const nb=document.getElementById('navbar');
-    if(!document.getElementById('nav-admin')){
-      const btn=document.createElement('button');
-      btn.className='nav-item';btn.id='nav-admin';btn.onclick=()=>goTab('admin');
-      btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>Admin<div class="nav-bar"></div>`;
-      nb.appendChild(btn);
-    }
+  // Ajouter bouton admin dans navbar si admin
+  if(S.user.role==='admin'&&!document.getElementById('nb-admin')){
+    var nav=document.getElementById('nav');
+    var b=document.createElement('button');
+    b.className='nb';b.id='nb-admin';b.onclick=function(){goTab('admin');};
+    b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg><span>Admin</span>';
+    nav.appendChild(b);
   }
-  await loadAllData();
-  goTab(STATE.user.role==='admin'?'admin':'dashboard');
+  await loadData();
+  goTab(S.user.role==='admin'?'admin':'dashboard');
 }
-
-async function loadAllData(){
+async function loadData(){
   try{
-    [DATA.invoices,DATA.revenues,DATA.maintenances,DATA.infos,DATA.contract]=await Promise.all([
-      api('GET','/invoices'),api('GET','/revenues'),api('GET','/maintenances'),api('GET','/infos'),api('GET','/contract')]);
-    selectedRevIdx=DATA.revenues.length-1;
-    const p=DATA.invoices.filter(i=>i.status==='en_attente').length;
-    document.getElementById('invDot').style.display=p>0?'block':'none';
-    document.getElementById('notifDot').style.display=p>0?'block':'none';
-  }catch(e){toast('Erreur chargement','error');}
+    var res=await Promise.all([api('GET','/invoices'),api('GET','/revenues'),api('GET','/maintenances'),api('GET','/infos'),api('GET','/contract')]);
+    D.invoices=res[0];D.revenues=res[1];D.maintenances=res[2];D.infos=res[3];D.contract=res[4];
+    selRevIdx=D.revenues.length-1;
+    var p=D.invoices.filter(function(i){return i.status==='en_attente';}).length;
+    document.getElementById('idot').style.display=p>0?'block':'none';
+    document.getElementById('ndot').style.display=p>0?'block':'none';
+  }catch(e){toast('Erreur chargement','err');}
 }
 
-/* ── NAV ──────────────────────────────────────────────────────────────────── */
+// ══ NAVIGATION ══════════════════════════════════════════════════════════════════
 function goTab(tab){
-  STATE.tab=tab;selectedInvoice=null;adminView=null;
-  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
-  const btn=document.getElementById('nav-'+tab);if(btn)btn.classList.add('active');
-  const c=document.getElementById('content');c.scrollTop=0;c.innerHTML='';
-  ({dashboard:renderDashboard,revenues:renderRevenues,invoices:renderInvoices,maintenance:renderMaintenance,infos:renderInfos,admin:renderAdmin})[tab]?.(c);
+  selInv=null;ownerData=null;
+  document.querySelectorAll('.nb').forEach(function(b){b.classList.remove('on');});
+  var nb=document.getElementById('nb-'+tab);if(nb)nb.classList.add('on');
+  var c=document.getElementById('scr');c.scrollTop=0;c.innerHTML='';
+  var pages={dashboard:rDash,revenues:rRevenues,invoices:rInvoices,maintenance:rMaint,infos:rInfos,admin:rAdmin};
+  if(pages[tab])pages[tab](c);
 }
 
-/* ── DASHBOARD ────────────────────────────────────────────────────────────── */
-function renderDashboard(c){
-  const lr=DATA.revenues[DATA.revenues.length-1],pr=DATA.revenues[DATA.revenues.length-2];
-  const pend=DATA.invoices.filter(i=>i.status==='en_attente').length;
-  const trend=lr&&pr?((lr.revenuNet-pr.revenuNet)/pr.revenuNet*100).toFixed(0):null;
-  c.innerHTML=`<div class="page fade-up">
-    <div class="hero-card">
-      <p class="hero-greeting">Bonjour,</p>
-      <h2 class="hero-name">${STATE.user.prenom} ${STATE.user.nom}</h2>
-      ${DATA.contract?`<div class="hero-contract">📄 Contrat ${DATA.contract.numero}</div>`:''}
-    </div>
-    ${pend>0?`<div class="alert alert-amber"><span style="font-size:19px">🔔</span><div><div class="alert-title">${pend} facture${pend>1?'s':''} en attente</div><div class="alert-sub">${DATA.invoices.filter(i=>i.status==='en_attente').map(i=>i.month||i.mois).join(', ')}</div></div></div>`:''}
-    <div class="stats-row">
-      <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-value">${lr?.tauxOccupation||'—'}%</div><div class="stat-label">Taux d'occupation</div>${trend?`<div class="stat-sub">${trend>0?'↑':'↓'} ${Math.abs(trend)}% vs mois préc.</div>`:''}</div>
-      <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value">${lr?.nbLocataires||'—'}</div><div class="stat-label">Locataires ce mois</div><div class="stat-sub" style="color:var(--green)">${lr?.nbNuits||'—'} nuits</div></div>
-    </div>
-    <div class="stats-row">
-      <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-value" style="font-size:17px">${lr?lr.revenuNet.toLocaleString()+' DT':'—'}</div><div class="stat-label">Revenu net · ${lr?.mois||''}</div></div>
-      <div class="stat-card"><div class="stat-icon">🧾</div><div class="stat-value" style="color:${pend>0?'var(--terra)':'var(--green)'}">${pend}</div><div class="stat-label">Factures en attente</div></div>
-    </div>
-    <h3 class="section-title" style="margin-top:8px">Activité récente</h3>
-    <div class="feed-card">
-      ${[...DATA.invoices.slice(0,2).map(i=>({icon:'🧾',text:`Facture ${i.month||i.mois} — ${(i.amount||0).toLocaleString()} DT`,time:(i.date||'').slice(0,10),bg:'var(--terra-light)'})),
-         ...DATA.maintenances.slice(0,2).map(m=>({icon:m.type==='Ménage'?'🧹':m.type==='Plomberie'?'🔧':'⚡',text:`${m.type} · ${m.statut}`,time:(m.date||'').slice(0,10),bg:'var(--green-bg)'}))
-        ].slice(0,4).map(a=>`<div class="feed-item"><div class="feed-icon" style="background:${a.bg}">${a.icon}</div><div class="feed-text">${a.text}</div><div class="feed-time">${a.time}</div></div>`).join('')}
-    </div>
-  </div>`;
+// ══ DASHBOARD ══════════════════════════════════════════════════════════════════
+function rDash(c){
+  var lr=D.revenues[D.revenues.length-1],pr=D.revenues[D.revenues.length-2];
+  var pend=D.invoices.filter(function(i){return i.status==='en_attente';}).length;
+  var trend=lr&&pr?(((lr.revenuNet-pr.revenuNet)/pr.revenuNet)*100).toFixed(0):null;
+  c.innerHTML='<div class="pg fu">'
+    +'<div class="hc"><p class="hg">Bonjour,</p><h2 class="hn">'+S.user.prenom+' '+S.user.nom+'</h2>'
+    +(D.contract?'<div class="hco">📄 Contrat '+D.contract.numero+'</div>':'')+'</div>'
+    +(pend>0?'<div class="al2 al-a"><span style="font-size:18px">🔔</span><div><div class="alt">'+pend+' facture'+(pend>1?'s':'')+' en attente</div><div class="als">'+D.invoices.filter(function(i){return i.status==='en_attente';}).map(function(i){return i.month||i.mois;}).join(', ')+'</div></div></div>':'')
+    +'<div class="sr"><div class="sc"><div class="si">📊</div><div class="sv">'+(lr?lr.tauxOccupation:'—')+'%</div><div class="sl">Taux d\'occupation</div>'+(trend?'<div class="ss">'+(trend>0?'↑':'↓')+' '+Math.abs(trend)+'% vs préc.</div>':'')+'</div>'
+    +'<div class="sc"><div class="si">👥</div><div class="sv">'+(lr?lr.nbLocataires:'—')+'</div><div class="sl">Locataires ce mois</div><div class="ss" style="color:var(--gr)">'+(lr?lr.nbNuits:'—')+' nuits</div></div></div>'
+    +'<div class="sr"><div class="sc"><div class="si">💰</div><div class="sv" style="font-size:16px">'+(lr?lr.revenuNet.toLocaleString()+' DT':'—')+'</div><div class="sl">Revenu net · '+(lr?lr.mois:'')+'</div></div>'
+    +'<div class="sc"><div class="si">🧾</div><div class="sv" style="color:'+(pend>0?'var(--T)':'var(--gr)')+'">'+pend+'</div><div class="sl">Factures en attente</div></div></div>'
+    +'<h3 class="st" style="margin-top:8px">Activité récente</h3><div class="fc">'
+    +[].concat(D.invoices.slice(0,2).map(function(i){return{ic:'🧾',tx:'Facture '+(i.month||i.mois)+' — '+(i.amount||0).toLocaleString()+' DT',tm:(i.date||'').slice(0,10),bg:'var(--TL)'};}),
+               D.maintenances.slice(0,2).map(function(m){return{ic:m.type==='Ménage'?'🧹':m.type==='Plomberie'?'🔧':'⚡',tx:m.type+' · '+m.statut,tm:(m.date||'').slice(0,10),bg:'var(--gbg)'};}))
+      .slice(0,4).map(function(a){return'<div class="fi2"><div class="fic" style="background:'+a.bg+'">'+a.ic+'</div><div class="ft">'+a.tx+'</div><div class="ftm">'+a.tm+'</div></div>';}).join('')
+    +'</div></div>';
 }
 
-/* ── REVENUES ─────────────────────────────────────────────────────────────── */
-function renderRevenues(c){
-  const revs=DATA.revenues;
-  if(!revs.length){c.innerHTML='<div class="page"><p style="color:var(--text2);text-align:center;padding:40px">Aucun revenu disponible</p></div>';return;}
-  if(selectedRevIdx===null||selectedRevIdx>=revs.length)selectedRevIdx=revs.length-1;
-  const cur=revs[selectedRevIdx],prev=revs[selectedRevIdx-1];
-  const trend=prev?((cur.revenuNet-prev.revenuNet)/prev.revenuNet*100).toFixed(0):null;
-  const mx=Math.max(...revs.map(r=>r.revenuBrut));
-  c.innerHTML=`<div class="page fade-up">
-    <div class="month-filter">${revs.map((r,i)=>`<button class="month-btn ${i===selectedRevIdx?'active':''}" onclick="selRev(${i})">${r.mois}</button>`).join('')}</div>
-    <div class="rev-hero">
-      <div class="rev-hero-label">Revenu net · ${cur.mois} ${cur.annee}</div>
-      <div class="rev-hero-amount">${cur.revenuNet.toLocaleString()} <span>DT</span></div>
-      ${trend?`<div style="color:${trend>0?'var(--green)':'var(--red)'};font-size:13px;font-weight:600">${trend>0?'↑':'↓'} ${Math.abs(trend)}% vs mois précédent</div>`:''}
-    </div>
-    <div class="rings-row">
-      ${ringSVG(cur.tauxOccupation,'Occupation')}
-      <div style="flex:1;display:flex;flex-direction:column;gap:9px">
-        <div class="stat-card" style="padding:11px"><div class="stat-value" style="font-size:19px">${cur.nbLocataires}</div><div class="stat-label">Locataires</div></div>
-        <div class="stat-card" style="padding:11px"><div class="stat-value" style="font-size:19px">${cur.nbNuits} j</div><div class="stat-label">Nuits réservées</div></div>
-      </div>
-    </div>
-    <div class="chart-wrap">
-      <h3 class="section-title" style="font-size:15px;margin-bottom:14px">Évolution des revenus</h3>
-      <div class="bars">${revs.map((r,i)=>`<div class="bar-col"><div class="bar" style="height:${Math.round((r.revenuBrut/mx)*72)}px;background:${i===selectedRevIdx?'var(--terra)':'var(--bg4)'}"></div><span class="bar-label">${r.mois.slice(0,3)}</span></div>`).join('')}</div>
-    </div>
-    <h3 class="section-title">Répartition</h3>
-    <div class="rev-breakdown">
-      <div class="rev-row"><span><span class="rev-dot" style="background:var(--terra)"></span><span style="color:var(--text2)">Revenus bruts Airbnb</span></span><span style="color:var(--terra);font-weight:700">+${cur.revenuBrut.toLocaleString()} DT</span></div>
-      <div class="rev-row"><span><span class="rev-dot" style="background:var(--red)"></span><span style="color:var(--text2)">Commission Nexstay (20%)</span></span><span style="color:var(--red);font-weight:700">-${Math.round(cur.revenuBrut*.2).toLocaleString()} DT</span></div>
-      <div class="rev-row"><span><span class="rev-dot" style="background:var(--amber)"></span><span style="color:var(--text2)">Charges & entretien</span></span><span style="color:var(--amber);font-weight:700">-${(cur.revenuBrut-cur.revenuNet-Math.round(cur.revenuBrut*.2)).toLocaleString()} DT</span></div>
-      <div class="rev-row" style="background:var(--bg)"><span style="font-weight:700">💰 Revenu net</span><span style="color:var(--terra);font-weight:700;font-size:16px">${cur.revenuNet.toLocaleString()} DT</span></div>
-    </div>
-  </div>`;
+// ══ REVENUES ═══════════════════════════════════════════════════════════════════
+function rRevenues(c){
+  var revs=D.revenues;
+  if(!revs.length){c.innerHTML='<div class="pg"><p style="color:var(--t2);text-align:center;padding:40px">Aucun revenu disponible</p></div>';return;}
+  if(selRevIdx===null||selRevIdx>=revs.length)selRevIdx=revs.length-1;
+  var cur=revs[selRevIdx],prev=revs[selRevIdx-1];
+  var trend=prev?(((cur.revenuNet-prev.revenuNet)/prev.revenuNet)*100).toFixed(0):null;
+  var mx=Math.max.apply(null,revs.map(function(r){return r.revenuBrut;}));
+  c.innerHTML='<div class="pg fu">'
+    +'<div class="mf">'+revs.map(function(r,i){return'<button class="mb'+(i===selRevIdx?' on':'')+'" onclick="selR('+i+')">'+r.mois+'</button>';}).join('')+'</div>'
+    +'<div class="rh"><div class="rl">Revenu net · '+cur.mois+' '+cur.annee+'</div>'
+    +'<div class="rv">'+cur.revenuNet.toLocaleString()+' <span>DT</span></div>'
+    +(trend?'<div style="color:'+(trend>0?'var(--gr)':'var(--re)')+';font-size:12px;font-weight:600">'+(trend>0?'↑':'↓')+' '+Math.abs(trend)+'% vs mois précédent</div>':'')+'</div>'
+    +'<div class="rr">'+ringSVG(cur.tauxOccupation,'Occupation')
+    +'<div style="flex:1;display:flex;flex-direction:column;gap:8px">'
+    +'<div class="sc" style="padding:10px"><div class="sv" style="font-size:18px">'+cur.nbLocataires+'</div><div class="sl">Locataires</div></div>'
+    +'<div class="sc" style="padding:10px"><div class="sv" style="font-size:18px">'+cur.nbNuits+' j</div><div class="sl">Nuits réservées</div></div>'
+    +'</div></div>'
+    +'<div class="cw"><h3 class="st" style="font-size:14px;margin-bottom:13px">Évolution des revenus</h3>'
+    +'<div class="bs">'+revs.map(function(r,i){return'<div class="bc"><div class="br" style="height:'+Math.round((r.revenuBrut/mx)*68)+'px;background:'+(i===selRevIdx?'var(--T)':'var(--b3)')+'"></div><span class="bl">'+r.mois.slice(0,3)+'</span></div>';}).join('')+'</div></div>'
+    +'<h3 class="st">Répartition</h3><div class="rb">'
+    +'<div class="rr2"><span><span class="rd" style="background:var(--T)"></span><span style="color:var(--t2)">Revenus bruts Airbnb</span></span><span style="color:var(--T);font-weight:700">+'+cur.revenuBrut.toLocaleString()+' DT</span></div>'
+    +'<div class="rr2"><span><span class="rd" style="background:var(--re)"></span><span style="color:var(--t2)">Commission Nexstay (20%)</span></span><span style="color:var(--re);font-weight:700">-'+Math.round(cur.revenuBrut*.2).toLocaleString()+' DT</span></div>'
+    +'<div class="rr2"><span><span class="rd" style="background:var(--am)"></span><span style="color:var(--t2)">Charges & entretien</span></span><span style="color:var(--am);font-weight:700">-'+(cur.revenuBrut-cur.revenuNet-Math.round(cur.revenuBrut*.2)).toLocaleString()+' DT</span></div>'
+    +'<div class="rr2" style="background:var(--bg)"><span style="font-weight:700">💰 Revenu net</span><span style="color:var(--T);font-weight:700;font-size:15px">'+cur.revenuNet.toLocaleString()+' DT</span></div>'
+    +'</div></div>';
 }
-function selRev(i){selectedRevIdx=i;renderRevenues(document.getElementById('content'));}
+function selR(i){selRevIdx=i;rRevenues(document.getElementById('scr'));}
 function ringSVG(val,label){
-  const r=33,circ=2*Math.PI*r,off=circ-((val/100)*circ);
-  return `<div class="ring-wrap"><svg width="84" height="84">
-    <circle cx="42" cy="42" r="${r}" fill="none" stroke="var(--bg4)" stroke-width="7"/>
-    <circle cx="42" cy="42" r="${r}" fill="none" stroke="var(--terra)" stroke-width="7"
-      stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}" stroke-linecap="round" transform="rotate(-90 42 42)"/>
-    <text x="50%" y="50%" text-anchor="middle" dy=".35em" fill="var(--terra)" font-size="13" font-weight="700" font-family="DM Sans,sans-serif">${val}%</text>
-  </svg><span class="ring-label">${label}</span></div>`;
+  var r=32,circ=2*Math.PI*r,off=circ-((val/100)*circ);
+  return'<div class="rw"><svg width="80" height="80"><circle cx="40" cy="40" r="'+r+'" fill="none" stroke="var(--b3)" stroke-width="7"/>'
+    +'<circle cx="40" cy="40" r="'+r+'" fill="none" stroke="var(--T)" stroke-width="7" stroke-dasharray="'+circ.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" stroke-linecap="round" transform="rotate(-90 40 40)"/>'
+    +'<text x="50%" y="50%" text-anchor="middle" dy=".35em" fill="var(--T)" font-size="13" font-weight="700" font-family="DM Sans,sans-serif">'+val+'%</text></svg>'
+    +'<span class="rwl">'+label+'</span></div>';
 }
 
-/* ── INVOICES ─────────────────────────────────────────────────────────────── */
-function renderInvoices(c){
-  if(selectedInvoice){renderInvoiceDetail(c,selectedInvoice);return;}
-  const pend=DATA.invoices.filter(i=>i.status==='en_attente');
-  const isAdmin=STATE.user.role==='admin';
-  c.innerHTML=`<div class="page fade-up">
-    ${pend.length
-      ?`<div class="alert alert-amber"><span style="font-size:19px">🔔</span><div><div class="alert-title">${pend.length} facture${pend.length>1?'s':''} en attente</div><div class="alert-sub">${pend.map(i=>`${i.month||i.mois} — ${(i.amount||0).toLocaleString()} DT`).join(' · ')}</div></div></div>`
-      :`<div class="alert alert-green"><span style="font-size:17px">✅</span><div><div class="alert-title">Tout est à jour</div><div class="alert-sub">Aucune facture en attente</div></div></div>`}
-    <h3 class="section-title">Historique des factures</h3>
-    ${DATA.invoices.map(inv=>`
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <div class="inv-item" style="flex:1;margin-bottom:0" onclick="openInv('${inv.id}')">
-          <div class="inv-icon" style="background:${inv.status==='payée'?'var(--green-bg)':'var(--amber-bg)'}">${inv.status==='payée'?'✅':'⏳'}</div>
-          <div class="inv-meta"><div class="inv-name">${inv.month||inv.mois}</div><div class="inv-num">${inv.numero}</div></div>
-          <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-            <div class="inv-amount">${(inv.amount||0).toLocaleString()} DT</div>
-            <span class="badge ${inv.status==='payée'?'badge-green':'badge-amber'}">${inv.status==='payée'?'✓ Payée':'⏳ Attente'}</span>
-          </div>
-        </div>
-        ${isAdmin?`<button class="btn-delete" onclick="delInvoice('${inv.id}')">🗑</button>`:''}
-      </div>`).join('')}
-  </div>`;
+// ══ INVOICES ═══════════════════════════════════════════════════════════════════
+function rInvoices(c){
+  if(selInv){rInvDetail(c,selInv);return;}
+  var pend=D.invoices.filter(function(i){return i.status==='en_attente';});
+  var isA=S.user.role==='admin';
+  c.innerHTML='<div class="pg fu">'
+    +(pend.length
+      ?'<div class="al2 al-a"><span style="font-size:18px">🔔</span><div><div class="alt">'+pend.length+' facture'+(pend.length>1?'s':'')+' en attente</div><div class="als">'+pend.map(function(i){return(i.month||i.mois)+' — '+(i.amount||0).toLocaleString()+' DT';}).join(' · ')+'</div></div></div>'
+      :'<div class="al2 al-g"><span style="font-size:17px">✅</span><div><div class="alt">Tout est à jour</div><div class="als">Aucune facture en attente</div></div></div>')
+    +'<h3 class="st">Factures</h3>'
+    +D.invoices.map(function(inv){
+      return'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+        +'<div class="ii" style="flex:1;cursor:pointer" onclick="selInv=D.invoices.find(function(i){return i.id===\''+inv.id+'\';});rInvoices(document.getElementById(\'scr\'))">'
+        +'<div class="iic" style="background:'+(inv.status==='payée'?'var(--gbg)':'var(--abg)')+'">'+  (inv.status==='payée'?'✅':'⏳')+'</div>'
+        +'<div class="iim"><div class="iin">'+(inv.month||inv.mois)+'</div><div class="iis">'+inv.numero+'</div></div>'
+        +'<div style="text-align:right"><div class="iia">'+(inv.amount||0).toLocaleString()+' DT</div>'
+        +'<span class="bg '+(inv.status==='payée'?'bg-g':'bg-a')+'" style="margin-top:3px">'+(inv.status==='payée'?'✓ Payée':'⏳ Attente')+'</span></div>'
+        +'</div>'
+        +(isA?'<button class="dbt" onclick="dInv(\''+inv.id+'\')">🗑</button>':'')
+        +'</div>';
+    }).join('')
+    +'</div>';
 }
-function openInv(id){selectedInvoice=DATA.invoices.find(i=>i.id===id);renderInvoices(document.getElementById('content'));}
-async function delInvoice(id){
+function rInvDetail(c,inv){
+  var isA=S.user.role==='admin';
+  c.innerHTML='<div class="pg fu">'
+    +'<button class="bk" onclick="selInv=null;rInvoices(document.getElementById(\'scr\'))">← Retour aux factures</button>'
+    +'<div class="is" style="border-radius:18px;padding:20px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">'
+    +'<div><div style="color:var(--t3);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">FACTURE</div>'
+    +'<div style="font-family:var(--fs);font-size:20px;font-weight:700">'+inv.numero+'</div></div>'
+    +'<span class="bg '+(inv.status==='payée'?'bg-g':'bg-a')+'">'+(inv.status==='payée'?'✓ Payée':'⏳ En attente')+'</span></div>'
+    +'<div style="border-top:1px dashed var(--b3);border-bottom:1px dashed var(--b3);padding:12px 0;margin:14px 0">'
+    +[['Période',inv.month||inv.mois],['Date d\'émission',(inv.date||'').slice(0,10)],['Propriétaire',S.user.prenom+' '+S.user.nom],['Contrat N°',(D.contract&&D.contract.numero)||'—']].map(function(r){return'<div style="display:flex;justify-content:space-between;padding:7px 0;font-size:13px"><span style="color:var(--t2)">'+r[0]+'</span><span style="font-weight:500">'+r[1]+'</span></div>';}).join('')
+    +'</div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center">'
+    +'<span style="font-family:var(--fs);font-size:18px;font-weight:700">Total</span>'
+    +'<span style="font-family:var(--fs);font-size:26px;font-weight:700;color:var(--T)">'+(inv.amount||0).toLocaleString()+' DT</span></div>'
+    +(isA?'<button class="dbt" style="width:100%;margin-top:12px;justify-content:center;padding:11px;font-size:13px;font-weight:700" onclick="dInv(\''+inv.id+'\');selInv=null">🗑 Supprimer cette facture</button>':'')
+    +'</div></div>';
+}
+async function dInv(id){
   if(!confirm('Supprimer cette facture ?'))return;
-  try{await api('DELETE','/invoices/'+id);DATA.invoices=DATA.invoices.filter(i=>i.id!==id);toast('Facture supprimée','success');renderInvoices(document.getElementById('content'));}
-  catch(e){toast(e.message,'error');}
-}
-function renderInvoiceDetail(c,inv){
-  const isAdmin=STATE.user.role==='admin';
-  c.innerHTML=`<div class="inv-detail fade-up">
-    <button class="back-btn" onclick="selectedInvoice=null;renderInvoices(document.getElementById('content'))">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>
-      Retour aux factures
-    </button>
-    <div class="inv-detail-card">
-      <div class="inv-detail-head">
-        <div><div class="inv-detail-label">Facture</div><div class="inv-detail-id">${inv.numero}</div></div>
-        <span class="badge ${inv.status==='payée'?'badge-green':'badge-amber'}">${inv.status==='payée'?'✓ Payée':'⏳ En attente'}</span>
-      </div>
-      <div class="dashed">
-        ${[['Période',inv.month||inv.mois],["Date d'émission",(inv.date||'').slice(0,10)],['Propriétaire',`${STATE.user.prenom} ${STATE.user.nom}`],['Contrat N°',DATA.contract?.numero||'—']].map(([l,v])=>`<div class="detail-row"><span class="detail-row-label">${l}</span><span class="detail-row-val">${v}</span></div>`).join('')}
-      </div>
-      <div class="inv-total-row"><span class="inv-total-label">Total</span><span class="inv-total-amount">${(inv.amount||0).toLocaleString()} DT</span></div>
-      <button class="btn-outline" onclick="toast('Téléchargement en cours...','info')">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Télécharger PDF
-      </button>
-      ${isAdmin?`<button class="btn-delete" style="width:100%;margin-top:10px;justify-content:center;padding:11px" onclick="delInvoice('${inv.id}');selectedInvoice=null">🗑 Supprimer cette facture</button>`:''}
-    </div>
-  </div>`;
+  try{await api('DELETE','/invoices/'+id);D.invoices=D.invoices.filter(function(i){return i.id!==id;});toast('Supprimée','ok');rInvoices(document.getElementById('scr'));}
+  catch(e){toast(e.message,'err');}
 }
 
-/* ── MAINTENANCE ──────────────────────────────────────────────────────────── */
-function renderMaintenance(c){
-  const done=DATA.maintenances.filter(m=>m.statut==='effectué').length;
-  const plan=DATA.maintenances.filter(m=>m.statut==='planifié').length;
-  const icons={Ménage:'🧹',Plomberie:'🔧','Électricité':'⚡',Peinture:'🎨',Climatisation:'❄️',Autre:'🔨'};
-  const isAdmin=STATE.user.role==='admin';
-  c.innerHTML=`<div class="page fade-up">
-    <div class="stats-row">
-      <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value">${done}</div><div class="stat-label">Effectuées</div></div>
-      <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-value">${plan}</div><div class="stat-label">Planifiées</div></div>
-    </div>
-    <h3 class="section-title">Journal des entretiens</h3>
-    ${DATA.maintenances.map(m=>`
-      <div style="position:relative">
-        <div class="main-item">
-          <div class="main-head">
-            <div class="main-icon-wrap">
-              <div class="main-icon" style="background:${m.statut==='effectué'?'var(--green-bg)':'var(--terra-light)'}">${icons[m.type]||'🔨'}</div>
-              <div><div class="main-type">${m.type}</div><div class="main-date">${(m.date||'').slice(0,10)}</div></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span class="badge ${m.statut==='effectué'?'badge-green':'badge-amber'}">${m.statut==='effectué'?'✓ Effectué':'⏳ Planifié'}</span>
-              ${isAdmin?`<button class="btn-delete" style="padding:5px 9px;font-size:13px" onclick="delMaint('${m.id}')">🗑</button>`:''}
-            </div>
-          </div>
-          <p class="main-note">${m.note||''}</p>
-          ${m.technicien?`<div class="main-tech"><span class="tech-chip">👤 ${m.technicien}</span></div>`:''}
-        </div>
-      </div>`).join('')}
-  </div>`;
+// ══ MAINTENANCE ════════════════════════════════════════════════════════════════
+function rMaint(c){
+  var isA=S.user.role==='admin';
+  var ic={Ménage:'🧹',Plomberie:'🔧','Électricité':'⚡',Peinture:'🎨',Climatisation:'❄️',Autre:'🔨'};
+  var done=D.maintenances.filter(function(m){return m.statut==='effectué';}).length;
+  var plan=D.maintenances.filter(function(m){return m.statut==='planifié';}).length;
+  c.innerHTML='<div class="pg fu">'
+    +'<div class="sr"><div class="sc"><div class="si">✅</div><div class="sv">'+done+'</div><div class="sl">Effectués</div></div>'
+    +'<div class="sc"><div class="si">📅</div><div class="sv">'+plan+'</div><div class="sl">Planifiés</div></div></div>'
+    +'<h3 class="st">Journal des entretiens</h3>'
+    +D.maintenances.map(function(m){
+      return'<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px">'
+        +'<div class="mi" style="flex:1">'
+        +'<div class="mih"><div class="miw"><div class="mic" style="background:'+(m.statut==='effectué'?'var(--gbg)':'var(--TL)')+'">'+  (ic[m.type]||'🔨')+'</div>'
+        +'<div><div class="mity">'+m.type+'</div><div class="mida">'+(m.date||'').slice(0,10)+'</div></div></div>'
+        +'<span class="bg '+(m.statut==='effectué'?'bg-g':'bg-a')+'">'+(m.statut==='effectué'?'✓ Fait':'⏳ Planifié')+'</span></div>'
+        +'<p class="mino">'+(m.note||'')+'</p>'
+        +(m.technicien?'<div class="mite"><span class="tc">👤 '+m.technicien+'</span></div>':'')
+        +'</div>'
+        +(isA?'<button class="dbt" style="margin-top:3px" onclick="dMaint(\''+m.id+'\')">🗑</button>':'')
+        +'</div>';
+    }).join('')
+    +'</div>';
 }
-async function delMaint(id){
+async function dMaint(id){
   if(!confirm('Supprimer cet entretien ?'))return;
-  try{await api('DELETE','/maintenances/'+id);DATA.maintenances=DATA.maintenances.filter(m=>m.id!==id);toast('Entretien supprimé','success');renderMaintenance(document.getElementById('content'));}
-  catch(e){toast(e.message,'error');}
+  try{await api('DELETE','/maintenances/'+id);D.maintenances=D.maintenances.filter(function(m){return m.id!==id;});toast('Supprimé','ok');rMaint(document.getElementById('scr'));}
+  catch(e){toast(e.message,'err');}
 }
 
-/* ── INFOS ────────────────────────────────────────────────────────────────── */
-function renderInfos(c){
-  const inf=DATA.infos,con=DATA.contract,now=new Date();
-  const dL=d=>d?Math.ceil((new Date(d)-now)/(864e5)):null;
-  const tvD=inf?.tv?.dateFin?dL(inf.tv.dateFin):null;
-  const netD=inf?.internet?.dateFin?dL(inf.internet.dateFin):null;
-  c.innerHTML=`<div class="page fade-up">
-    ${tvD!==null&&tvD<45?`<div class="alert ${tvD<14?'alert-red':'alert-amber'}"><span style="font-size:19px">${tvD<14?'🔴':'⚠️'}</span><div><div class="alert-title">TV expire dans ${tvD} jours</div><div class="alert-sub">Nexstay vous contactera pour le renouvellement</div></div></div>`:''}
-    ${netD!==null&&netD<45?`<div class="alert ${netD<14?'alert-red':'alert-amber'}"><span style="font-size:19px">${netD<14?'🔴':'⚠️'}</span><div><div class="alert-title">Internet expire dans ${netD} jours</div></div></div>`:''}
-    ${con?`<div class="info-section">
-      <div class="info-section-head"><span class="info-section-icon">📄</span><span class="info-section-title">Contrat</span></div>
-      <div class="info-row"><span class="info-label">Numéro</span><span class="info-value hi">${con.numero}</span></div>
-      <div class="info-row"><span class="info-label">Début</span><span class="info-value">${con.dateDebut}</span></div>
-      <div class="info-row"><span class="info-label">Fin</span><span class="info-value">${con.dateFin}</span></div>
-      <div class="info-row"><span class="info-label">Commission</span><span class="info-value hi">${con.commission}%</span></div>
-      <div class="info-row"><span class="info-label">Statut</span><span><span class="badge badge-green">✓ ${con.statut}</span></span></div>
-    </div>`:''}
-    ${inf?`
-    <div class="info-section">
-      <div class="info-section-head"><span class="info-section-icon">🏠</span><span class="info-section-title">Logement</span></div>
-      <div class="info-row"><span class="info-label">Adresse</span><span class="info-value">${inf.adresse||'—'}</span></div>
-      <div class="info-row"><span class="info-label">Étage</span><span class="info-value">${inf.etage||'—'}</span></div>
-      <div class="info-row"><span class="info-label">Superficie</span><span class="info-value">${inf.superficie||'—'}</span></div>
-      <div class="info-row"><span class="info-label">Clés</span><span class="info-value">${inf.nbCles||'—'}</span></div>
-      ${inf.autresInfos?`<div class="info-row"><span class="info-label">Note</span><span class="info-value" style="font-size:12px">${inf.autresInfos}</span></div>`:''}
-    </div>
-    <div class="info-section">
-      <div class="info-section-head"><span class="info-section-icon">📡</span><span class="info-section-title">Internet</span></div>
-      <div class="info-row"><span class="info-label">Fournisseur</span><span class="info-value">${inf.internet?.fournisseur||'—'}</span></div>
-      <div class="info-row"><span class="info-label">N° Contrat</span><span class="info-value hi">${inf.internet?.numero||'—'}</span></div>
-      <div class="info-row"><span class="info-label">Fin abonnement</span><span class="info-value ${netD!==null&&netD<30?'hi':''}">${inf.internet?.dateFin||'—'}</span></div>
-    </div>
-    <div class="info-section">
-      <div class="info-section-head"><span class="info-section-icon">📺</span><span class="info-section-title">TV / Abonnement</span></div>
-      <div class="info-row"><span class="info-label">Abonnement</span><span class="info-value">${inf.tv?.abonnement||'—'}</span></div>
-      <div class="info-row"><span class="info-label">Référence</span><span class="info-value hi">${inf.tv?.reference||'—'}</span></div>
-      <div class="info-row"><span class="info-label">Date de fin</span><span class="info-value ${tvD!==null&&tvD<30?'hi':''}">${inf.tv?.dateFin||'—'}</span></div>
-    </div>`:`<div class="info-section"><div style="text-align:center;padding:28px;color:var(--text2)">Informations non encore renseignées</div></div>`}
-  </div>`;
+// ══ INFOS ══════════════════════════════════════════════════════════════════════
+function rInfos(c){
+  var inf=D.infos,con=D.contract,now=new Date();
+  function dL(d){return d?Math.ceil((new Date(d)-now)/864e5):null;}
+  var tvD=inf&&inf.tv&&inf.tv.dateFin?dL(inf.tv.dateFin):null;
+  var netD=inf&&inf.internet&&inf.internet.dateFin?dL(inf.internet.dateFin):null;
+  c.innerHTML='<div class="pg fu">'
+    +(tvD!==null&&tvD<45?'<div class="al2 '+(tvD<14?'al-r':'al-a')+'"><span style="font-size:18px">'+(tvD<14?'🔴':'⚠️')+'</span><div><div class="alt">TV expire dans '+tvD+' jours</div><div class="als">Nexstay vous contactera</div></div></div>':'')
+    +(netD!==null&&netD<45?'<div class="al2 '+(netD<14?'al-r':'al-a')+'"><span style="font-size:18px">'+(netD<14?'🔴':'⚠️')+'</span><div><div class="alt">Internet expire dans '+netD+' jours</div></div></div>':'')
+    +(con?'<div class="is"><div class="ish"><span>📄</span><span class="ist">Contrat</span></div>'
+      +['Numéro|'+con.numero+'|hi','Début|'+con.dateDebut,'Fin|'+con.dateFin,'Commission|'+con.commission+'%|hi','Statut|<span class="bg bg-g">✓ '+con.statut+'</span>'].map(function(r){var p=r.split('|');return'<div class="ir"><span class="irl">'+p[0]+'</span><span class="irv'+(p[2]?' hi':'')+'">'+(p[1]||'—')+'</span></div>';}).join('')+'</div>':'')
+    +(inf?'<div class="is"><div class="ish"><span>🏠</span><span class="ist">Logement</span></div>'
+      +['Adresse|'+(inf.adresse||'—'),'Étage|'+(inf.etage||'—'),'Superficie|'+(inf.superficie||'—'),'Clés|'+(inf.nbCles||'—'),(inf.autresInfos?'Note|'+inf.autresInfos:'')].filter(Boolean).map(function(r){var p=r.split('|');return'<div class="ir"><span class="irl">'+p[0]+'</span><span class="irv">'+p[1]+'</span></div>';}).join('')+'</div>'
+      +'<div class="is"><div class="ish"><span>📡</span><span class="ist">Internet</span></div>'
+      +['Fournisseur|'+(inf.internet&&inf.internet.fournisseur||'—'),'N° Contrat|'+(inf.internet&&inf.internet.numero||'—')+'|hi','Fin abonnement|'+(inf.internet&&inf.internet.dateFin||'—')].map(function(r){var p=r.split('|');return'<div class="ir"><span class="irl">'+p[0]+'</span><span class="irv'+(p[2]?' hi':'')+'">'+(p[1]||'—')+'</span></div>';}).join('')+'</div>'
+      +'<div class="is"><div class="ish"><span>📺</span><span class="ist">TV / Abonnement</span></div>'
+      +['Abonnement|'+(inf.tv&&inf.tv.abonnement||'—'),'Référence|'+(inf.tv&&inf.tv.reference||'—')+'|hi','Date de fin|'+(inf.tv&&inf.tv.dateFin||'—')].map(function(r){var p=r.split('|');return'<div class="ir"><span class="irl">'+p[0]+'</span><span class="irv'+(p[2]?' hi':'')+'">'+(p[1]||'—')+'</span></div>';}).join('')+'</div>'
+      :'<div class="is"><div style="text-align:center;padding:26px;color:var(--t2)">Informations non encore renseignées</div></div>')
+    +'</div>';
 }
 
-/* ── ADMIN ────────────────────────────────────────────────────────────────── */
-async function renderAdmin(c){
-  c.innerHTML='<div class="page"><div class="spinner"></div></div>';
-  let stats={},owners=[];
-  try{[stats,owners]=await Promise.all([api('GET','/stats'),api('GET','/owners')]);}catch{}
+// ══ ADMIN ══════════════════════════════════════════════════════════════════════
+async function rAdmin(c){
+  c.innerHTML='<div class="pg"><div class="spin"></div></div>';
+  var stats={},owners=[];
+  try{var r=await Promise.all([api('GET','/stats'),api('GET','/owners')]);stats=r[0];owners=r[1];}catch(e){}
   window._ow=owners;window._st=stats;
-  // Si on revient d'une vue propriétaire
-  if(adminView){renderOwnerDetail(c,adminView);return;}
-  renderOwnerList(c,owners,stats);
+  if(ownerData){rOwnerDetail(c,ownerData);return;}
+  rOwnerList(c,owners,stats);
 }
 
-function renderOwnerList(c,owners,stats){
-  c.innerHTML=`<div class="page fade-up">
-    <!-- Stats globales -->
-    <div class="stats-hero"><div class="stats-hero-val">${(stats.totalRevenue||0).toLocaleString()} DT</div><div class="stats-hero-label">Total revenus nets cumulés</div></div>
-    <div class="stats-row">
-      <div class="stat-card"><div class="stat-icon">👤</div><div class="stat-value">${stats.totalOwners||0}</div><div class="stat-label">Propriétaires</div></div>
-      <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-value" style="color:var(--terra)">${stats.pendingInvoices||0}</div><div class="stat-label">Factures en attente</div></div>
-    </div>
-    <div class="stats-row">
-      <div class="stat-card"><div class="stat-icon">🧾</div><div class="stat-value">${stats.totalInvoices||0}</div><div class="stat-label">Total factures</div></div>
-      <div class="stat-card"><div class="stat-icon">🔧</div><div class="stat-value" style="color:var(--amber)">${stats.maintenancePending||0}</div><div class="stat-label">Entretiens planifiés</div></div>
-    </div>
-
-    <!-- Liste propriétaires -->
-    <h3 class="section-title" style="margin-top:8px">Propriétaires (${owners.length})</h3>
-    ${owners.map(o=>`
-      <div class="owner-card" onclick="openOwner('${o.id}')">
-        <div class="owner-card-head">
-          <div class="owner-avatar">👤</div>
-          <div class="owner-info">
-            <div class="owner-name">${o.prenom} ${o.nom}</div>
-            <div class="owner-email">${o.email}</div>
-          </div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
-        </div>
-        <div class="owner-stats">
-          <div class="owner-stat"><div class="owner-stat-val">${o.ville||'—'}</div><div class="owner-stat-label">Ville</div></div>
-          <div class="owner-stat"><div class="owner-stat-val">${o.typeLogement||'—'}</div><div class="owner-stat-label">Bien</div></div>
-          <div class="owner-stat"><div class="owner-stat-val">${o.tel||'—'}</div><div class="owner-stat-label">Tél</div></div>
-        </div>
-      </div>`).join('')}
-  </div>`;
+function rOwnerList(c,owners,stats){
+  c.innerHTML='<div class="pg fu">'
+    +'<div class="sh2"><div class="shv">'+(stats.totalRevenue||0).toLocaleString()+' DT</div><div class="shl">Total revenus nets cumulés</div></div>'
+    +'<div class="sr"><div class="sc"><div class="si">👤</div><div class="sv">'+(stats.totalOwners||0)+'</div><div class="sl">Propriétaires</div></div>'
+    +'<div class="sc"><div class="si">⏳</div><div class="sv" style="color:var(--T)">'+(stats.pendingInvoices||0)+'</div><div class="sl">Factures en attente</div></div></div>'
+    +'<div class="sr"><div class="sc"><div class="si">🧾</div><div class="sv">'+(stats.totalInvoices||0)+'</div><div class="sl">Total factures</div></div>'
+    +'<div class="sc"><div class="si">🔧</div><div class="sv" style="color:var(--am)">'+(stats.maintenancePending||0)+'</div><div class="sl">Entretiens planifiés</div></div></div>'
+    +'<h3 class="st" style="margin-top:6px">Propriétaires ('+owners.length+')</h3>'
+    +owners.map(function(o){
+      return'<div class="oc" onclick="openOwner(\''+o.id+'\')">'
+        +'<div class="och"><div class="oa">👤</div>'
+        +'<div class="oi"><div class="on2">'+o.prenom+' '+o.nom+'</div><div class="oe">'+o.email+'</div></div>'
+        +'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg></div>'
+        +'<div style="display:flex;gap:7px;margin-top:9px">'
+        +'<div style="flex:1;background:var(--b2);border-radius:8px;padding:7px;text-align:center"><div style="font-size:12px;font-weight:700;color:var(--T)">'+(o.ville||'—')+'</div><div style="font-size:9px;color:var(--t2)">Ville</div></div>'
+        +'<div style="flex:1;background:var(--b2);border-radius:8px;padding:7px;text-align:center"><div style="font-size:12px;font-weight:700;color:var(--T)">'+(o.typeLogement||'—')+'</div><div style="font-size:9px;color:var(--t2)">Bien</div></div>'
+        +'<div style="flex:1;background:var(--b2);border-radius:8px;padding:7px;text-align:center"><div style="font-size:11px;font-weight:700;color:var(--T)">'+(o.tel||'—')+'</div><div style="font-size:9px;color:var(--t2)">Tél</div></div>'
+        +'</div></div>';
+    }).join('')
+    +'</div>';
 }
 
-async function openOwner(ownerId){
-  const c=document.getElementById('content');
-  c.innerHTML='<div class="page"><div class="spinner"></div></div>';
+async function openOwner(id){
+  var c=document.getElementById('scr');
+  c.innerHTML='<div class="pg"><div class="spin"></div></div>';
   try{
-    const d=await api('GET','/owner-data/'+ownerId);
-    adminView=d;
-    renderOwnerDetail(c,d);
-  }catch(e){toast(e.message,'error');}
+    var d=await api('GET','/owner-data/'+id);
+    ownerData=d;ownerTabActive='inv';
+    rOwnerDetail(c,d);
+  }catch(e){toast(e.message,'err');}
 }
 
-function renderOwnerDetail(c,d){
-  const o=d.owner||{};
-  const invoices=d.invoices||[];
-  const revenues=d.revenues||[];
-  const maintenances=d.maintenances||[];
-  const infos=d.infos||null;
-  const contract=d.contract||null;
-  const ownerId=o.id;
-  const icons={Ménage:'🧹',Plomberie:'🔧','Électricité':'⚡',Peinture:'🎨',Climatisation:'❄️',Autre:'🔨'};
-  const oo=window._ow||[];
-  const ownerOpts=oo.map(x=>`<option value="${x.id}" ${x.id===ownerId?'selected':''}>${x.prenom} ${x.nom}</option>`).join('');
-
-  c.innerHTML=`<div class="detail-page fade-up">
-    <!-- Back -->
-    <button class="back-btn" onclick="adminView=null;renderAdmin(document.getElementById('content'))">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>
-      Tous les propriétaires
-    </button>
-
-    <!-- Owner hero -->
-    <div class="hero-card" style="margin-bottom:14px">
-      <p class="hero-greeting">Propriétaire</p>
-      <h2 class="hero-name">${o.prenom} ${o.nom}</h2>
-      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-        <div class="hero-contract">📧 ${o.email}</div>
-        <div class="hero-contract">📞 ${o.tel||'—'}</div>
-      </div>
-    </div>
-
-    <!-- Tabs -->
-    <div class="tab-pills" id="ownerTabs">
-      <button class="tab-pill active" id="otab-inv" onclick="ownerTab('inv')">Factures</button>
-      <button class="tab-pill" id="otab-rev" onclick="ownerTab('rev')">Revenus</button>
-      <button class="tab-pill" id="otab-maint" onclick="ownerTab('maint')">Entretiens</button>
-      <button class="tab-pill" id="otab-infos" onclick="ownerTab('infos')">Infos</button>
-    </div>
-    <div id="ownerTabBody"></div>
-  </div>`;
-
-  // Store data for sub-tabs
-  window._od={ownerId,o,invoices,revenues,maintenances,infos,contract,ownerOpts,icons};
-  ownerTab('inv');
+function rOwnerDetail(c,d){
+  var o=d.owner||{};
+  c.innerHTML='<div class="pg fu">'
+    +'<button class="bk" onclick="ownerData=null;rAdmin(document.getElementById(\'scr\'))">← Tous les propriétaires</button>'
+    +'<div class="hc" style="margin-bottom:13px"><p class="hg">Propriétaire</p><h2 class="hn">'+o.prenom+' '+o.nom+'</h2>'
+    +'<div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap"><div class="hco">📧 '+o.email+'</div><div class="hco">📞 '+(o.tel||'—')+'</div></div></div>'
+    +'<div class="tp" id="oTabs">'
+    +'<button class="tpb'+(ownerTabActive==='inv'?' on':'')+'" onclick="oTab(\'inv\')">Factures</button>'
+    +'<button class="tpb'+(ownerTabActive==='rev'?' on':'')+'" onclick="oTab(\'rev\')">Revenus</button>'
+    +'<button class="tpb'+(ownerTabActive==='maint'?' on':'')+'" onclick="oTab(\'maint\')">Entretiens</button>'
+    +'<button class="tpb'+(ownerTabActive==='infos'?' on':'')+'" onclick="oTab(\'infos\')">Infos</button>'
+    +'</div>'
+    +'<div id="oBody"></div>'
+    +'</div>';
+  oTab(ownerTabActive);
 }
 
-function ownerTab(tab){
-  document.querySelectorAll('.tab-pill').forEach(p=>p.classList.remove('active'));
-  const p=document.getElementById('otab-'+tab);if(p)p.classList.add('active');
-  const body=document.getElementById('ownerTabBody');
-  const {ownerId,invoices,revenues,maintenances,infos,contract,ownerOpts,icons}=window._od;
+function oTab(tab){
+  ownerTabActive=tab;
+  document.querySelectorAll('.tpb').forEach(function(b){b.classList.remove('on');});
+  var found=false;
+  document.querySelectorAll('.tpb').forEach(function(b){
+    if(!found&&((tab==='inv'&&b.textContent==='Factures')||(tab==='rev'&&b.textContent==='Revenus')||(tab==='maint'&&b.textContent==='Entretiens')||(tab==='infos'&&b.textContent==='Infos'))){b.classList.add('on');found=true;}
+  });
+  var body=document.getElementById('oBody');if(!body)return;
+  var d=ownerData||{};
+  var invs=d.invoices||[],revs=d.revenues||[],maints=d.maintenances||[],inf=d.infos||null;
+  var oid=(d.owner||{}).id||'';
+  var ic={Ménage:'🧹',Plomberie:'🔧','Électricité':'⚡',Peinture:'🎨',Climatisation:'❄️',Autre:'🔨'};
 
   if(tab==='inv'){
-    body.innerHTML=`
-      <!-- Formulaire nouvelle facture -->
-      <div class="info-section" style="margin-bottom:12px">
-        <div class="info-section-head"><span class="info-section-icon">➕</span><span class="info-section-title">Nouvelle facture</span></div>
-        <div style="padding:14px;display:flex;flex-direction:column;gap:9px">
-          <input id="ai-m" class="field" placeholder="Période (ex: Mai 2025)">
-          <input id="ai-n" class="field" placeholder="Numéro (ex: F-2025-005)">
-          <div style="display:flex;gap:9px"><input id="ai-a" class="field" type="number" placeholder="Montant DT"><input id="ai-d" class="field" type="date"></div>
-          <select id="ai-s" class="field"><option value="en_attente">En attente</option><option value="payée">Payée</option></select>
-          <button class="btn-terra" style="margin-top:0" onclick="adminAddInv('${ownerId}')">Envoyer la facture</button>
-        </div>
-      </div>
-      <!-- Liste -->
-      <h3 class="section-title">Factures (${invoices.length})</h3>
-      ${invoices.length===0?'<p style="color:var(--text2);font-size:13px;padding:10px 0">Aucune facture</p>':''}
-      ${invoices.map(inv=>`
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <div class="inv-item" style="flex:1;margin-bottom:0">
-            <div class="inv-icon" style="background:${inv.status==='payée'?'var(--green-bg)':'var(--amber-bg)'}">${inv.status==='payée'?'✅':'⏳'}</div>
-            <div class="inv-meta"><div class="inv-name">${inv.month||inv.mois}</div><div class="inv-num">${inv.numero}</div></div>
-            <div style="text-align:right"><div class="inv-amount">${(inv.amount||0).toLocaleString()} DT</div>
-            <span class="badge ${inv.status==='payée'?'badge-green':'badge-amber'}" style="margin-top:3px">${inv.status==='payée'?'✓ Payée':'⏳ Attente'}</span></div>
-          </div>
-          <button class="btn-delete" onclick="adminDelInv('${inv.id}','${ownerId}')">🗑</button>
-        </div>`).join('')}`;
+    body.innerHTML=
+      // FORMULAIRE AJOUT FACTURE
+      '<div class="fs2"><div class="fs2h"><span>➕</span><span class="fs2t">Nouvelle facture</span></div>'
+      +'<div class="fs2b">'
+      +'<input id="ai-m" class="fi" placeholder="Période (ex: Mai 2025)">'
+      +'<input id="ai-n" class="fi" placeholder="Numéro (ex: F-2025-005)">'
+      +'<div style="display:flex;gap:8px"><input id="ai-a" class="fi" type="number" placeholder="Montant DT"><input id="ai-d" class="fi" type="date"></div>'
+      +'<select id="ai-s" class="fi"><option value="en_attente">En attente</option><option value="payée">Payée</option></select>'
+      +'<button class="bt" style="margin-top:0" onclick="aAddInv(\''+oid+'\')">Envoyer la facture</button>'
+      +'</div></div>'
+      // LISTE FACTURES
+      +'<h3 class="st">Factures ('+invs.length+')</h3>'
+      +(invs.length===0?'<p style="color:var(--t2);font-size:13px;padding:8px 0">Aucune facture</p>':'')
+      +invs.map(function(inv){
+        return'<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">'
+          +'<div class="ii" style="flex:1"><div class="iic" style="background:'+(inv.status==='payée'?'var(--gbg)':'var(--abg)')+'">'+  (inv.status==='payée'?'✅':'⏳')+'</div>'
+          +'<div class="iim"><div class="iin">'+(inv.month||inv.mois)+'</div><div class="iis">'+inv.numero+'</div></div>'
+          +'<div style="text-align:right"><div class="iia">'+(inv.amount||0).toLocaleString()+' DT</div>'
+          +'<span class="bg '+(inv.status==='payée'?'bg-g':'bg-a')+'" style="margin-top:3px">'+(inv.status==='payée'?'✓ Payée':'⏳ Attente')+'</span></div></div>'
+          +'<button class="dbt" onclick="aDelInv(\''+inv.id+'\',\''+oid+'\')">🗑</button>'
+          +'</div>';
+      }).join('');
   }
 
   if(tab==='rev'){
-    body.innerHTML=`
-      <!-- Formulaire nouveau revenu -->
-      <div class="info-section" style="margin-bottom:12px">
-        <div class="info-section-head"><span class="info-section-icon">➕</span><span class="info-section-title">Publier des revenus</span></div>
-        <div style="padding:14px;display:flex;flex-direction:column;gap:9px">
-          <div style="display:flex;gap:9px"><input id="ar-m" class="field" placeholder="Mois (ex: Juin)"><input id="ar-y" class="field" type="number" placeholder="Année" value="2025"></div>
-          <div style="display:flex;gap:9px"><input id="ar-b" class="field" type="number" placeholder="Revenu brut DT"><input id="ar-n" class="field" type="number" placeholder="Revenu net DT"></div>
-          <div style="display:flex;gap:9px"><input id="ar-oc" class="field" type="number" placeholder="Occupation %" min="0" max="100"><input id="ar-l" class="field" type="number" placeholder="Nb locataires"></div>
-          <input id="ar-ni" class="field" type="number" placeholder="Nb nuits réservées">
-          <button class="btn-terra" style="margin-top:0" onclick="adminAddRev('${ownerId}')">Publier les revenus</button>
-        </div>
-      </div>
-      <!-- Liste -->
-      <h3 class="section-title">Revenus (${revenues.length})</h3>
-      ${revenues.map(r=>`
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <div class="rev-hero" style="flex:1;margin-bottom:0;padding:14px">
-            <div class="rev-hero-label">${r.mois} ${r.annee}</div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
-              <span style="font-family:var(--serif);font-size:22px;font-weight:700;color:var(--terra)">${r.revenuNet.toLocaleString()} DT</span>
-              <span class="badge badge-terra">${r.tauxOccupation}% occ.</span>
-            </div>
-          </div>
-          <button class="btn-delete" onclick="adminDelRev('${r.id}','${ownerId}')">🗑</button>
-        </div>`).join('')}`;
+    body.innerHTML=
+      // FORMULAIRE AJOUT REVENU
+      '<div class="fs2"><div class="fs2h"><span>➕</span><span class="fs2t">Publier des revenus</span></div>'
+      +'<div class="fs2b">'
+      +'<div style="display:flex;gap:8px"><input id="ar-m" class="fi" placeholder="Mois (ex: Juin)"><input id="ar-y" class="fi" type="number" placeholder="Année" value="2025"></div>'
+      +'<div style="display:flex;gap:8px"><input id="ar-b" class="fi" type="number" placeholder="Revenu brut DT"><input id="ar-n" class="fi" type="number" placeholder="Revenu net DT"></div>'
+      +'<div style="display:flex;gap:8px"><input id="ar-oc" class="fi" type="number" placeholder="Occupation %" min="0" max="100"><input id="ar-l" class="fi" type="number" placeholder="Nb locataires"></div>'
+      +'<input id="ar-ni" class="fi" type="number" placeholder="Nb nuits réservées">'
+      +'<button class="bt" style="margin-top:0" onclick="aAddRev(\''+oid+'\')">Publier les revenus</button>'
+      +'</div></div>'
+      // LISTE REVENUS
+      +'<h3 class="st">Revenus ('+revs.length+')</h3>'
+      +(revs.length===0?'<p style="color:var(--t2);font-size:13px;padding:8px 0">Aucun revenu</p>':'')
+      +revs.map(function(r){
+        return'<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">'
+          +'<div class="rh" style="flex:1;margin-bottom:0;padding:13px"><div class="rl">'+r.mois+' '+r.annee+'</div>'
+          +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">'
+          +'<span style="font-family:var(--fs);font-size:20px;font-weight:700;color:var(--T)">'+r.revenuNet.toLocaleString()+' DT</span>'
+          +'<span class="bg bg-t">'+r.tauxOccupation+'% occ.</span></div></div>'
+          +'<button class="dbt" onclick="aDelRev(\''+r.id+'\',\''+oid+'\')">🗑</button>'
+          +'</div>';
+      }).join('');
   }
 
   if(tab==='maint'){
-    body.innerHTML=`
-      <!-- Formulaire nouvel entretien -->
-      <div class="info-section" style="margin-bottom:12px">
-        <div class="info-section-head"><span class="info-section-icon">➕</span><span class="info-section-title">Ajouter un entretien</span></div>
-        <div style="padding:14px;display:flex;flex-direction:column;gap:9px">
-          <select id="am-t" class="field"><option>Ménage</option><option>Plomberie</option><option>Électricité</option><option>Peinture</option><option>Climatisation</option><option>Autre</option></select>
-          <div style="display:flex;gap:9px"><input id="am-d" class="field" type="date"><select id="am-s" class="field"><option value="planifié">Planifié</option><option value="effectué">Effectué</option></select></div>
-          <input id="am-te" class="field" placeholder="Nom du technicien">
-          <textarea id="am-n" class="field" rows="2" placeholder="Description / notes"></textarea>
-          <button class="btn-terra" style="margin-top:0" onclick="adminAddMaint('${ownerId}')">Ajouter l'entretien</button>
-        </div>
-      </div>
-      <!-- Liste -->
-      <h3 class="section-title">Entretiens (${maintenances.length})</h3>
-      ${maintenances.map(m=>`
-        <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px">
-          <div class="main-item" style="flex:1;margin-bottom:0">
-            <div class="main-head">
-              <div class="main-icon-wrap">
-                <div class="main-icon" style="background:${m.statut==='effectué'?'var(--green-bg)':'var(--terra-light)'}">${icons[m.type]||'🔨'}</div>
-                <div><div class="main-type">${m.type}</div><div class="main-date">${(m.date||'').slice(0,10)}</div></div>
-              </div>
-              <span class="badge ${m.statut==='effectué'?'badge-green':'badge-amber'}">${m.statut==='effectué'?'✓ Fait':'⏳ Planifié'}</span>
-            </div>
-            <p class="main-note">${m.note||''}</p>
-            ${m.technicien?`<div class="main-tech"><span class="tech-chip">👤 ${m.technicien}</span></div>`:''}
-          </div>
-          <button class="btn-delete" style="margin-top:4px" onclick="adminDelMaint('${m.id}','${ownerId}')">🗑</button>
-        </div>`).join('')}`;
+    body.innerHTML=
+      // FORMULAIRE AJOUT ENTRETIEN
+      '<div class="fs2"><div class="fs2h"><span>➕</span><span class="fs2t">Ajouter un entretien</span></div>'
+      +'<div class="fs2b">'
+      +'<select id="am-t" class="fi"><option>Ménage</option><option>Plomberie</option><option>Électricité</option><option>Peinture</option><option>Climatisation</option><option>Autre</option></select>'
+      +'<div style="display:flex;gap:8px"><input id="am-d" class="fi" type="date"><select id="am-s" class="fi"><option value="planifié">Planifié</option><option value="effectué">Effectué</option></select></div>'
+      +'<input id="am-te" class="fi" placeholder="Nom du technicien">'
+      +'<textarea id="am-n" class="fi" rows="2" placeholder="Description / notes"></textarea>'
+      +'<button class="bt" style="margin-top:0" onclick="aAddMaint(\''+oid+'\')">Ajouter l\'entretien</button>'
+      +'</div></div>'
+      // LISTE ENTRETIENS
+      +'<h3 class="st">Entretiens ('+maints.length+')</h3>'
+      +(maints.length===0?'<p style="color:var(--t2);font-size:13px;padding:8px 0">Aucun entretien</p>':'')
+      +maints.map(function(m){
+        return'<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px">'
+          +'<div class="mi" style="flex:1"><div class="mih"><div class="miw"><div class="mic" style="background:'+(m.statut==='effectué'?'var(--gbg)':'var(--TL)')+'">'+  (ic[m.type]||'🔨')+'</div>'
+          +'<div><div class="mity">'+m.type+'</div><div class="mida">'+(m.date||'').slice(0,10)+'</div></div></div>'
+          +'<span class="bg '+(m.statut==='effectué'?'bg-g':'bg-a')+'">'+(m.statut==='effectué'?'✓ Fait':'⏳ Planifié')+'</span></div>'
+          +'<p class="mino">'+(m.note||'')+'</p>'
+          +(m.technicien?'<div class="mite"><span class="tc">👤 '+m.technicien+'</span></div>':'')
+          +'</div>'
+          +'<button class="dbt" style="margin-top:3px" onclick="aDelMaint(\''+m.id+'\',\''+oid+'\')">🗑</button>'
+          +'</div>';
+      }).join('');
   }
 
   if(tab==='infos'){
-    const i=infos||{};
-    body.innerHTML=`
-      <div class="info-section">
-        <div class="info-section-head"><span class="info-section-icon">✏️</span><span class="info-section-title">Modifier les informations</span></div>
-        <div style="padding:14px;display:flex;flex-direction:column;gap:9px">
-          <input id="ii-adr" class="field" placeholder="Adresse" value="${i.adresse||''}">
-          <div style="display:flex;gap:9px"><input id="ii-et" class="field" placeholder="Étage" value="${i.etage||''}"><input id="ii-sup" class="field" placeholder="Superficie" value="${i.superficie||''}"></div>
-          <input id="ii-cles" class="field" type="number" placeholder="Nombre de clés" value="${i.nbCles||''}">
-          <div style="background:var(--bg2);border-radius:10px;padding:12px;font-size:12px;font-weight:700;color:var(--text2);letter-spacing:.8px;margin-top:4px">INTERNET</div>
-          <div style="display:flex;gap:9px"><input id="ii-if" class="field" placeholder="Fournisseur" value="${i.internet?.fournisseur||''}"><input id="ii-in" class="field" placeholder="N° contrat" value="${i.internet?.numero||''}"></div>
-          <input id="ii-id" class="field" type="date" value="${i.internet?.dateFin||''}">
-          <div style="background:var(--bg2);border-radius:10px;padding:12px;font-size:12px;font-weight:700;color:var(--text2);letter-spacing:.8px;margin-top:4px">TV / ABONNEMENT</div>
-          <div style="display:flex;gap:9px"><input id="ii-ta" class="field" placeholder="Abonnement TV" value="${i.tv?.abonnement||''}"><input id="ii-tr" class="field" placeholder="Référence" value="${i.tv?.reference||''}"></div>
-          <input id="ii-td" class="field" type="date" value="${i.tv?.dateFin||''}">
-          <textarea id="ii-note" class="field" rows="2" placeholder="Notes (code digicode, etc.)">${i.autresInfos||''}</textarea>
-          <button class="btn-terra" style="margin-top:0" onclick="adminSaveInfos('${ownerId}')">💾 Enregistrer</button>
-        </div>
-      </div>`;
+    var i=inf||{};
+    body.innerHTML=
+      '<div class="fs2"><div class="fs2h"><span>✏️</span><span class="fs2t">Informations logement</span></div>'
+      +'<div class="fs2b">'
+      +'<input id="ii-adr" class="fi" placeholder="Adresse" value="'+(i.adresse||'')+'">'
+      +'<div style="display:flex;gap:8px"><input id="ii-et" class="fi" placeholder="Étage" value="'+(i.etage||'')+'"><input id="ii-sup" class="fi" placeholder="Superficie" value="'+(i.superficie||'')+'"></div>'
+      +'<input id="ii-cl" class="fi" type="number" placeholder="Nombre de clés" value="'+(i.nbCles||'')+'">'
+      +'<div class="sep">INTERNET</div>'
+      +'<div style="display:flex;gap:8px"><input id="ii-if" class="fi" placeholder="Fournisseur" value="'+((i.internet&&i.internet.fournisseur)||'')+'"><input id="ii-in" class="fi" placeholder="N° contrat" value="'+((i.internet&&i.internet.numero)||'')+'"></div>'
+      +'<input id="ii-id" class="fi" type="date" value="'+((i.internet&&i.internet.dateFin)||'')+'">'
+      +'<div class="sep">TV / ABONNEMENT</div>'
+      +'<div style="display:flex;gap:8px"><input id="ii-ta" class="fi" placeholder="Abonnement" value="'+((i.tv&&i.tv.abonnement)||'')+'"><input id="ii-tr" class="fi" placeholder="Référence" value="'+((i.tv&&i.tv.reference)||'')+'"></div>'
+      +'<input id="ii-td" class="fi" type="date" value="'+((i.tv&&i.tv.dateFin)||'')+'">'
+      +'<textarea id="ii-no" class="fi" rows="2" placeholder="Notes (code digicode, etc.)">'+(i.autresInfos||'')+'</textarea>'
+      +'<button class="bt" style="margin-top:0" onclick="aSaveInfos(\''+oid+'\')">💾 Enregistrer les informations</button>'
+      +'</div></div>';
   }
 }
 
-/* ── ADMIN ACTIONS ────────────────────────────────────────────────────────── */
-const g=id=>document.getElementById(id)?.value||'';
+// ══ ADMIN ACTIONS ══════════════════════════════════════════════════════════════
+function gv(id){var e=document.getElementById(id);return e?e.value:'';}
 
-async function adminAddInv(ownerId){
+async function aAddInv(oid){
+  var m=gv('ai-m'),n=gv('ai-n'),a=parseFloat(gv('ai-a'))||0,d=gv('ai-d'),s=gv('ai-s');
+  if(!m||!n){toast('Remplissez la période et le numéro','err');return;}
   try{
-    const inv=await api('POST','/invoices',{ownerId,month:g('ai-m'),numero:g('ai-n'),amount:parseFloat(g('ai-a'))||0,date:g('ai-d'),status:g('ai-s')});
-    window._od.invoices.unshift(inv);toast('Facture envoyée ✓','success');ownerTab('inv');
-  }catch(e){toast(e.message,'error');}
+    var inv=await api('POST','/invoices',{ownerId:oid,month:m,numero:n,amount:a,date:d,status:s});
+    ownerData.invoices.unshift(inv);toast('Facture envoyée ✓','ok');oTab('inv');
+  }catch(e){toast(e.message,'err');}
 }
-async function adminDelInv(id,ownerId){
+async function aDelInv(id,oid){
   if(!confirm('Supprimer cette facture ?'))return;
-  try{await api('DELETE','/invoices/'+id);window._od.invoices=window._od.invoices.filter(i=>i.id!==id);toast('Facture supprimée','success');ownerTab('inv');}
-  catch(e){toast(e.message,'error');}
-}
-async function adminAddRev(ownerId){
   try{
-    const rev=await api('POST','/revenues',{ownerId,mois:g('ar-m'),annee:parseInt(g('ar-y')),revenuBrut:parseFloat(g('ar-b'))||0,revenuNet:parseFloat(g('ar-n'))||0,tauxOccupation:parseInt(g('ar-oc'))||0,nbLocataires:parseInt(g('ar-l'))||0,nbNuits:parseInt(g('ar-ni'))||0});
-    window._od.revenues.push(rev);toast('Revenus publiés ✓','success');ownerTab('rev');
-  }catch(e){toast(e.message,'error');}
+    await api('DELETE','/invoices/'+id);
+    ownerData.invoices=ownerData.invoices.filter(function(i){return i.id!==id;});
+    toast('Supprimée','ok');oTab('inv');
+  }catch(e){toast(e.message,'err');}
 }
-async function adminDelRev(id,ownerId){
+async function aAddRev(oid){
+  var m=gv('ar-m');
+  if(!m){toast('Indiquez le mois','err');return;}
+  try{
+    var rev=await api('POST','/revenues',{ownerId:oid,mois:m,annee:parseInt(gv('ar-y'))||2025,revenuBrut:parseFloat(gv('ar-b'))||0,revenuNet:parseFloat(gv('ar-n'))||0,tauxOccupation:parseInt(gv('ar-oc'))||0,nbLocataires:parseInt(gv('ar-l'))||0,nbNuits:parseInt(gv('ar-ni'))||0});
+    ownerData.revenues.push(rev);toast('Revenus publiés ✓','ok');oTab('rev');
+  }catch(e){toast(e.message,'err');}
+}
+async function aDelRev(id,oid){
   if(!confirm('Supprimer ces revenus ?'))return;
-  try{await api('DELETE','/revenues/'+id);window._od.revenues=window._od.revenues.filter(r=>r.id!==id);toast('Revenus supprimés','success');ownerTab('rev');}
-  catch(e){toast(e.message,'error');}
-}
-async function adminAddMaint(ownerId){
   try{
-    const m=await api('POST','/maintenances',{ownerId,type:g('am-t'),date:g('am-d'),statut:g('am-s'),technicien:g('am-te'),note:g('am-n')});
-    window._od.maintenances.unshift(m);toast('Entretien ajouté ✓','success');ownerTab('maint');
-  }catch(e){toast(e.message,'error');}
+    await api('DELETE','/revenues/'+id);
+    ownerData.revenues=ownerData.revenues.filter(function(r){return r.id!==id;});
+    toast('Supprimés','ok');oTab('rev');
+  }catch(e){toast(e.message,'err');}
 }
-async function adminDelMaint(id,ownerId){
+async function aAddMaint(oid){
+  try{
+    var m=await api('POST','/maintenances',{ownerId:oid,type:gv('am-t'),date:gv('am-d'),statut:gv('am-s'),technicien:gv('am-te'),note:gv('am-n')});
+    ownerData.maintenances.unshift(m);toast('Entretien ajouté ✓','ok');oTab('maint');
+  }catch(e){toast(e.message,'err');}
+}
+async function aDelMaint(id,oid){
   if(!confirm('Supprimer cet entretien ?'))return;
-  try{await api('DELETE','/maintenances/'+id);window._od.maintenances=window._od.maintenances.filter(m=>m.id!==id);toast('Entretien supprimé','success');ownerTab('maint');}
-  catch(e){toast(e.message,'error');}
+  try{
+    await api('DELETE','/maintenances/'+id);
+    ownerData.maintenances=ownerData.maintenances.filter(function(m){return m.id!==id;});
+    toast('Supprimé','ok');oTab('maint');
+  }catch(e){toast(e.message,'err');}
 }
-async function adminSaveInfos(ownerId){
-  const body={ownerId,adresse:g('ii-adr'),etage:g('ii-et'),superficie:g('ii-sup'),nbCles:parseInt(g('ii-cles'))||0,
-    internet:{fournisseur:g('ii-if'),numero:g('ii-in'),dateFin:g('ii-id')},
-    tv:{abonnement:g('ii-ta'),reference:g('ii-tr'),dateFin:g('ii-td')},
-    autresInfos:g('ii-note')};
-  try{const inf=await api('PUT','/infos',body);window._od.infos=inf;toast('Informations enregistrées ✓','success');}
-  catch(e){toast(e.message,'error');}
+async function aSaveInfos(oid){
+  var body={ownerId:oid,adresse:gv('ii-adr'),etage:gv('ii-et'),superficie:gv('ii-sup'),nbCles:parseInt(gv('ii-cl'))||0,
+    internet:{fournisseur:gv('ii-if'),numero:gv('ii-in'),dateFin:gv('ii-id')},
+    tv:{abonnement:gv('ii-ta'),reference:gv('ii-tr'),dateFin:gv('ii-td')},
+    autresInfos:gv('ii-no')};
+  try{
+    var inf=await api('PUT','/infos',body);
+    ownerData.infos=inf;toast('Informations enregistrées ✓','ok');
+  }catch(e){toast(e.message,'err');}
 }
 
-/* ── INIT ─────────────────────────────────────────────────────────────────── */
-renderAuth();
-tryAutoLogin();
+// ══ INIT ═══════════════════════════════════════════════════════════════════════
+rAuth();
+tryAuto();
 </script>
 </body>
 </html>
