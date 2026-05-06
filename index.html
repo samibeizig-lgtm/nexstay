@@ -787,6 +787,7 @@ function rOwnerDetail(c,d){
     +'<button class="tpill'+(oTab2==='rev'?' on':'')+'" onclick="oSwitch(\'rev\')">Revenus</button>'
     +'<button class="tpill'+(oTab2==='maint'?' on':'')+'" onclick="oSwitch(\'maint\')">Entretiens</button>'
     +'<button class="tpill'+(oTab2==='infos'?' on':'')+'" onclick="oSwitch(\'infos\')">Infos</button>'
+    +'<button class="tpill'+(oTab2==='cal'?' on':'')+'" onclick="oSwitch(\'cal\')">Calendrier</button>'
     +'</div>'
     +'<div id="ob"></div></div>';
   renderOTab(oTab2);
@@ -795,7 +796,7 @@ function rOwnerDetail(c,d){
 function oSwitch(t){
   oTab2=t;
   document.querySelectorAll('.tpill').forEach(function(b){b.classList.remove('on');});
-  var tabs={inv:'Factures',rev:'Revenus',maint:'Entretiens',infos:'Infos'};
+  var tabs={inv:'Factures',rev:'Revenus',maint:'Entretiens',infos:'Infos',cal:'Calendrier'};
   document.querySelectorAll('.tpill').forEach(function(b){if(b.textContent===tabs[t])b.classList.add('on');});
   renderOTab(t);
 }
@@ -921,6 +922,27 @@ function renderOTab(t){
       +'<button class="btnT" style="margin-top:0" onclick="aSaveInfos(\''+oid+'\')">Enregistrer les informations</button>'
       +'</div></div>';
   }
+
+  if(t==='cal'){
+    var oid2=(ownerData&&ownerData.owner)?ownerData.owner.id:'';
+    var calUrl2=(ownerData&&ownerData.infos&&ownerData.infos.calendarUrl)||'';
+    body.innerHTML=
+      '<div class="fsec"><div class="fsech"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--T);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="fsect">Calendrier Airbnb</span></div>'
+      +'<div class="fsecb">'
+      +'<div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:4px">Entrez le lien iCal Airbnb du propriétaire pour synchroniser son calendrier.</div>'
+      +'<label style="font-size:11px;font-weight:700;color:var(--t2);display:block;margin-bottom:5px;letter-spacing:.5px">LIEN ICAL AIRBNB</label>'
+      +'<input id="ownerCalUrl" class="inp" placeholder="https://www.airbnb.com/calendar/ical/..." value="'+calUrl2+'">'
+      +'<div style="background:var(--b2);border-radius:10px;padding:11px;font-size:11px;color:var(--t2);line-height:1.6">'
+      +'<b style="display:block;margin-bottom:3px">Comment obtenir le lien iCal sur Airbnb :</b>'
+      +'1. Ouvrir Airbnb → Calendrier<br>'
+      +'2. Cliquer sur Paramètres (⚙️)<br>'
+      +'3. Synchroniser les calendriers<br>'
+      +'4. Exporter le calendrier → Copier le lien'
+      +'</div>'
+      +(calUrl2?'<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--gbg);border:1px solid rgba(61,140,110,0.2);border-radius:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--gr);flex-shrink:0"></div><span style="font-size:12px;color:var(--gr);font-weight:600">Lien iCal configuré</span></div>':'')
+      +'<button class="btnT" style="margin-top:0" onclick="saveOwnerCalUrl()">Enregistrer le lien iCal</button>'
+      +'</div></div>';
+  }
 }
 
 // ══ PDF UPLOAD ══════════════════════════════════════════════════════════════════
@@ -978,6 +1000,7 @@ function rOwnerDetail(c,d){
     +'<button class="tpill'+(oTab2==='rev'?' on':'')+'" onclick="oSwitch(\'rev\')">Revenus</button>'
     +'<button class="tpill'+(oTab2==='maint'?' on':'')+'" onclick="oSwitch(\'maint\')">Entretiens</button>'
     +'<button class="tpill'+(oTab2==='infos'?' on':'')+'" onclick="oSwitch(\'infos\')">Infos</button>'
+    +'<button class="tpill'+(oTab2==='cal'?' on':'')+'" onclick="oSwitch(\'cal\')">Calendrier</button>'
     +'</div>'
     +'<div id="ob"></div></div>';
   renderOTab(oTab2);
@@ -986,7 +1009,7 @@ function rOwnerDetail(c,d){
 function oSwitch(t){
   oTab2=t;
   document.querySelectorAll('.tpill').forEach(function(b){b.classList.remove('on');});
-  var tabs={inv:'Factures',rev:'Revenus',maint:'Entretiens',infos:'Infos'};
+  var tabs={inv:'Factures',rev:'Revenus',maint:'Entretiens',infos:'Infos',cal:'Calendrier'};
   document.querySelectorAll('.tpill').forEach(function(b){if(b.textContent===tabs[t])b.classList.add('on');});
   renderOTab(t);
 }
@@ -1103,6 +1126,27 @@ function renderOTab(t){
       +'<button class="btnT" style="margin-top:0" onclick="aSaveInfos(\''+oid+'\')">Enregistrer les informations</button>'
       +'</div></div>';
   }
+
+  if(t==='cal'){
+    var oid2=(ownerData&&ownerData.owner)?ownerData.owner.id:'';
+    var calUrl2=(ownerData&&ownerData.infos&&ownerData.infos.calendarUrl)||'';
+    body.innerHTML=
+      '<div class="fsec"><div class="fsech"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--T);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="fsect">Calendrier Airbnb</span></div>'
+      +'<div class="fsecb">'
+      +'<div style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:4px">Entrez le lien iCal Airbnb du propriétaire pour synchroniser son calendrier.</div>'
+      +'<label style="font-size:11px;font-weight:700;color:var(--t2);display:block;margin-bottom:5px;letter-spacing:.5px">LIEN ICAL AIRBNB</label>'
+      +'<input id="ownerCalUrl" class="inp" placeholder="https://www.airbnb.com/calendar/ical/..." value="'+calUrl2+'">'
+      +'<div style="background:var(--b2);border-radius:10px;padding:11px;font-size:11px;color:var(--t2);line-height:1.6">'
+      +'<b style="display:block;margin-bottom:3px">Comment obtenir le lien iCal sur Airbnb :</b>'
+      +'1. Ouvrir Airbnb → Calendrier<br>'
+      +'2. Cliquer sur Paramètres (⚙️)<br>'
+      +'3. Synchroniser les calendriers<br>'
+      +'4. Exporter le calendrier → Copier le lien'
+      +'</div>'
+      +(calUrl2?'<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--gbg);border:1px solid rgba(61,140,110,0.2);border-radius:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--gr);flex-shrink:0"></div><span style="font-size:12px;color:var(--gr);font-weight:600">Lien iCal configuré</span></div>':'')
+      +'<button class="btnT" style="margin-top:0" onclick="saveOwnerCalUrl()">Enregistrer le lien iCal</button>'
+      +'</div></div>';
+  }
 }
 
 // ══ PDF UPLOAD ══════════════════════════════════════════════════════════════════
@@ -1194,6 +1238,23 @@ async function aDelMaint(id,oid){
   if(!confirm('Supprimer ?'))return;
   try{await api('DELETE','/maintenances/'+id);ownerData.maintenances=ownerData.maintenances.filter(function(m){return m.id!==id;});toast('Supprimé','ok');oSwitch('maint');}catch(e){toast(e.message,'err');}
 }
+async function saveOwnerCalUrl(){
+  var oid=(ownerData&&ownerData.owner)?ownerData.owner.id:null;
+  if(!oid){toast('Erreur: propriétaire non trouvé','err');return;}
+  var url=document.getElementById('ownerCalUrl');
+  if(!url)return;
+  var val=url.value.trim();
+  try{
+    await api('PUT','/calendar/'+oid,{calendarUrl:val||null});
+    // Update ownerData cache
+    if(ownerData.infos)ownerData.infos.calendarUrl=val||null;
+    else ownerData.infos={calendarUrl:val||null};
+    _calEvents=[];
+    toast('Lien iCal enregistré ✓','ok');
+    oSwitch('cal');
+  }catch(e){toast(e.message,'err');}
+}
+
 async function aChangePwd(oid){
   if(!oid)oid=window._infosOid;
   var pwd=gv('ii-pwd');
