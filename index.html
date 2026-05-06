@@ -1228,7 +1228,9 @@ var _calYear=null,_calMonth=null,_calEvents=[];
 async function rCalendar(c){
   c.innerHTML='<div class="pg"><div class="spin"></div></div>';
   try{
-    var cal=await api('GET','/calendar/'+S.user.id);
+    var calOwnerId=S.user.id;
+    if(S.user.role==='admin'&&ownerData&&ownerData.owner)calOwnerId=ownerData.owner.id;
+    var cal=await api('GET','/calendar/'+calOwnerId);
     var calUrl=cal.calendarUrl||null;
     var now=new Date();
     if(_calYear===null){_calYear=now.getFullYear();_calMonth=now.getMonth();}
@@ -1254,9 +1256,20 @@ async function rCalendar(c){
 
     var h='<div class="pg fu">';
 
-    if(!calUrl){
-      h+='<div class="alrt alrt-t"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--T);stroke-width:2;fill:none;flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div><div class="atit">Calendrier non configuré</div><div class="asub2">Contactez Nexstay pour synchroniser votre calendrier Airbnb.</div></div></div>';
+    // Admin can edit iCal URL directly in calendar tab
+    var isAdmin=S.user.role==='admin';
+    h+='<div style="background:var(--w);border:1px solid var(--bd);border-radius:14px;padding:15px;box-shadow:var(--sh);margin-bottom:12px">';
+    h+='<div style="font-size:11px;font-weight:700;color:var(--t2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Synchronisation Airbnb</div>';
+    if(isAdmin){
+      h+='<div style="font-size:12px;color:var(--t2);margin-bottom:8px">Lien iCal Airbnb du propriétaire :</div>';
+      h+='<input id="calUrlInput" class="inp" style="font-size:12px;margin-bottom:8px" placeholder="https://www.airbnb.com/calendar/ical/..." value="'+(calUrl||'')+'">';
+      h+='<button onclick="saveCalUrl()" class="bt" style="width:100%;padding:11px;margin-top:0">Enregistrer le lien iCal</button>';
+    } else if(calUrl){
+      h+='<div style="display:flex;align-items:center;gap:8px"><div style="width:8px;height:8px;border-radius:50%;background:var(--gr);flex-shrink:0"></div><span style="font-size:13px;color:var(--tx);font-weight:600">Calendrier synchronisé avec Airbnb</span></div>';
+    } else {
+      h+='<div class="alrt alrt-t" style="margin-bottom:0"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--T);stroke-width:2;fill:none;flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div><div class="atit">Calendrier non configuré</div><div class="asub2">Contactez Nexstay pour synchroniser votre calendrier Airbnb.</div></div></div>';
     }
+    h+='</div>';
 
     // Month header with navigation
     h+='<div style="background:var(--w);border:1px solid var(--bd);border-radius:16px;overflow:hidden;box-shadow:var(--sh);margin-bottom:12px">';
@@ -1352,6 +1365,21 @@ function calNav(dir){
   if(_calMonth>11){_calMonth=0;_calYear++;}
   if(_calMonth<0){_calMonth=11;_calYear--;}
   rCalendar(document.getElementById('scr'));
+}
+
+async function saveCalUrl(){
+  var url=document.getElementById('calUrlInput');
+  if(!url)return;
+  var val=url.value.trim();
+  // Determine which owner's calendar to save
+  var targetId=S.user.id;
+  if(S.user.role==='admin'&&ownerData&&ownerData.owner)targetId=ownerData.owner.id;
+  try{
+    await api('PUT','/calendar/'+targetId,{calendarUrl:val||null});
+    _calEvents=[]; // Reset cached events
+    toast('Lien iCal enregistré ✓','ok');
+    rCalendar(document.getElementById('scr'));
+  }catch(e){toast(e.message,'err');}
 }
 
 // ══ PASSWORD ═══════════════════════════════════════════════════════════════════
