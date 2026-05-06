@@ -5,240 +5,252 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#FAFAF8">
+<meta name="theme-color" content="#F7F5F2">
 <title>Nexstay</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  --T:#C17F5A;--TD:#9E6240;--TL:rgba(193,127,90,0.13);
-  --bg:#F7F5F2;--w:#FFFFFF;--b2:#EDE9E3;--b3:#E2DDD6;
+  --T:#C17F5A;--TD:#9E6240;--TL:rgba(193,127,90,0.12);--TM:rgba(193,127,90,0.22);
+  --bg:#F7F5F2;--w:#fff;--b2:#EDE9E3;--b3:#DDD8D0;
   --tx:#1A1612;--t2:#6B6158;--t3:#ABA39A;
-  --gr:#3D8C6E;--gbg:rgba(61,140,110,0.11);
+  --gr:#3D8C6E;--gbg:rgba(61,140,110,0.1);
   --re:#C0392B;--rbg:rgba(192,57,43,0.09);
-  --am:#B8860B;--abg:rgba(184,134,11,0.1);
-  --bd:rgba(0,0,0,0.07);--sh:0 1px 8px rgba(0,0,0,0.07);
+  --am:#A07010;--abg:rgba(160,112,16,0.1);
+  --bd:rgba(0,0,0,0.07);--sh:0 1px 8px rgba(0,0,0,0.06);--shm:0 4px 20px rgba(0,0,0,0.1);
   --f:'DM Sans',sans-serif;--fs:'Cormorant Garamond',serif;
 }
-html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);overflow:hidden;-webkit-font-smoothing:antialiased}
+html{height:100%}
+body{height:100%;margin:0;padding:0;background:var(--bg);color:var(--tx);font-family:var(--f);-webkit-font-smoothing:antialiased;overflow:hidden}
 
-/* ─ APP SHELL ─ */
-#app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;background:var(--bg)}
-#hdr{background:var(--w);border-bottom:1px solid var(--bd);padding:10px 15px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:50}
-#scr{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;background:var(--b2)}
+/* ══ SHELL ═══════════════════════════════════════════════════════════════════ */
+/* On utilise position:fixed pour tout — seul moyen fiable sur Android Chrome */
+#auth{position:fixed;inset:0;background:linear-gradient(150deg,#FAFAF8,#EDE8DF);display:flex;align-items:center;justify-content:center;padding:20px;z-index:300;overflow-y:auto}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;max-width:480px;left:50%;transform:translateX(-50%);width:100%}
+#hdr{position:relative;background:var(--w);border-bottom:1px solid var(--bd);padding:10px 15px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:10;box-shadow:var(--sh)}
+#scr{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;background:var(--b2);min-height:0}
+#nav{background:var(--w);border-top:1px solid var(--bd);display:flex;flex-direction:row;flex-shrink:0;padding:0 0 env(safe-area-inset-bottom,0px);box-shadow:0 -2px 10px rgba(0,0,0,0.05)}
 
-/* ─ NAVBAR ─ KEY FIX: fixed height, equal flex items, no overflow needed ─ */
-#nav{
-  background:var(--w);
-  border-top:1px solid var(--bd);
-  display:flex;
-  flex-direction:row;
-  flex-shrink:0;
-  height:58px;
-  padding-bottom:env(safe-area-inset-bottom,0px);
-  box-shadow:0 -2px 12px rgba(0,0,0,0.06);
-  z-index:50;
-}
-/* Each nav button takes equal space */
-.nb{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:2px;
-  border:none;
-  background:none;
-  color:var(--t3);
-  font-size:9px;
-  font-weight:700;
-  font-family:var(--f);
-  padding:0;
-  cursor:pointer;
-  position:relative;
-  transition:color .15s;
-  min-width:0;
-  overflow:hidden;
-}
-.nb svg{width:20px;height:20px;flex-shrink:0}
-.nb span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;padding:0 2px}
+/* ══ NAV BUTTONS ════════════════════════════════════════════════════════════ */
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;color:var(--t3);font-size:9px;font-weight:700;font-family:var(--f);padding:9px 2px 8px;cursor:pointer;position:relative;transition:color .15s;min-width:0}
+.nb svg{width:21px;height:21px;stroke:currentColor;stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.nb span{white-space:nowrap;font-size:9px;letter-spacing:.2px}
 .nb.on{color:var(--T)}
-.nb.on::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:20px;height:2px;background:var(--T);border-radius:1px}
-.ndot{position:absolute;top:6px;right:25%;width:6px;height:6px;border-radius:50%;background:var(--T);border:1.5px solid var(--w)}
+.nb.on::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:24px;height:2.5px;background:var(--T);border-radius:0 0 2px 2px}
+.ndot2{position:absolute;top:7px;right:calc(50% - 14px);width:6px;height:6px;border-radius:50%;background:var(--T);border:1.5px solid var(--w)}
 
-/* ─ AUTH ─ */
-#auth{position:fixed;inset:0;background:linear-gradient(150deg,#FAFAF8,#EDE8DF);display:flex;align-items:center;justify-content:center;padding:20px;z-index:200;overflow-y:auto}
-.ac{width:100%;max-width:390px}
-.al{text-align:center;margin-bottom:30px}
-.logo-xl .n{font-family:var(--fs);font-size:42px;font-weight:700;color:var(--tx)}
-.logo-xl .s{font-family:var(--fs);font-size:42px;font-weight:700;color:var(--T)}
-.logo-xl .c{display:block;font-size:10px;letter-spacing:4px;color:var(--t3);margin-top:4px;font-weight:500}
-.acard{background:var(--w);border-radius:22px;padding:26px;box-shadow:0 4px 24px rgba(0,0,0,0.1)}
-.pb{display:flex;gap:7px;margin-bottom:22px}
-.pb i{flex:1;height:2px;border-radius:1px;background:var(--b3);transition:background .3s}
-.pb i.on{background:var(--T)}
-.at{font-family:var(--fs);font-size:21px;font-weight:700;margin-bottom:3px}
-.as{color:var(--t2);font-size:13px;margin-bottom:18px}
-.fg{display:flex;flex-direction:column;gap:10px}
-.fr{display:flex;gap:9px}
-.fi{width:100%;background:var(--b2);border:1.5px solid var(--b3);border-radius:11px;padding:12px 14px;color:var(--tx);font-size:15px;font-family:var(--f);outline:none;transition:border-color .2s}
-.fi:focus{border-color:var(--T);background:var(--w)}
-select.fi option{background:#fff}
-.bt{width:100%;padding:14px;background:var(--T);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;font-family:var(--f);margin-top:16px;transition:background .2s}
-.bt:active{background:var(--TD)}
-.aswitch{text-align:center;color:var(--t2);font-size:13px;margin-top:15px}
-.aswitch b{color:var(--T);cursor:pointer;font-weight:600}
-.ahint{text-align:center;color:var(--t3);font-size:11px;margin-top:8px}
+/* ══ AUTH ═══════════════════════════════════════════════════════════════════ */
+.awrap{width:100%;max-width:390px}
+.alogo{text-align:center;margin-bottom:28px}
+.logo-xl{display:flex;justify-content:center;align-items:baseline}
+.logo-xl .n{font-family:var(--fs);font-size:44px;font-weight:700;color:var(--tx);line-height:1}
+.logo-xl .s{font-family:var(--fs);font-size:44px;font-weight:700;color:var(--T);line-height:1}
+.logo-xl .sub{display:block;font-size:10px;letter-spacing:4px;color:var(--t3);margin-top:6px;font-weight:500;text-align:center}
+.acard{background:var(--w);border-radius:22px;padding:26px;box-shadow:var(--shm)}
+.pbar{display:flex;gap:7px;margin-bottom:22px}
+.pbar i{flex:1;height:2px;border-radius:1px;background:var(--b3);transition:background .3s}
+.pbar i.on{background:var(--T)}
+.atitle{font-family:var(--fs);font-size:22px;font-weight:700;margin-bottom:4px}
+.asub{color:var(--t2);font-size:13px;margin-bottom:20px}
+.fgrp{display:flex;flex-direction:column;gap:10px}
+.frow{display:flex;gap:9px}
+.inp{width:100%;background:var(--b2);border:1.5px solid var(--b3);border-radius:11px;padding:12px 14px;color:var(--tx);font-size:15px;font-family:var(--f);outline:none;transition:border-color .2s}
+.inp:focus{border-color:var(--T);background:var(--w)}
+select.inp option{background:#fff}
+.btnT{width:100%;padding:14px;background:var(--T);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;font-family:var(--f);margin-top:16px;cursor:pointer;transition:background .15s}
+.btnT:active{background:var(--TD)}
+.alink{text-align:center;color:var(--t2);font-size:13px;margin-top:14px}
+.alink b{color:var(--T);cursor:pointer;font-weight:600}
 
-/* ─ LOGO SMALL ─ */
+/* ══ LOGO SMALL ════════════════════════════════════════════════════════════ */
+.logo-sm{display:flex;align-items:baseline}
 .logo-sm .n{font-family:var(--fs);font-size:20px;font-weight:700;color:var(--tx)}
 .logo-sm .s{font-family:var(--fs);font-size:20px;font-weight:700;color:var(--T)}
-.logo-sm .c{font-size:7.5px;letter-spacing:2px;color:var(--t3);font-weight:500;margin-left:7px;align-self:center;text-transform:uppercase}
-.logo-sm{display:flex;align-items:baseline}
+.logo-sm .sub{font-size:7.5px;letter-spacing:2.5px;color:var(--t3);font-weight:500;margin-left:8px;align-self:center;text-transform:uppercase}
 
-/* ─ ICON BTNS ─ */
-.hbtn{width:33px;height:33px;border:1.5px solid var(--bd);border-radius:9px;background:var(--w);color:var(--t2);display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;box-shadow:var(--sh)}
-.hdot{position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--T);border:1.5px solid var(--w)}
+/* ══ HDR BTNS ══════════════════════════════════════════════════════════════ */
+.hbtn{width:33px;height:33px;border:1.5px solid var(--bd);border-radius:9px;background:var(--w);color:var(--t2);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
+.hbtn svg{width:16px;height:16px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.hdot{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:var(--T);border:1.5px solid var(--w)}
 
-/* ─ PAGE ─ */
-.pg{padding:15px 13px 28px}
-.st{font-family:var(--fs);font-size:18px;font-weight:700;margin-bottom:11px}
+/* ══ PAGE ══════════════════════════════════════════════════════════════════ */
+.pg{padding:14px 13px 30px}
+.stitle{font-family:var(--fs);font-size:18px;font-weight:700;margin-bottom:11px;color:var(--tx)}
 
-/* ─ HERO CARD ─ */
-.hc{background:linear-gradient(135deg,var(--T),var(--TD));border-radius:18px;padding:20px;margin-bottom:13px;position:relative;overflow:hidden;box-shadow:0 6px 24px rgba(193,127,90,0.28)}
-.hc::before{content:'';position:absolute;top:-40px;right:-40px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,0.1);pointer-events:none}
-.hg{color:rgba(255,255,255,0.72);font-size:12px}
-.hn{color:#fff;font-family:var(--fs);font-size:23px;font-weight:700;margin-top:3px}
-.hco{display:inline-flex;align-items:center;gap:6px;margin-top:11px;background:rgba(255,255,255,0.18);border-radius:8px;padding:6px 11px;color:#fff;font-size:11px;font-weight:600}
+/* ══ HERO ══════════════════════════════════════════════════════════════════ */
+.hcard{background:linear-gradient(135deg,var(--T),var(--TD));border-radius:18px;padding:20px;margin-bottom:12px;position:relative;overflow:hidden;box-shadow:0 6px 24px rgba(193,127,90,0.26)}
+.hcard::before{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.1);pointer-events:none}
+.hgreet{color:rgba(255,255,255,0.72);font-size:12px}
+.hname{color:#fff;font-family:var(--fs);font-size:22px;font-weight:700;margin-top:2px}
+.hbadge{display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:rgba(255,255,255,0.18);border-radius:8px;padding:5px 11px;color:#fff;font-size:11px;font-weight:600}
 
-/* ─ STAT CARDS ─ */
-.sr{display:flex;gap:8px;margin-bottom:8px}
-.sc{flex:1;min-width:0;background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:13px;box-shadow:var(--sh)}
-.si{font-size:17px;margin-bottom:7px}
-.sv{font-size:20px;font-weight:700;line-height:1}
-.sl{font-size:10px;color:var(--t2);margin-top:4px}
-.ss{font-size:10px;color:var(--T);font-weight:600;margin-top:3px}
+/* ══ STAT GRID ════════════════════════════════════════════════════════════ */
+.sgrid{display:flex;gap:8px;margin-bottom:8px}
+.scard{flex:1;min-width:0;background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:13px 12px;box-shadow:var(--sh)}
+.sico{width:28px;height:28px;border-radius:8px;background:var(--TL);display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.sico svg{width:14px;height:14px;stroke:var(--T);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.sval{font-size:20px;font-weight:700;line-height:1;color:var(--tx)}
+.slbl{font-size:10px;color:var(--t2);margin-top:4px;line-height:1.3}
+.ssub{font-size:10px;font-weight:600;margin-top:3px}
 
-/* ─ FEED ─ */
-.fc{background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:3px 13px;box-shadow:var(--sh)}
-.fi2{display:flex;align-items:center;gap:11px;padding:12px 0;border-bottom:1px solid var(--b2)}
-.fi2:last-child{border-bottom:none}
-.fic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
-.ft{flex:1;font-size:13px;font-weight:500;line-height:1.4}
+/* ══ FEED ══════════════════════════════════════════════════════════════════ */
+.fcard{background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:2px 13px;box-shadow:var(--sh)}
+.fitem{display:flex;align-items:center;gap:11px;padding:12px 0;border-bottom:1px solid var(--b2)}
+.fitem:last-child{border-bottom:none}
+.fico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fico svg{width:15px;height:15px;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ftx{flex:1;font-size:13px;font-weight:500;line-height:1.35}
 .ftm{font-size:10px;color:var(--t3);flex-shrink:0}
 
-/* ─ BADGES ─ */
-.bg{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
-.bg-g{background:var(--gbg);color:var(--gr)}
-.bg-a{background:var(--abg);color:var(--am)}
-.bg-r{background:var(--rbg);color:var(--re)}
-.bg-t{background:var(--TL);color:var(--T)}
+/* ══ BADGES ════════════════════════════════════════════════════════════════ */
+.bdg{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
+.bdg svg{width:10px;height:10px;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.bdg-g{background:var(--gbg);color:var(--gr)}
+.bdg-a{background:var(--abg);color:var(--am)}
+.bdg-r{background:var(--rbg);color:var(--re)}
+.bdg-t{background:var(--TL);color:var(--T)}
 
-/* ─ ALERTS ─ */
-.al2{border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
-.al-a{background:var(--abg);border:1px solid rgba(184,134,11,0.2)}
-.al-r{background:var(--rbg);border:1px solid rgba(192,57,43,0.15)}
-.al-g{background:var(--gbg);border:1px solid rgba(61,140,110,0.2)}
-.alt{font-size:13px;font-weight:700}
-.als{font-size:11px;color:var(--t2);margin-top:2px;line-height:1.5}
+/* ══ ALERTS ════════════════════════════════════════════════════════════════ */
+.alrt{border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+.alrt svg{width:16px;height:16px;flex-shrink:0;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;margin-top:1px}
+.alrt-a{background:var(--abg);border:1px solid rgba(160,112,16,0.2)}
+.alrt-r{background:var(--rbg);border:1px solid rgba(192,57,43,0.15)}
+.alrt-g{background:var(--gbg);border:1px solid rgba(61,140,110,0.18)}
+.alrt-t{background:var(--TL);border:1px solid var(--TM)}
+.atit{font-size:13px;font-weight:700;color:var(--tx)}
+.asub2{font-size:11px;color:var(--t2);margin-top:2px;line-height:1.5}
 
-/* ─ INVOICES ─ */
-.ii{display:flex;align-items:center;gap:11px;padding:13px;background:var(--w);border:1px solid var(--bd);border-radius:13px;box-shadow:var(--sh);transition:border-color .2s}
-.ii:active{border-color:var(--T)}
-.iic{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:19px}
-.iim{flex:1;min-width:0}
-.iin{font-size:14px;font-weight:600}
-.iis{font-size:11px;color:var(--t3);margin-top:1px}
-.iia{font-size:14px;font-weight:700;color:var(--T)}
+/* ══ INVOICES ══════════════════════════════════════════════════════════════ */
+.irow{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.icard{flex:1;display:flex;align-items:center;gap:11px;padding:13px;background:var(--w);border:1px solid var(--bd);border-radius:13px;box-shadow:var(--sh);cursor:pointer;transition:border-color .15s;min-width:0}
+.icard:active{border-color:var(--T)}
+.iico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.iico svg{width:17px;height:17px;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.imeta{flex:1;min-width:0}
+.iname{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inum{font-size:11px;color:var(--t3);margin-top:1px}
+.iamt{font-size:14px;font-weight:700;color:var(--T)}
 
-/* ─ DEL BTN ─ */
-.dbt{background:var(--rbg);border:1px solid rgba(192,57,43,0.18);color:var(--re);border-radius:9px;padding:8px 10px;font-size:14px;flex-shrink:0;cursor:pointer;display:flex;align-items:center}
+/* ══ DEL / ACTION BTNS ════════════════════════════════════════════════════ */
+.dbtn{background:var(--rbg);border:1px solid rgba(192,57,43,0.15);color:var(--re);border-radius:9px;padding:9px 10px;display:flex;align-items:center;cursor:pointer;flex-shrink:0}
+.dbtn svg{width:15px;height:15px;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke:var(--re)}
 
-/* ─ MONTH PILLS ─ */
-.mf{display:flex;gap:6px;overflow-x:auto;padding-bottom:3px;margin-bottom:13px;scrollbar-width:none}
-.mf::-webkit-scrollbar{display:none}
-.mb{flex-shrink:0;padding:6px 13px;border-radius:18px;border:1.5px solid var(--b3);background:var(--w);color:var(--t2);font-size:12px;font-weight:600;font-family:var(--f);cursor:pointer;transition:all .2s}
-.mb.on{background:var(--T);border-color:var(--T);color:#fff}
+/* ══ MONTH PILLS ═══════════════════════════════════════════════════════════ */
+.mpills{display:flex;gap:6px;overflow-x:auto;padding-bottom:3px;margin-bottom:12px;scrollbar-width:none}
+.mpills::-webkit-scrollbar{display:none}
+.mpill{flex-shrink:0;padding:6px 13px;border-radius:18px;border:1.5px solid var(--b3);background:var(--w);color:var(--t2);font-size:12px;font-weight:600;font-family:var(--f);cursor:pointer;transition:all .15s}
+.mpill.on{background:var(--T);border-color:var(--T);color:#fff}
 
-/* ─ REV HERO ─ */
-.rh{background:var(--w);border:1px solid var(--bd);border-radius:16px;padding:18px;margin-bottom:10px;box-shadow:var(--sh)}
-.rl{color:var(--t3);font-size:11px;font-weight:600;letter-spacing:.7px;text-transform:uppercase}
-.rv{font-family:var(--fs);font-size:34px;font-weight:700;line-height:1.1;margin:5px 0 3px}
-.rv span{color:var(--T)}
+/* ══ REV HERO ══════════════════════════════════════════════════════════════ */
+.rhero{background:var(--w);border:1px solid var(--bd);border-radius:15px;padding:18px;margin-bottom:10px;box-shadow:var(--sh)}
+.rlbl{color:var(--t3);font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}
+.rval{font-family:var(--fs);font-size:32px;font-weight:700;color:var(--tx);line-height:1.1;margin:4px 0 3px}
+.rval span{color:var(--T)}
 
-/* ─ BARS ─ */
-.cw{background:var(--w);border:1px solid var(--bd);border-radius:15px;padding:16px;margin-bottom:10px;box-shadow:var(--sh)}
-.bs{display:flex;align-items:flex-end;gap:6px;height:80px}
-.bc{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
-.br{width:100%;border-radius:4px 4px 0 0;transition:height .6s ease}
-.bl{font-size:9px;color:var(--t3);font-weight:500}
+/* ══ BARS ══════════════════════════════════════════════════════════════════ */
+.chartw{background:var(--w);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:10px;box-shadow:var(--sh)}
+.bars{display:flex;align-items:flex-end;gap:5px;height:72px}
+.bcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+.bar{width:100%;border-radius:4px 4px 0 0;transition:height .5s ease}
+.blbl{font-size:9px;color:var(--t3);font-weight:600}
 
-/* ─ RING ─ */
-.rr{display:flex;gap:10px;align-items:center;margin-bottom:10px}
-.rw{display:flex;flex-direction:column;align-items:center;gap:4px}
-.rwl{font-size:10px;color:var(--t2);font-weight:500}
+/* ══ RING ══════════════════════════════════════════════════════════════════ */
+.ringrow{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.ringw{display:flex;flex-direction:column;align-items:center;gap:4px}
+.ringl{font-size:10px;color:var(--t2);font-weight:600}
 
-/* ─ REV BREAKDOWN ─ */
-.rb{background:var(--w);border:1px solid var(--bd);border-radius:15px;overflow:hidden;box-shadow:var(--sh)}
-.rr2{display:flex;justify-content:space-between;align-items:center;padding:12px 15px;border-bottom:1px solid var(--b2);font-size:13px}
-.rr2:last-child{border-bottom:none}
-.rd{width:7px;height:7px;border-radius:50%;margin-right:8px;display:inline-block;flex-shrink:0}
+/* ══ REV BREAKDOWN ════════════════════════════════════════════════════════ */
+.rvbk{background:var(--w);border:1px solid var(--bd);border-radius:14px;overflow:hidden;box-shadow:var(--sh)}
+.rvrow{display:flex;justify-content:space-between;align-items:center;padding:11px 15px;border-bottom:1px solid var(--b2);font-size:13px}
+.rvrow:last-child{border-bottom:none}
+.rvdot{width:7px;height:7px;border-radius:50%;margin-right:8px;display:inline-block;flex-shrink:0}
 
-/* ─ MAINTENANCE ─ */
-.mi{background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:14px;box-shadow:var(--sh)}
-.mih{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
-.miw{display:flex;align-items:center;gap:9px}
-.mic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
-.mity{font-size:14px;font-weight:700}
-.mida{font-size:11px;color:var(--t3);margin-top:1px}
-.mino{font-size:12px;color:var(--t2);line-height:1.55;padding-left:47px}
-.mite{display:flex;align-items:center;gap:6px;margin-top:8px;padding-left:47px}
-.tc{background:var(--TL);color:var(--T);font-size:11px;font-weight:600;padding:2px 9px;border-radius:18px}
+/* ══ MAINTENANCE ═══════════════════════════════════════════════════════════ */
+.mcard{background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:13px;box-shadow:var(--sh)}
+.mhead{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.mwrap{display:flex;align-items:center;gap:9px}
+.mico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mico svg{width:16px;height:16px;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.mtype{font-size:14px;font-weight:700}
+.mdate{font-size:11px;color:var(--t3);margin-top:1px}
+.mnote{font-size:12px;color:var(--t2);line-height:1.55;padding-left:45px}
+.mtech{display:flex;align-items:center;gap:6px;margin-top:8px;padding-left:45px}
+.tchip{background:var(--TL);color:var(--T);font-size:11px;font-weight:600;padding:2px 9px;border-radius:16px}
 
-/* ─ INFOS ─ */
-.is{background:var(--w);border:1px solid var(--bd);border-radius:15px;overflow:hidden;margin-bottom:10px;box-shadow:var(--sh)}
-.ish{display:flex;align-items:center;gap:8px;padding:11px 15px;border-bottom:1px solid var(--b2);background:var(--bg)}
-.ist{font-size:11px;font-weight:700;color:var(--t2);letter-spacing:1px;text-transform:uppercase}
-.ir{display:flex;justify-content:space-between;align-items:center;padding:11px 15px;border-bottom:1px solid var(--b2);font-size:13px}
-.ir:last-child{border-bottom:none}
-.irl{color:var(--t2)}
-.irv{color:var(--tx);font-weight:500;text-align:right;max-width:55%;line-height:1.4;font-size:12px}
-.irv.hi{color:var(--T);font-weight:700;font-size:13px}
+/* ══ INFOS ═════════════════════════════════════════════════════════════════ */
+.isec{background:var(--w);border:1px solid var(--bd);border-radius:14px;overflow:hidden;margin-bottom:10px;box-shadow:var(--sh)}
+.isech{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--b2);background:var(--bg)}
+.isech svg{width:14px;height:14px;stroke:var(--T);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.isect{font-size:10px;font-weight:700;color:var(--t2);letter-spacing:1.2px;text-transform:uppercase}
+.irow2{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid var(--b2);font-size:13px}
+.irow2:last-child{border-bottom:none}
+.irlbl{color:var(--t2)}
+.irval{color:var(--tx);font-weight:500;text-align:right;max-width:55%;line-height:1.4;font-size:12px}
+.irval.hi{color:var(--T);font-weight:700;font-size:13px}
 
-/* ─ ADMIN ─ */
-.tp{display:flex;background:var(--b2);border-radius:11px;padding:3px;margin-bottom:13px;gap:2px}
-.tpb{flex:1;text-align:center;padding:8px 2px;border-radius:9px;border:none;background:transparent;color:var(--t2);font-size:11px;font-weight:700;font-family:var(--f);cursor:pointer;transition:all .18s}
-.tpb.on{background:var(--w);color:var(--T);box-shadow:var(--sh)}
-.sh2{background:linear-gradient(135deg,var(--T),var(--TD));border-radius:15px;padding:18px;color:#fff;margin-bottom:10px;box-shadow:0 5px 20px rgba(193,127,90,0.28)}
-.shv{font-family:var(--fs);font-size:32px;font-weight:700}
-.shl{font-size:12px;opacity:.8;margin-top:3px}
-.oc{background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:14px;margin-bottom:8px;box-shadow:var(--sh);cursor:pointer}
-.och{display:flex;justify-content:space-between;align-items:center}
-.oa{width:38px;height:38px;border-radius:11px;background:var(--TL);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
-.oi{flex:1;margin-left:10px}
-.on2{font-size:14px;font-weight:700}
-.oe{font-size:11px;color:var(--t3);margin-top:1px}
+/* ══ INV DETAIL ═══════════════════════════════════════════════════════════ */
+.dpage{padding:0 13px 30px;min-height:100%}
+.bkbtn{display:flex;align-items:center;gap:7px;background:none;border:none;color:var(--T);font-size:13px;font-weight:600;font-family:var(--f);padding:15px 0 12px;cursor:pointer}
+.bkbtn svg{width:15px;height:15px;stroke:var(--T);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.dcard{background:var(--w);border:1px solid var(--bd);border-radius:18px;padding:20px;box-shadow:var(--shm)}
+.dlbl{color:var(--t3);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+.dnum{font-family:var(--fs);font-size:20px;font-weight:700}
+.ddash{border-top:1px dashed var(--b3);border-bottom:1px dashed var(--b3);padding:11px 0;margin:14px 0}
+.drow{display:flex;justify-content:space-between;padding:6px 0;font-size:13px}
+.dtot{display:flex;justify-content:space-between;align-items:center;padding-top:2px}
+.dtotl{font-family:var(--fs);font-size:18px;font-weight:700}
+.dtota{font-family:var(--fs);font-size:26px;font-weight:700;color:var(--T)}
+.dlbtn{width:100%;margin-top:14px;padding:12px;background:var(--TL);border:1.5px solid var(--TM);border-radius:11px;color:var(--T);font-size:14px;font-weight:700;font-family:var(--f);display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer}
+.dlbtn svg{width:15px;height:15px;stroke:var(--T);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.dlbtn.disabled{opacity:.45;cursor:default}
 
-/* ─ FORM SECTION ─ */
-.fs2{background:var(--w);border:1px solid var(--bd);border-radius:13px;overflow:hidden;margin-bottom:12px;box-shadow:var(--sh)}
-.fs2h{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--b2);background:var(--bg)}
-.fs2t{font-size:11px;font-weight:700;color:var(--t2);letter-spacing:1px;text-transform:uppercase}
-.fs2b{padding:13px;display:flex;flex-direction:column;gap:9px}
-.sep{background:var(--b2);border-radius:8px;padding:9px 11px;font-size:10px;font-weight:700;color:var(--t2);letter-spacing:.8px;text-transform:uppercase}
+/* ══ ADMIN ═════════════════════════════════════════════════════════════════ */
+.tpills{display:flex;background:var(--b2);border-radius:11px;padding:3px;margin-bottom:12px;gap:2px}
+.tpill{flex:1;text-align:center;padding:8px 2px;border-radius:9px;border:none;background:transparent;color:var(--t2);font-size:11px;font-weight:700;font-family:var(--f);cursor:pointer;transition:all .15s}
+.tpill.on{background:var(--w);color:var(--T);box-shadow:var(--sh)}
+.ahero{background:linear-gradient(135deg,var(--T),var(--TD));border-radius:14px;padding:18px;color:#fff;margin-bottom:10px;box-shadow:0 4px 18px rgba(193,127,90,0.26)}
+.aheroval{font-family:var(--fs);font-size:30px;font-weight:700}
+.aherolbl{font-size:11px;opacity:.8;margin-top:2px}
+.ocard{background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:13px;margin-bottom:8px;box-shadow:var(--sh);cursor:pointer;transition:border-color .15s}
+.ocard:active{border-color:var(--T)}
+.ohead{display:flex;justify-content:space-between;align-items:center}
+.oavt{width:36px;height:36px;border-radius:10px;background:var(--TL);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.oavt svg{width:16px;height:16px;stroke:var(--T);stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.oinf{flex:1;margin-left:10px}
+.oname{font-size:14px;font-weight:700}
+.oemail{font-size:11px;color:var(--t3);margin-top:1px}
+.ochev svg{width:13px;height:13px;stroke:var(--t3);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.opills{display:flex;gap:6px;margin-top:9px}
+.opill{flex:1;background:var(--b2);border-radius:8px;padding:7px 4px;text-align:center}
+.opval{font-size:11px;font-weight:700;color:var(--T);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.oplbl{font-size:9px;color:var(--t2);margin-top:1px}
 
-/* ─ BACK BTN ─ */
-.bk{display:flex;align-items:center;gap:7px;background:none;border:none;color:var(--T);font-size:13px;font-weight:600;font-family:var(--f);padding:15px 0 13px;cursor:pointer}
+/* ══ FORM SECTION ══════════════════════════════════════════════════════════ */
+.fsec{background:var(--w);border:1px solid var(--bd);border-radius:13px;overflow:hidden;margin-bottom:12px;box-shadow:var(--sh)}
+.fsech{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--b2);background:var(--bg)}
+.fsech svg{width:14px;height:14px;stroke:var(--T);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.fsect{font-size:10px;font-weight:700;color:var(--t2);letter-spacing:1px;text-transform:uppercase}
+.fsecb{padding:13px;display:flex;flex-direction:column;gap:9px}
+.sep{background:var(--b2);border-radius:7px;padding:8px 10px;font-size:10px;font-weight:700;color:var(--t2);letter-spacing:.8px;text-transform:uppercase}
 
-/* ─ UTILS ─ */
+/* ══ UPLOAD ZONE ═══════════════════════════════════════════════════════════ */
+.upzone{border:1.5px dashed var(--TM);border-radius:11px;padding:16px;text-align:center;background:var(--TL);cursor:pointer;transition:background .15s}
+.upzone:hover{background:rgba(193,127,90,0.18)}
+.upzone svg{width:22px;height:22px;stroke:var(--T);stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round;margin:0 auto 6px;display:block}
+.upzone p{font-size:12px;color:var(--T);font-weight:600}
+.upzone small{font-size:10px;color:var(--t2)}
+
+/* ══ SPIN ══════════════════════════════════════════════════════════════════ */
 .spin{width:26px;height:26px;border:2.5px solid var(--b3);border-top-color:var(--T);border-radius:50%;animation:sp .7s linear infinite;margin:36px auto}
 @keyframes sp{to{transform:rotate(360deg)}}
 @keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.fu{animation:fu .28s ease both}
-#toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-70px);background:var(--tx);color:#fff;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:500;z-index:999;transition:transform .3s;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.2)}
+.fu{animation:fu .25s ease both}
+
+/* ══ TOAST ═════════════════════════════════════════════════════════════════ */
+#toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-70px);background:var(--tx);color:#fff;border-radius:10px;padding:9px 18px;font-size:13px;font-weight:500;z-index:999;transition:transform .3s;white-space:nowrap;box-shadow:var(--shm);pointer-events:none}
 #toast.show{transform:translateX(-50%) translateY(0)}
 #toast.ok{background:var(--gr)}
 #toast.err{background:var(--re)}
-.tc2{background:var(--b3);border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;font-family:var(--f);cursor:pointer;color:var(--t2)}
 </style>
 </head>
 <body>
@@ -246,149 +258,166 @@ select.fi option{background:#fff}
 
 <!-- AUTH -->
 <div id="auth">
-<div class="ac">
-  <div class="al">
-    <div class="logo-xl"><span class="n">Nex</span><span class="s">stay</span><span class="c">Conciergerie · Tunisie</span></div>
+<div class="awrap">
+  <div class="alogo">
+    <div class="logo-xl"><span class="n">Nex</span><span class="s">stay</span></div>
+    <span class="sub" style="display:block;font-size:10px;letter-spacing:4px;color:var(--t3);margin-top:6px;font-family:var(--f);font-weight:500">CONCIERGERIE · TUNISIE</span>
   </div>
-  <div class="acard" id="ac2"></div>
+  <div class="acard" id="ac"></div>
 </div>
 </div>
 
 <!-- APP -->
 <div id="app" style="display:none">
   <div id="hdr">
-    <div class="logo-sm"><span class="n">Nex</span><span class="s">stay</span><span class="c">Conciergerie</span></div>
+    <div class="logo-sm"><span class="n">Nex</span><span class="s">stay</span><span class="sub">Conciergerie</span></div>
     <div style="display:flex;gap:7px">
       <button class="hbtn" onclick="goTab('invoices')">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         <span class="hdot" id="ndot" style="display:none"></span>
       </button>
       <button class="hbtn" onclick="logout()">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </button>
     </div>
   </div>
   <div id="scr"></div>
   <div id="nav">
     <button class="nb on" id="nb-dashboard" onclick="goTab('dashboard')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
       <span>Accueil</span>
     </button>
     <button class="nb" id="nb-revenues" onclick="goTab('revenues')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
       <span>Revenus</span>
     </button>
     <button class="nb" id="nb-invoices" onclick="goTab('invoices')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       <span>Factures</span>
-      <span class="ndot" id="idot" style="display:none"></span>
+      <span class="ndot2" id="idot" style="display:none"></span>
     </button>
     <button class="nb" id="nb-maintenance" onclick="goTab('maintenance')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
       <span>Entretiens</span>
     </button>
     <button class="nb" id="nb-infos" onclick="goTab('infos')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       <span>Infos</span>
     </button>
   </div>
 </div>
 
 <script>
+// ══ SVG ICONS ═════════════════════════════════════════════════════════════════
+var ICO={
+  back:'<svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>',
+  dl:'<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+  del:'<svg viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>',
+  add:'<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  check:'<svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>',
+  clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>',
+  home:'<svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>',
+  rev:'<svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+  inv:'<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>',
+  tool:'<svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+  shield:'<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  user:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>',
+  chev:'<svg viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>',
+  warn:'<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  up:'<svg viewBox="0 0 24 24"><polyline points="16,16 12,12 8,16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>',
+  pdf:'<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>',
+};
+function ico(k,cls){return'<svg viewBox="0 0 24 24" class="'+(cls||'')+'" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round">'+ICO[k].replace(/<svg[^>]*>/,'').replace('</svg>','')+'</svg>';}
+
 // ══ STATE ══════════════════════════════════════════════════════════════════════
 var S={user:null,token:null,authMode:'login',authStep:1,authTmp:{}};
 var D={invoices:[],revenues:[],maintenances:[],infos:null,contract:null};
-var selInv=null,selRevIdx=null,ownerData=null,ownerTabActive='inv';
+var selInv=null,selRevIdx=null,ownerData=null,oTab2='inv';
 
 // ══ API ════════════════════════════════════════════════════════════════════════
 async function api(method,path,body){
   var opts={method,headers:{'Content-Type':'application/json'}};
   if(S.token)opts.headers['Authorization']='Bearer '+S.token;
   if(body)opts.body=JSON.stringify(body);
-  var res=await fetch('/api'+path,opts);
-  var d=await res.json().catch(function(){return{};});
-  if(!res.ok)throw new Error(d.error||'Erreur');
+  var r=await fetch('/api'+path,opts);
+  var d=await r.json().catch(function(){return{};});
+  if(!r.ok)throw new Error(d.error||'Erreur');
+  return d;
+}
+async function apiUpload(path,formData){
+  var r=await fetch('/api'+path,{method:'POST',headers:{'Authorization':'Bearer '+S.token},body:formData});
+  var d=await r.json().catch(function(){return{};});
+  if(!r.ok)throw new Error(d.error||'Erreur upload');
   return d;
 }
 
 // ══ TOAST ══════════════════════════════════════════════════════════════════════
 function toast(msg,type){
   var el=document.getElementById('toast');
-  el.className=type==='ok'?'ok':type==='err'?'err':'';
-  el.textContent=msg;el.classList.add('show');
-  setTimeout(function(){el.classList.remove('show')},3000);
+  el.className=type==='ok'?'ok show':type==='err'?'err show':'show';
+  el.textContent=msg;
+  clearTimeout(el._t);
+  el._t=setTimeout(function(){el.className=el.className.replace(' show','').replace('show','');},3000);
 }
 
 // ══ AUTH ═══════════════════════════════════════════════════════════════════════
 function rAuth(){
-  var c=document.getElementById('ac2');
+  var c=document.getElementById('ac');
   if(S.authMode==='login'){
-    c.innerHTML='<h2 class="at">Connexion</h2><p class="as">Accédez à votre espace propriétaire</p>'
-      +'<div class="fg"><input id="le" class="fi" type="email" placeholder="Email" value="demo@nexstay.tn">'
-      +'<input id="lp" class="fi" type="password" placeholder="Mot de passe" value="demo123"></div>'
-      +'<button class="bt" onclick="doLogin()">Se connecter</button>'
-      +'<p class="aswitch">Pas encore inscrit ? <b onclick="swAuth(\'register\')">Créer un compte</b></p>'
-      +'<p class="ahint">Admin : admin@nexstay.tn · admin123</p>';
+    c.innerHTML='<h2 class="atitle">Connexion</h2><p class="asub">Accédez à votre espace propriétaire</p>'
+      +'<div class="fgrp"><input id="le" class="inp" type="email" placeholder="Adresse email">'
+      +'<input id="lp" class="inp" type="password" placeholder="Mot de passe"></div>'
+      +'<button class="btnT" onclick="doLogin()">Se connecter</button>'
+      +'<p class="alink">Pas encore inscrit ? <b onclick="swAuth(\'register\')">Créer un compte</b></p>';
   } else {
     var s=S.authStep;
-    c.innerHTML='<div class="pb"><i class="'+(s>=1?'on':'')+'"></i><i class="'+(s>=2?'on':'')+'"></i></div>'
-      +'<h2 class="at">'+(s===1?'Créer votre compte':'Votre logement')+'</h2>'
-      +'<p class="as">'+(s===1?'Informations personnelles':'Adresse de la propriété')+'</p>'
+    c.innerHTML='<div class="pbar"><i class="'+(s>=1?'on':'')+'"></i><i class="'+(s>=2?'on':'')+'"></i></div>'
+      +'<h2 class="atitle">'+(s===1?'Créer votre compte':'Votre logement')+'</h2>'
+      +'<p class="asub">'+(s===1?'Informations personnelles':'Adresse de la propriété')+'</p>'
       +(s===1
-        ?'<div class="fg"><div class="fr"><input id="rpr" class="fi" placeholder="Prénom"><input id="rno" class="fi" placeholder="Nom"></div>'
-          +'<input id="rem" class="fi" type="email" placeholder="Email">'
-          +'<input id="rte" class="fi" placeholder="Téléphone (+216)">'
-          +'<input id="rpw" class="fi" type="password" placeholder="Mot de passe"></div>'
-          +'<button class="bt" onclick="nextStep()">Continuer →</button>'
-        :'<div class="fg"><input id="rad" class="fi" placeholder="Adresse complète">'
-          +'<input id="rvi" class="fi" placeholder="Ville">'
-          +'<select id="rty" class="fi"><option value="">Type de bien</option><option>Appartement</option><option>Villa</option><option>Studio</option><option>Duplex</option></select></div>'
-          +'<button class="bt" onclick="doRegister()">Créer mon compte</button>')
-      +'<p class="aswitch">'+(s===2?'<b onclick="S.authStep=1;rAuth()">← Retour</b> · ':'')+'Déjà inscrit ? <b onclick="swAuth(\'login\')">Se connecter</b></p>';
+        ?'<div class="fgrp"><div class="frow"><input id="rpr" class="inp" placeholder="Prénom"><input id="rno" class="inp" placeholder="Nom"></div>'
+          +'<input id="rem" class="inp" type="email" placeholder="Email">'
+          +'<input id="rte" class="inp" placeholder="Téléphone (+216)">'
+          +'<input id="rpw" class="inp" type="password" placeholder="Mot de passe"></div>'
+          +'<button class="btnT" onclick="nextStep()">Continuer →</button>'
+        :'<div class="fgrp"><input id="rad" class="inp" placeholder="Adresse complète">'
+          +'<input id="rvi" class="inp" placeholder="Ville">'
+          +'<select id="rty" class="inp"><option value="">Type de bien</option><option>Appartement</option><option>Villa</option><option>Studio</option><option>Duplex</option></select></div>'
+          +'<button class="btnT" onclick="doRegister()">Créer mon compte</button>')
+      +'<p class="alink">'+(s===2?'<b onclick="S.authStep=1;rAuth()">← Retour</b> · ':'')+'Déjà inscrit ? <b onclick="swAuth(\'login\')">Se connecter</b></p>';
   }
 }
 function swAuth(m){S.authMode=m;S.authStep=1;rAuth();}
-function v(id){var el=document.getElementById(id);return el?el.value:'';}
+function gv(id){var e=document.getElementById(id);return e?e.value:'';}
 function nextStep(){
-  if(!v('rem')||!v('rpw')){toast('Remplissez tous les champs','err');return;}
-  S.authTmp={prenom:v('rpr'),nom:v('rno'),email:v('rem'),password:v('rpw'),tel:v('rte')};
+  if(!gv('rem')||!gv('rpw')){toast('Remplissez tous les champs','err');return;}
+  S.authTmp={prenom:gv('rpr'),nom:gv('rno'),email:gv('rem'),password:gv('rpw'),tel:gv('rte')};
   S.authStep=2;rAuth();
 }
 async function doRegister(){
-  try{
-    var d=await api('POST','/auth/register',Object.assign({},S.authTmp,{adresse:v('rad'),ville:v('rvi'),typeLogement:v('rty')}));
-    S.user=d.user;S.token=d.token;localStorage.setItem('nxt',d.token);startApp();
-  }catch(e){toast(e.message,'err');}
+  try{var d=await api('POST','/auth/register',Object.assign({},S.authTmp,{adresse:gv('rad'),ville:gv('rvi'),typeLogement:gv('rty')}));
+  S.user=d.user;S.token=d.token;localStorage.setItem('nxt',d.token);startApp();}catch(e){toast(e.message,'err');}
 }
 async function doLogin(){
-  try{
-    var d=await api('POST','/auth/login',{email:v('le'),password:v('lp')});
-    S.user=d.user;S.token=d.token;localStorage.setItem('nxt',d.token);startApp();
-  }catch(e){toast(e.message,'err');}
+  try{var d=await api('POST','/auth/login',{email:gv('le'),password:gv('lp')});
+  S.user=d.user;S.token=d.token;localStorage.setItem('nxt',d.token);startApp();}catch(e){toast(e.message,'err');}
 }
 async function tryAuto(){
   var t=localStorage.getItem('nxt');if(!t)return;
   S.token=t;
-  try{S.user=await api('GET','/auth/me');startApp();}
-  catch(e){localStorage.removeItem('nxt');}
+  try{S.user=await api('GET','/auth/me');startApp();}catch(e){localStorage.removeItem('nxt');}
 }
-function logout(){
-  localStorage.removeItem('nxt');S.user=null;S.token=null;
-  document.getElementById('auth').style.display='flex';
-  document.getElementById('app').style.display='none';
-  rAuth();
-}
+function logout(){localStorage.removeItem('nxt');S.user=null;S.token=null;document.getElementById('auth').style.display='flex';document.getElementById('app').style.display='none';rAuth();}
 
-// ══ START APP ══════════════════════════════════════════════════════════════════
+// ══ START ═══════════════════════════════════════════════════════════════════════
 async function startApp(){
   document.getElementById('auth').style.display='none';
   document.getElementById('app').style.display='flex';
-  // Ajouter bouton admin dans navbar si admin
   if(S.user.role==='admin'&&!document.getElementById('nb-admin')){
     var nav=document.getElementById('nav');
     var b=document.createElement('button');
     b.className='nb';b.id='nb-admin';b.onclick=function(){goTab('admin');};
-    b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg><span>Admin</span>';
+    b.innerHTML='<svg viewBox="0 0 24 24" style="width:21px;height:21px;stroke:currentColor;stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg><span>Admin</span>';
     nav.appendChild(b);
   }
   await loadData();
@@ -396,8 +425,8 @@ async function startApp(){
 }
 async function loadData(){
   try{
-    var res=await Promise.all([api('GET','/invoices'),api('GET','/revenues'),api('GET','/maintenances'),api('GET','/infos'),api('GET','/contract')]);
-    D.invoices=res[0];D.revenues=res[1];D.maintenances=res[2];D.infos=res[3];D.contract=res[4];
+    var r=await Promise.all([api('GET','/invoices'),api('GET','/revenues'),api('GET','/maintenances'),api('GET','/infos'),api('GET','/contract')]);
+    D.invoices=r[0];D.revenues=r[1];D.maintenances=r[2];D.infos=r[3];D.contract=r[4];
     selRevIdx=D.revenues.length-1;
     var p=D.invoices.filter(function(i){return i.status==='en_attente';}).length;
     document.getElementById('idot').style.display=p>0?'block':'none';
@@ -405,14 +434,13 @@ async function loadData(){
   }catch(e){toast('Erreur chargement','err');}
 }
 
-// ══ NAVIGATION ══════════════════════════════════════════════════════════════════
+// ══ NAV ════════════════════════════════════════════════════════════════════════
 function goTab(tab){
   selInv=null;ownerData=null;
   document.querySelectorAll('.nb').forEach(function(b){b.classList.remove('on');});
   var nb=document.getElementById('nb-'+tab);if(nb)nb.classList.add('on');
   var c=document.getElementById('scr');c.scrollTop=0;c.innerHTML='';
-  var pages={dashboard:rDash,revenues:rRevenues,invoices:rInvoices,maintenance:rMaint,infos:rInfos,admin:rAdmin};
-  if(pages[tab])pages[tab](c);
+  ({dashboard:rDash,revenues:rRevenues,invoices:rInvoices,maintenance:rMaint,infos:rInfos,admin:rAdmin})[tab]&&({dashboard:rDash,revenues:rRevenues,invoices:rInvoices,maintenance:rMaint,infos:rInfos,admin:rAdmin})[tab](c);
 }
 
 // ══ DASHBOARD ══════════════════════════════════════════════════════════════════
@@ -421,18 +449,24 @@ function rDash(c){
   var pend=D.invoices.filter(function(i){return i.status==='en_attente';}).length;
   var trend=lr&&pr?(((lr.revenuNet-pr.revenuNet)/pr.revenuNet)*100).toFixed(0):null;
   c.innerHTML='<div class="pg fu">'
-    +'<div class="hc"><p class="hg">Bonjour,</p><h2 class="hn">'+S.user.prenom+' '+S.user.nom+'</h2>'
-    +(D.contract?'<div class="hco">📄 Contrat '+D.contract.numero+'</div>':'')+'</div>'
-    +(pend>0?'<div class="al2 al-a"><span style="font-size:18px">🔔</span><div><div class="alt">'+pend+' facture'+(pend>1?'s':'')+' en attente</div><div class="als">'+D.invoices.filter(function(i){return i.status==='en_attente';}).map(function(i){return i.month||i.mois;}).join(', ')+'</div></div></div>':'')
-    +'<div class="sr"><div class="sc"><div class="si">📊</div><div class="sv">'+(lr?lr.tauxOccupation:'—')+'%</div><div class="sl">Taux d\'occupation</div>'+(trend?'<div class="ss">'+(trend>0?'↑':'↓')+' '+Math.abs(trend)+'% vs préc.</div>':'')+'</div>'
-    +'<div class="sc"><div class="si">👥</div><div class="sv">'+(lr?lr.nbLocataires:'—')+'</div><div class="sl">Locataires ce mois</div><div class="ss" style="color:var(--gr)">'+(lr?lr.nbNuits:'—')+' nuits</div></div></div>'
-    +'<div class="sr"><div class="sc"><div class="si">💰</div><div class="sv" style="font-size:16px">'+(lr?lr.revenuNet.toLocaleString()+' DT':'—')+'</div><div class="sl">Revenu net · '+(lr?lr.mois:'')+'</div></div>'
-    +'<div class="sc"><div class="si">🧾</div><div class="sv" style="color:'+(pend>0?'var(--T)':'var(--gr)')+'">'+pend+'</div><div class="sl">Factures en attente</div></div></div>'
-    +'<h3 class="st" style="margin-top:8px">Activité récente</h3><div class="fc">'
-    +[].concat(D.invoices.slice(0,2).map(function(i){return{ic:'🧾',tx:'Facture '+(i.month||i.mois)+' — '+(i.amount||0).toLocaleString()+' DT',tm:(i.date||'').slice(0,10),bg:'var(--TL)'};}),
-               D.maintenances.slice(0,2).map(function(m){return{ic:m.type==='Ménage'?'🧹':m.type==='Plomberie'?'🔧':'⚡',tx:m.type+' · '+m.statut,tm:(m.date||'').slice(0,10),bg:'var(--gbg)'};}))
-      .slice(0,4).map(function(a){return'<div class="fi2"><div class="fic" style="background:'+a.bg+'">'+a.ic+'</div><div class="ft">'+a.tx+'</div><div class="ftm">'+a.tm+'</div></div>';}).join('')
-    +'</div></div>';
+    +'<div class="hcard"><p class="hgreet">Bonjour,</p><h2 class="hname">'+S.user.prenom+' '+S.user.nom+'</h2>'
+    +(D.contract?'<div class="hbadge">'+ico('inv')+'Contrat '+D.contract.numero+'</div>':'')+'</div>'
+    +(pend>0?'<div class="alrt alrt-a"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--am);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><div><div class="atit">'+pend+' facture'+(pend>1?'s':'')+' en attente</div><div class="asub2">'+D.invoices.filter(function(i){return i.status==='en_attente';}).map(function(i){return i.month||i.mois;}).join(', ')+'</div></div></div>':'')
+    +'<div class="sgrid">'
+    +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg></div><div class="sval">'+(lr?lr.tauxOccupation:'—')+'%</div><div class="slbl">Taux d\'occupation</div>'+(trend?'<div class="ssub" style="color:'+(trend>0?'var(--gr)':'var(--re)')+'">'+(trend>0?'↑':'↓')+' '+Math.abs(trend)+'%</div>':'')+'</div>'
+    +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="sval">'+(lr?lr.nbLocataires:'—')+'</div><div class="slbl">Locataires ce mois</div><div class="ssub" style="color:var(--gr)">'+(lr?lr.nbNuits:'—')+' nuits</div></div>'
+    +'</div>'
+    +'<div class="sgrid">'
+    +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="sval" style="font-size:16px">'+(lr?lr.revenuNet.toLocaleString()+' DT':'—')+'</div><div class="slbl">Revenu net · '+(lr?lr.mois:'')+'</div></div>'
+    +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div class="sval" style="color:'+(pend>0?'var(--T)':'var(--gr)')+'">'+pend+'</div><div class="slbl">Factures en attente</div></div>'
+    +'</div>'
+    +'<h3 class="stitle" style="margin-top:6px">Activité récente</h3><div class="fcard">'
+    +[].concat(
+      D.invoices.slice(0,2).map(function(i){return{svgk:'inv',tx:'Facture '+(i.month||i.mois)+' — '+(i.amount||0).toLocaleString()+' DT',tm:(i.date||'').slice(0,10),col:'var(--T)',bg:'var(--TL)'};}),
+      D.maintenances.slice(0,2).map(function(m){return{svgk:'tool',tx:m.type+' · '+m.statut,tm:(m.date||'').slice(0,10),col:'var(--gr)',bg:'var(--gbg)'};})
+    ).slice(0,4).map(function(a){
+      return'<div class="fitem"><div class="fico" style="background:'+a.bg+'"><svg viewBox="0 0 24 24" style="stroke:'+a.col+'">'+ICO[a.svgk].replace(/<svg[^>]*>/,'').replace('</svg>','')+'</svg></div><div class="ftx">'+a.tx+'</div><div class="ftm">'+a.tm+'</div></div>';
+    }).join('')+'</div></div>';
 }
 
 // ══ REVENUES ═══════════════════════════════════════════════════════════════════
@@ -444,31 +478,31 @@ function rRevenues(c){
   var trend=prev?(((cur.revenuNet-prev.revenuNet)/prev.revenuNet)*100).toFixed(0):null;
   var mx=Math.max.apply(null,revs.map(function(r){return r.revenuBrut;}));
   c.innerHTML='<div class="pg fu">'
-    +'<div class="mf">'+revs.map(function(r,i){return'<button class="mb'+(i===selRevIdx?' on':'')+'" onclick="selR('+i+')">'+r.mois+'</button>';}).join('')+'</div>'
-    +'<div class="rh"><div class="rl">Revenu net · '+cur.mois+' '+cur.annee+'</div>'
-    +'<div class="rv">'+cur.revenuNet.toLocaleString()+' <span>DT</span></div>'
-    +(trend?'<div style="color:'+(trend>0?'var(--gr)':'var(--re)')+';font-size:12px;font-weight:600">'+(trend>0?'↑':'↓')+' '+Math.abs(trend)+'% vs mois précédent</div>':'')+'</div>'
-    +'<div class="rr">'+ringSVG(cur.tauxOccupation,'Occupation')
+    +'<div class="mpills">'+revs.map(function(r,i){return'<button class="mpill'+(i===selRevIdx?' on':'')+'" onclick="selR('+i+')">'+r.mois+'</button>';}).join('')+'</div>'
+    +'<div class="rhero"><div class="rlbl">Revenu net · '+cur.mois+' '+cur.annee+'</div>'
+    +'<div class="rval">'+cur.revenuNet.toLocaleString()+' <span>DT</span></div>'
+    +(trend?'<div style="font-size:12px;font-weight:600;color:'+(trend>0?'var(--gr)':'var(--re)')+'">'+(trend>0?'↑':'↓')+' '+Math.abs(trend)+'% vs mois précédent</div>':'')+'</div>'
+    +'<div class="ringrow">'+ringSVG(cur.tauxOccupation,'Occupation')
     +'<div style="flex:1;display:flex;flex-direction:column;gap:8px">'
-    +'<div class="sc" style="padding:10px"><div class="sv" style="font-size:18px">'+cur.nbLocataires+'</div><div class="sl">Locataires</div></div>'
-    +'<div class="sc" style="padding:10px"><div class="sv" style="font-size:18px">'+cur.nbNuits+' j</div><div class="sl">Nuits réservées</div></div>'
+    +'<div class="scard" style="padding:11px"><div class="sval" style="font-size:18px">'+cur.nbLocataires+'</div><div class="slbl">Locataires</div></div>'
+    +'<div class="scard" style="padding:11px"><div class="sval" style="font-size:18px">'+cur.nbNuits+' j</div><div class="slbl">Nuits réservées</div></div>'
     +'</div></div>'
-    +'<div class="cw"><h3 class="st" style="font-size:14px;margin-bottom:13px">Évolution des revenus</h3>'
-    +'<div class="bs">'+revs.map(function(r,i){return'<div class="bc"><div class="br" style="height:'+Math.round((r.revenuBrut/mx)*68)+'px;background:'+(i===selRevIdx?'var(--T)':'var(--b3)')+'"></div><span class="bl">'+r.mois.slice(0,3)+'</span></div>';}).join('')+'</div></div>'
-    +'<h3 class="st">Répartition</h3><div class="rb">'
-    +'<div class="rr2"><span><span class="rd" style="background:var(--T)"></span><span style="color:var(--t2)">Revenus bruts Airbnb</span></span><span style="color:var(--T);font-weight:700">+'+cur.revenuBrut.toLocaleString()+' DT</span></div>'
-    +'<div class="rr2"><span><span class="rd" style="background:var(--re)"></span><span style="color:var(--t2)">Commission Nexstay (20%)</span></span><span style="color:var(--re);font-weight:700">-'+Math.round(cur.revenuBrut*.2).toLocaleString()+' DT</span></div>'
-    +'<div class="rr2"><span><span class="rd" style="background:var(--am)"></span><span style="color:var(--t2)">Charges & entretien</span></span><span style="color:var(--am);font-weight:700">-'+(cur.revenuBrut-cur.revenuNet-Math.round(cur.revenuBrut*.2)).toLocaleString()+' DT</span></div>'
-    +'<div class="rr2" style="background:var(--bg)"><span style="font-weight:700">💰 Revenu net</span><span style="color:var(--T);font-weight:700;font-size:15px">'+cur.revenuNet.toLocaleString()+' DT</span></div>'
+    +'<div class="chartw"><h3 class="stitle" style="font-size:14px;margin-bottom:12px">Évolution des revenus</h3>'
+    +'<div class="bars">'+revs.map(function(r,i){return'<div class="bcol"><div class="bar" style="height:'+Math.round((r.revenuBrut/mx)*60)+'px;background:'+(i===selRevIdx?'var(--T)':'var(--b3)')+'"></div><span class="blbl">'+r.mois.slice(0,3)+'</span></div>';}).join('')+'</div></div>'
+    +'<h3 class="stitle">Répartition</h3>'
+    +'<div class="rvbk">'
+    +'<div class="rvrow"><span><span class="rvdot" style="background:var(--T)"></span><span style="color:var(--t2)">Revenus bruts Airbnb</span></span><span style="color:var(--T);font-weight:700">+'+cur.revenuBrut.toLocaleString()+' DT</span></div>'
+    +'<div class="rvrow"><span><span class="rvdot" style="background:var(--re)"></span><span style="color:var(--t2)">Charges & entretien</span></span><span style="color:var(--re);font-weight:700">-'+(cur.revenuBrut-cur.revenuNet).toLocaleString()+' DT</span></div>'
+    +'<div class="rvrow" style="background:var(--bg)"><span style="font-weight:700;color:var(--tx)">Revenu net</span><span style="color:var(--T);font-weight:700;font-size:15px">'+cur.revenuNet.toLocaleString()+' DT</span></div>'
     +'</div></div>';
 }
 function selR(i){selRevIdx=i;rRevenues(document.getElementById('scr'));}
 function ringSVG(val,label){
   var r=32,circ=2*Math.PI*r,off=circ-((val/100)*circ);
-  return'<div class="rw"><svg width="80" height="80"><circle cx="40" cy="40" r="'+r+'" fill="none" stroke="var(--b3)" stroke-width="7"/>'
-    +'<circle cx="40" cy="40" r="'+r+'" fill="none" stroke="var(--T)" stroke-width="7" stroke-dasharray="'+circ.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" stroke-linecap="round" transform="rotate(-90 40 40)"/>'
+  return'<div class="ringw"><svg width="78" height="78" viewBox="0 0 78 78"><circle cx="39" cy="39" r="'+r+'" fill="none" stroke="var(--b3)" stroke-width="7"/>'
+    +'<circle cx="39" cy="39" r="'+r+'" fill="none" stroke="var(--T)" stroke-width="7" stroke-dasharray="'+circ.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" stroke-linecap="round" transform="rotate(-90 39 39)"/>'
     +'<text x="50%" y="50%" text-anchor="middle" dy=".35em" fill="var(--T)" font-size="13" font-weight="700" font-family="DM Sans,sans-serif">'+val+'%</text></svg>'
-    +'<span class="rwl">'+label+'</span></div>';
+    +'<span class="ringl">'+label+'</span></div>';
 }
 
 // ══ INVOICES ═══════════════════════════════════════════════════════════════════
@@ -478,40 +512,44 @@ function rInvoices(c){
   var isA=S.user.role==='admin';
   c.innerHTML='<div class="pg fu">'
     +(pend.length
-      ?'<div class="al2 al-a"><span style="font-size:18px">🔔</span><div><div class="alt">'+pend.length+' facture'+(pend.length>1?'s':'')+' en attente</div><div class="als">'+pend.map(function(i){return(i.month||i.mois)+' — '+(i.amount||0).toLocaleString()+' DT';}).join(' · ')+'</div></div></div>'
-      :'<div class="al2 al-g"><span style="font-size:17px">✅</span><div><div class="alt">Tout est à jour</div><div class="als">Aucune facture en attente</div></div></div>')
-    +'<h3 class="st">Factures</h3>'
+      ?'<div class="alrt alrt-a"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--am);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><div><div class="atit">'+pend.length+' facture'+(pend.length>1?'s':'')+' en attente</div><div class="asub2">'+pend.map(function(i){return(i.month||i.mois)+' — '+(i.amount||0).toLocaleString()+' DT';}).join(' · ')+'</div></div></div>'
+      :'<div class="alrt alrt-g"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--gr);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round"><polyline points="20,6 9,17 4,12"/></svg><div><div class="atit">Tout est à jour</div><div class="asub2">Aucune facture en attente</div></div></div>')
+    +'<h3 class="stitle">Factures</h3>'
     +D.invoices.map(function(inv){
-      return'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
-        +'<div class="ii" style="flex:1;cursor:pointer" onclick="selInv=D.invoices.find(function(i){return i.id===\''+inv.id+'\';});rInvoices(document.getElementById(\'scr\'))">'
-        +'<div class="iic" style="background:'+(inv.status==='payée'?'var(--gbg)':'var(--abg)')+'">'+  (inv.status==='payée'?'✅':'⏳')+'</div>'
-        +'<div class="iim"><div class="iin">'+(inv.month||inv.mois)+'</div><div class="iis">'+inv.numero+'</div></div>'
-        +'<div style="text-align:right"><div class="iia">'+(inv.amount||0).toLocaleString()+' DT</div>'
-        +'<span class="bg '+(inv.status==='payée'?'bg-g':'bg-a')+'" style="margin-top:3px">'+(inv.status==='payée'?'✓ Payée':'⏳ Attente')+'</span></div>'
+      var paid=inv.status==='payée';
+      var oid=inv.id;
+      return'<div class="irow">'
+        +'<div class="icard" onclick="selInv=D.invoices.find(function(x){return x.id===\''+oid+'\';});rInvoices(document.getElementById(\'scr\'))">'
+        +'<div class="iico" style="background:'+(paid?'var(--gbg)':'var(--abg)')+'"><svg viewBox="0 0 24 24" style="stroke:'+(paid?'var(--gr)':'var(--am)')+'"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>'
+        +'<div class="imeta"><div class="iname">'+(inv.month||inv.mois)+'</div><div class="inum">'+inv.numero+'</div></div>'
+        +'<div style="text-align:right"><div class="iamt">'+(inv.amount||0).toLocaleString()+' DT</div>'
+        +'<span class="bdg '+(paid?'bdg-g':'bdg-a')+'" style="margin-top:3px">'+(paid?'Payée':'En attente')+'</span></div>'
         +'</div>'
-        +(isA?'<button class="dbt" onclick="dInv(\''+inv.id+'\')">🗑</button>':'')
+        +(isA?'<button class="dbtn" onclick="dInv(\''+oid+'\')">'+ico('del')+'</button>':'')
         +'</div>';
-    }).join('')
-    +'</div>';
+    }).join('')+'</div>';
 }
 function rInvDetail(c,inv){
   var isA=S.user.role==='admin';
-  c.innerHTML='<div class="pg fu">'
-    +'<button class="bk" onclick="selInv=null;rInvoices(document.getElementById(\'scr\'))">← Retour aux factures</button>'
-    +'<div class="is" style="border-radius:18px;padding:20px">'
-    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">'
-    +'<div><div style="color:var(--t3);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">FACTURE</div>'
-    +'<div style="font-family:var(--fs);font-size:20px;font-weight:700">'+inv.numero+'</div></div>'
-    +'<span class="bg '+(inv.status==='payée'?'bg-g':'bg-a')+'">'+(inv.status==='payée'?'✓ Payée':'⏳ En attente')+'</span></div>'
-    +'<div style="border-top:1px dashed var(--b3);border-bottom:1px dashed var(--b3);padding:12px 0;margin:14px 0">'
-    +[['Période',inv.month||inv.mois],['Date d\'émission',(inv.date||'').slice(0,10)],['Propriétaire',S.user.prenom+' '+S.user.nom],['Contrat N°',(D.contract&&D.contract.numero)||'—']].map(function(r){return'<div style="display:flex;justify-content:space-between;padding:7px 0;font-size:13px"><span style="color:var(--t2)">'+r[0]+'</span><span style="font-weight:500">'+r[1]+'</span></div>';}).join('')
+  var paid=inv.status==='payée';
+  c.innerHTML='<div class="dpage fu">'
+    +'<button class="bkbtn" onclick="selInv=null;rInvoices(document.getElementById(\'scr\'))">'+ico('back')+' Retour aux factures</button>'
+    +'<div class="dcard">'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">'
+    +'<div><div class="dlbl">Facture</div><div class="dnum">'+inv.numero+'</div></div>'
+    +'<span class="bdg '+(paid?'bdg-g':'bdg-a')+'">'+(paid?'Payée':'En attente')+'</span></div>'
+    +'<div class="ddash">'
+    +[['Période',inv.month||inv.mois],['Date d\'émission',(inv.date||'').slice(0,10)],['Propriétaire',S.user.prenom+' '+S.user.nom],['Contrat N°',(D.contract&&D.contract.numero)||'—']].map(function(r){return'<div class="drow"><span style="color:var(--t2)">'+r[0]+'</span><span style="font-weight:500">'+r[1]+'</span></div>';}).join('')
     +'</div>'
-    +'<div style="display:flex;justify-content:space-between;align-items:center">'
-    +'<span style="font-family:var(--fs);font-size:18px;font-weight:700">Total</span>'
-    +'<span style="font-family:var(--fs);font-size:26px;font-weight:700;color:var(--T)">'+(inv.amount||0).toLocaleString()+' DT</span></div>'
-    +(isA?'<button class="dbt" style="width:100%;margin-top:12px;justify-content:center;padding:11px;font-size:13px;font-weight:700" onclick="dInv(\''+inv.id+'\');selInv=null">🗑 Supprimer cette facture</button>':'')
+    +'<div class="dtot"><span class="dtotl">Total</span><span class="dtota">'+(inv.amount||0).toLocaleString()+' DT</span></div>'
+    // Bouton téléchargement — actif seulement si PDF disponible
+    +(inv.pdfFile
+      ?'<button class="dlbtn" onclick="dlPdf(\''+inv.id+'\')">'+ico('dl')+' Télécharger la facture PDF</button>'
+      :'<div class="dlbtn disabled" style="cursor:default">'+ico('pdf')+' PDF non encore disponible</div>')
+    +(isA?'<button class="dbtn" style="width:100%;justify-content:center;margin-top:10px;padding:11px;font-size:13px;font-weight:700;gap:6px;color:var(--re)" onclick="dInv(\''+inv.id+'\');selInv=null">'+ico('del')+' Supprimer cette facture</button>':'')
     +'</div></div>';
 }
+function dlPdf(id){window.open('/api/invoice-pdf/'+id,'_blank');}
 async function dInv(id){
   if(!confirm('Supprimer cette facture ?'))return;
   try{await api('DELETE','/invoices/'+id);D.invoices=D.invoices.filter(function(i){return i.id!==id;});toast('Supprimée','ok');rInvoices(document.getElementById('scr'));}
@@ -521,29 +559,30 @@ async function dInv(id){
 // ══ MAINTENANCE ════════════════════════════════════════════════════════════════
 function rMaint(c){
   var isA=S.user.role==='admin';
-  var ic={Ménage:'🧹',Plomberie:'🔧','Électricité':'⚡',Peinture:'🎨',Climatisation:'❄️',Autre:'🔨'};
   var done=D.maintenances.filter(function(m){return m.statut==='effectué';}).length;
   var plan=D.maintenances.filter(function(m){return m.statut==='planifié';}).length;
+  var typeIco={Ménage:'<svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',Plomberie:'<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2z"/></svg>','Électricité':'<svg viewBox="0 0 24 24"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/></svg>',Peinture:'<svg viewBox="0 0 24 24"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"/><polygon points="18,2 22,6 12,16 8,16 8,12 18,2"/></svg>',Climatisation:'<svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><path d="M6 9l6 3 6-3"/><path d="M6 15l6-3 6 3"/></svg>',Autre:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>'};
   c.innerHTML='<div class="pg fu">'
-    +'<div class="sr"><div class="sc"><div class="si">✅</div><div class="sv">'+done+'</div><div class="sl">Effectués</div></div>'
-    +'<div class="sc"><div class="si">📅</div><div class="sv">'+plan+'</div><div class="sl">Planifiés</div></div></div>'
-    +'<h3 class="st">Journal des entretiens</h3>'
+    +'<div class="sgrid"><div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></div><div class="sval">'+done+'</div><div class="slbl">Effectués</div></div>'
+    +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div><div class="sval">'+plan+'</div><div class="slbl">Planifiés</div></div></div>'
+    +'<h3 class="stitle">Journal des entretiens</h3>'
     +D.maintenances.map(function(m){
+      var done2=m.statut==='effectué';
+      var tic=typeIco[m.type]||typeIco['Autre'];
       return'<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px">'
-        +'<div class="mi" style="flex:1">'
-        +'<div class="mih"><div class="miw"><div class="mic" style="background:'+(m.statut==='effectué'?'var(--gbg)':'var(--TL)')+'">'+  (ic[m.type]||'🔨')+'</div>'
-        +'<div><div class="mity">'+m.type+'</div><div class="mida">'+(m.date||'').slice(0,10)+'</div></div></div>'
-        +'<span class="bg '+(m.statut==='effectué'?'bg-g':'bg-a')+'">'+(m.statut==='effectué'?'✓ Fait':'⏳ Planifié')+'</span></div>'
-        +'<p class="mino">'+(m.note||'')+'</p>'
-        +(m.technicien?'<div class="mite"><span class="tc">👤 '+m.technicien+'</span></div>':'')
+        +'<div class="mcard" style="flex:1"><div class="mhead">'
+        +'<div class="mwrap"><div class="mico" style="background:'+(done2?'var(--gbg)':'var(--TL)')+';"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:'+(done2?'var(--gr)':'var(--T)')+';stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round">'+tic.replace(/<svg[^>]*>/,'').replace('</svg>','')+'</svg></div>'
+        +'<div><div class="mtype">'+m.type+'</div><div class="mdate">'+(m.date||'').slice(0,10)+'</div></div></div>'
+        +'<span class="bdg '+(done2?'bdg-g':'bdg-t')+'">'+(done2?'Effectué':'Planifié')+'</span></div>'
+        +'<p class="mnote">'+(m.note||'')+'</p>'
+        +(m.technicien?'<div class="mtech"><span class="tchip">'+m.technicien+'</span></div>':'')
         +'</div>'
-        +(isA?'<button class="dbt" style="margin-top:3px" onclick="dMaint(\''+m.id+'\')">🗑</button>':'')
+        +(isA?'<button class="dbtn" style="margin-top:3px" onclick="dMaint(\''+m.id+'\')">'+ico('del')+'</button>':'')
         +'</div>';
-    }).join('')
-    +'</div>';
+    }).join('')+'</div>';
 }
 async function dMaint(id){
-  if(!confirm('Supprimer cet entretien ?'))return;
+  if(!confirm('Supprimer ?'))return;
   try{await api('DELETE','/maintenances/'+id);D.maintenances=D.maintenances.filter(function(m){return m.id!==id;});toast('Supprimé','ok');rMaint(document.getElementById('scr'));}
   catch(e){toast(e.message,'err');}
 }
@@ -554,18 +593,18 @@ function rInfos(c){
   function dL(d){return d?Math.ceil((new Date(d)-now)/864e5):null;}
   var tvD=inf&&inf.tv&&inf.tv.dateFin?dL(inf.tv.dateFin):null;
   var netD=inf&&inf.internet&&inf.internet.dateFin?dL(inf.internet.dateFin):null;
+  function isec(icon,title,rows){
+    return'<div class="isec"><div class="isech"><svg viewBox="0 0 24 24">'+icon.replace(/<svg[^>]*>/,'').replace('</svg>','')+'</svg><span class="isect">'+title+'</span></div>'
+      +rows.map(function(r){return'<div class="irow2"><span class="irlbl">'+r[0]+'</span><span class="irval'+(r[2]?' hi':'')+'">'+r[1]+'</span></div>';}).join('')+'</div>';
+  }
   c.innerHTML='<div class="pg fu">'
-    +(tvD!==null&&tvD<45?'<div class="al2 '+(tvD<14?'al-r':'al-a')+'"><span style="font-size:18px">'+(tvD<14?'🔴':'⚠️')+'</span><div><div class="alt">TV expire dans '+tvD+' jours</div><div class="als">Nexstay vous contactera</div></div></div>':'')
-    +(netD!==null&&netD<45?'<div class="al2 '+(netD<14?'al-r':'al-a')+'"><span style="font-size:18px">'+(netD<14?'🔴':'⚠️')+'</span><div><div class="alt">Internet expire dans '+netD+' jours</div></div></div>':'')
-    +(con?'<div class="is"><div class="ish"><span>📄</span><span class="ist">Contrat</span></div>'
-      +['Numéro|'+con.numero+'|hi','Début|'+con.dateDebut,'Fin|'+con.dateFin,'Commission|'+con.commission+'%|hi','Statut|<span class="bg bg-g">✓ '+con.statut+'</span>'].map(function(r){var p=r.split('|');return'<div class="ir"><span class="irl">'+p[0]+'</span><span class="irv'+(p[2]?' hi':'')+'">'+(p[1]||'—')+'</span></div>';}).join('')+'</div>':'')
-    +(inf?'<div class="is"><div class="ish"><span>🏠</span><span class="ist">Logement</span></div>'
-      +['Adresse|'+(inf.adresse||'—'),'Étage|'+(inf.etage||'—'),'Superficie|'+(inf.superficie||'—'),'Clés|'+(inf.nbCles||'—'),(inf.autresInfos?'Note|'+inf.autresInfos:'')].filter(Boolean).map(function(r){var p=r.split('|');return'<div class="ir"><span class="irl">'+p[0]+'</span><span class="irv">'+p[1]+'</span></div>';}).join('')+'</div>'
-      +'<div class="is"><div class="ish"><span>📡</span><span class="ist">Internet</span></div>'
-      +['Fournisseur|'+(inf.internet&&inf.internet.fournisseur||'—'),'N° Contrat|'+(inf.internet&&inf.internet.numero||'—')+'|hi','Fin abonnement|'+(inf.internet&&inf.internet.dateFin||'—')].map(function(r){var p=r.split('|');return'<div class="ir"><span class="irl">'+p[0]+'</span><span class="irv'+(p[2]?' hi':'')+'">'+(p[1]||'—')+'</span></div>';}).join('')+'</div>'
-      +'<div class="is"><div class="ish"><span>📺</span><span class="ist">TV / Abonnement</span></div>'
-      +['Abonnement|'+(inf.tv&&inf.tv.abonnement||'—'),'Référence|'+(inf.tv&&inf.tv.reference||'—')+'|hi','Date de fin|'+(inf.tv&&inf.tv.dateFin||'—')].map(function(r){var p=r.split('|');return'<div class="ir"><span class="irl">'+p[0]+'</span><span class="irv'+(p[2]?' hi':'')+'">'+(p[1]||'—')+'</span></div>';}).join('')+'</div>'
-      :'<div class="is"><div style="text-align:center;padding:26px;color:var(--t2)">Informations non encore renseignées</div></div>')
+    +(tvD!==null&&tvD<45?'<div class="alrt '+(tvD<14?'alrt-r':'alrt-a')+'"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:'+(tvD<14?'var(--re)':'var(--am)')+';stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><div><div class="atit">TV expire dans '+tvD+' jours</div><div class="asub2">Nexstay vous contactera pour le renouvellement</div></div></div>':'')
+    +(netD!==null&&netD<45?'<div class="alrt '+(netD<14?'alrt-r':'alrt-a')+'"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:'+(netD<14?'var(--re)':'var(--am)')+';stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><div><div class="atit">Internet expire dans '+netD+' jours</div></div></div>':'')
+    +(con?isec('<svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7"/></svg>','Contrat',[['Numéro',con.numero,true],['Date de début',con.dateDebut],['Date de fin',con.dateFin],['Statut','<span class="bdg bdg-g">Actif</span>']]):'')
+    +(inf?isec('<svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>','Logement',[['Adresse',inf.adresse||'—'],['Étage',inf.etage||'—'],['Superficie',inf.superficie||'—'],['Clés',inf.nbCles||'—'],inf.autresInfos?['Note',inf.autresInfos]:null].filter(Boolean))
+      +isec('<svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>','Internet',[['Fournisseur',(inf.internet&&inf.internet.fournisseur)||'—'],['N° Contrat',(inf.internet&&inf.internet.numero)||'—',true],['Fin abonnement',(inf.internet&&inf.internet.dateFin)||'—',(netD!==null&&netD<30)]])
+      +isec('<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17,2 12,7 7,2"/></svg>','TV / Abonnement',[['Abonnement',(inf.tv&&inf.tv.abonnement)||'—'],['Référence',(inf.tv&&inf.tv.reference)||'—',true],['Date de fin',(inf.tv&&inf.tv.dateFin)||'—',(tvD!==null&&tvD<30)]])
+      :'<div class="isec"><div style="text-align:center;padding:24px;color:var(--t2);font-size:13px">Informations non encore renseignées</div></div>')
     +'</div>';
 }
 
@@ -576,226 +615,228 @@ async function rAdmin(c){
   try{var r=await Promise.all([api('GET','/stats'),api('GET','/owners')]);stats=r[0];owners=r[1];}catch(e){}
   window._ow=owners;window._st=stats;
   if(ownerData){rOwnerDetail(c,ownerData);return;}
-  rOwnerList(c,owners,stats);
-}
-
-function rOwnerList(c,owners,stats){
   c.innerHTML='<div class="pg fu">'
-    +'<div class="sh2"><div class="shv">'+(stats.totalRevenue||0).toLocaleString()+' DT</div><div class="shl">Total revenus nets cumulés</div></div>'
-    +'<div class="sr"><div class="sc"><div class="si">👤</div><div class="sv">'+(stats.totalOwners||0)+'</div><div class="sl">Propriétaires</div></div>'
-    +'<div class="sc"><div class="si">⏳</div><div class="sv" style="color:var(--T)">'+(stats.pendingInvoices||0)+'</div><div class="sl">Factures en attente</div></div></div>'
-    +'<div class="sr"><div class="sc"><div class="si">🧾</div><div class="sv">'+(stats.totalInvoices||0)+'</div><div class="sl">Total factures</div></div>'
-    +'<div class="sc"><div class="si">🔧</div><div class="sv" style="color:var(--am)">'+(stats.maintenancePending||0)+'</div><div class="sl">Entretiens planifiés</div></div></div>'
-    +'<h3 class="st" style="margin-top:6px">Propriétaires ('+owners.length+')</h3>'
+    +'<div class="ahero"><div class="aheroval">'+(stats.totalRevenue||0).toLocaleString()+' DT</div><div class="aherolbl">Total revenus nets cumulés</div></div>'
+    +'<div class="sgrid"><div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div><div class="sval">'+(stats.totalOwners||0)+'</div><div class="slbl">Propriétaires</div></div>'
+    +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div><div class="sval">'+(stats.totalInvoices||0)+'</div><div class="slbl">Factures totales</div></div></div>'
+    +'<div class="sgrid"><div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div><div class="sval" style="color:var(--T)">'+(stats.pendingInvoices||0)+'</div><div class="slbl">Factures en attente</div></div>'
+    +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div><div class="sval" style="color:var(--am)">'+(stats.maintenancePending||0)+'</div><div class="slbl">Entretiens planifiés</div></div></div>'
+    +'<h3 class="stitle" style="margin-top:6px">Propriétaires ('+owners.length+')</h3>'
     +owners.map(function(o){
-      return'<div class="oc" onclick="openOwner(\''+o.id+'\')">'
-        +'<div class="och"><div class="oa">👤</div>'
-        +'<div class="oi"><div class="on2">'+o.prenom+' '+o.nom+'</div><div class="oe">'+o.email+'</div></div>'
-        +'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg></div>'
-        +'<div style="display:flex;gap:7px;margin-top:9px">'
-        +'<div style="flex:1;background:var(--b2);border-radius:8px;padding:7px;text-align:center"><div style="font-size:12px;font-weight:700;color:var(--T)">'+(o.ville||'—')+'</div><div style="font-size:9px;color:var(--t2)">Ville</div></div>'
-        +'<div style="flex:1;background:var(--b2);border-radius:8px;padding:7px;text-align:center"><div style="font-size:12px;font-weight:700;color:var(--T)">'+(o.typeLogement||'—')+'</div><div style="font-size:9px;color:var(--t2)">Bien</div></div>'
-        +'<div style="flex:1;background:var(--b2);border-radius:8px;padding:7px;text-align:center"><div style="font-size:11px;font-weight:700;color:var(--T)">'+(o.tel||'—')+'</div><div style="font-size:9px;color:var(--t2)">Tél</div></div>'
+      return'<div class="ocard" onclick="openOwner(\''+o.id+'\')">'
+        +'<div class="ohead"><div class="oavt"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div>'
+        +'<div class="oinf"><div class="oname">'+o.prenom+' '+o.nom+'</div><div class="oemail">'+o.email+'</div></div>'
+        +'<div class="ochev"><svg viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div></div>'
+        +'<div class="opills">'
+        +'<div class="opill"><div class="opval">'+(o.ville||'—')+'</div><div class="oplbl">Ville</div></div>'
+        +'<div class="opill"><div class="opval">'+(o.typeLogement||'—')+'</div><div class="oplbl">Bien</div></div>'
+        +'<div class="opill"><div class="opval" style="font-size:10px">'+(o.tel||'—')+'</div><div class="oplbl">Tél</div></div>'
         +'</div></div>';
-    }).join('')
-    +'</div>';
+    }).join('')+'</div>';
 }
 
 async function openOwner(id){
   var c=document.getElementById('scr');
   c.innerHTML='<div class="pg"><div class="spin"></div></div>';
-  try{
-    var d=await api('GET','/owner-data/'+id);
-    ownerData=d;ownerTabActive='inv';
-    rOwnerDetail(c,d);
-  }catch(e){toast(e.message,'err');}
+  try{var d=await api('GET','/owner-data/'+id);ownerData=d;oTab2='inv';rOwnerDetail(c,d);}
+  catch(e){toast(e.message,'err');}
 }
 
 function rOwnerDetail(c,d){
   var o=d.owner||{};
   c.innerHTML='<div class="pg fu">'
-    +'<button class="bk" onclick="ownerData=null;rAdmin(document.getElementById(\'scr\'))">← Tous les propriétaires</button>'
-    +'<div class="hc" style="margin-bottom:13px"><p class="hg">Propriétaire</p><h2 class="hn">'+o.prenom+' '+o.nom+'</h2>'
-    +'<div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap"><div class="hco">📧 '+o.email+'</div><div class="hco">📞 '+(o.tel||'—')+'</div></div></div>'
-    +'<div class="tp" id="oTabs">'
-    +'<button class="tpb'+(ownerTabActive==='inv'?' on':'')+'" onclick="oTab(\'inv\')">Factures</button>'
-    +'<button class="tpb'+(ownerTabActive==='rev'?' on':'')+'" onclick="oTab(\'rev\')">Revenus</button>'
-    +'<button class="tpb'+(ownerTabActive==='maint'?' on':'')+'" onclick="oTab(\'maint\')">Entretiens</button>'
-    +'<button class="tpb'+(ownerTabActive==='infos'?' on':'')+'" onclick="oTab(\'infos\')">Infos</button>'
+    +'<button class="bkbtn" onclick="ownerData=null;rAdmin(document.getElementById(\'scr\'))">'+ico('back')+' Tous les propriétaires</button>'
+    +'<div class="hcard" style="margin-bottom:12px"><p class="hgreet">Propriétaire</p><h2 class="hname">'+o.prenom+' '+o.nom+'</h2>'
+    +'<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px">'
+    +'<div class="hbadge">'+ico('rev')+o.email+'</div>'
+    +'<div class="hbadge">'+ico('shield')+(o.tel||'—')+'</div>'
+    +'</div></div>'
+    +'<div class="tpills">'
+    +'<button class="tpill'+(oTab2==='inv'?' on':'')+'" onclick="oSwitch(\'inv\')">Factures</button>'
+    +'<button class="tpill'+(oTab2==='rev'?' on':'')+'" onclick="oSwitch(\'rev\')">Revenus</button>'
+    +'<button class="tpill'+(oTab2==='maint'?' on':'')+'" onclick="oSwitch(\'maint\')">Entretiens</button>'
+    +'<button class="tpill'+(oTab2==='infos'?' on':'')+'" onclick="oSwitch(\'infos\')">Infos</button>'
     +'</div>'
-    +'<div id="oBody"></div>'
-    +'</div>';
-  oTab(ownerTabActive);
+    +'<div id="ob"></div></div>';
+  renderOTab(oTab2);
 }
 
-function oTab(tab){
-  ownerTabActive=tab;
-  document.querySelectorAll('.tpb').forEach(function(b){b.classList.remove('on');});
-  var found=false;
-  document.querySelectorAll('.tpb').forEach(function(b){
-    if(!found&&((tab==='inv'&&b.textContent==='Factures')||(tab==='rev'&&b.textContent==='Revenus')||(tab==='maint'&&b.textContent==='Entretiens')||(tab==='infos'&&b.textContent==='Infos'))){b.classList.add('on');found=true;}
-  });
-  var body=document.getElementById('oBody');if(!body)return;
+function oSwitch(t){
+  oTab2=t;
+  document.querySelectorAll('.tpill').forEach(function(b){b.classList.remove('on');});
+  var tabs={inv:'Factures',rev:'Revenus',maint:'Entretiens',infos:'Infos'};
+  document.querySelectorAll('.tpill').forEach(function(b){if(b.textContent===tabs[t])b.classList.add('on');});
+  renderOTab(t);
+}
+
+function renderOTab(t){
+  var body=document.getElementById('ob');if(!body)return;
   var d=ownerData||{};
   var invs=d.invoices||[],revs=d.revenues||[],maints=d.maintenances||[],inf=d.infos||null;
   var oid=(d.owner||{}).id||'';
-  var ic={Ménage:'🧹',Plomberie:'🔧','Électricité':'⚡',Peinture:'🎨',Climatisation:'❄️',Autre:'🔨'};
 
-  if(tab==='inv'){
+  if(t==='inv'){
     body.innerHTML=
-      // FORMULAIRE AJOUT FACTURE
-      '<div class="fs2"><div class="fs2h"><span>➕</span><span class="fs2t">Nouvelle facture</span></div>'
-      +'<div class="fs2b">'
-      +'<input id="ai-m" class="fi" placeholder="Période (ex: Mai 2025)">'
-      +'<input id="ai-n" class="fi" placeholder="Numéro (ex: F-2025-005)">'
-      +'<div style="display:flex;gap:8px"><input id="ai-a" class="fi" type="number" placeholder="Montant DT"><input id="ai-d" class="fi" type="date"></div>'
-      +'<select id="ai-s" class="fi"><option value="en_attente">En attente</option><option value="payée">Payée</option></select>'
-      +'<button class="bt" style="margin-top:0" onclick="aAddInv(\''+oid+'\')">Envoyer la facture</button>'
-      +'</div></div>'
-      // LISTE FACTURES
-      +'<h3 class="st">Factures ('+invs.length+')</h3>'
+      // FORM AJOUT
+      '<div class="fsec"><div class="fsech"><svg viewBox="0 0 24 24">'+ICO.add.replace(/<svg[^>]*>/,'').replace('</svg>','')+'</svg><span class="fsect">Nouvelle facture</span></div>'
+      +'<div class="fsecb">'
+      +'<input id="ai-m" class="inp" placeholder="Période (ex: Mai 2025)">'
+      +'<input id="ai-n" class="inp" placeholder="Numéro (ex: F-2025-005)">'
+      +'<div style="display:flex;gap:8px"><input id="ai-a" class="inp" type="number" placeholder="Montant DT"><input id="ai-d" class="inp" type="date"></div>'
+      +'<select id="ai-s" class="inp"><option value="en_attente">En attente</option><option value="payée">Payée</option></select>'
+      +'<button class="btnT" style="margin-top:0" onclick="aAddInv(\''+oid+'\')">Envoyer la facture</button></div></div>'
+      // LISTE
+      +'<h3 class="stitle">Factures ('+invs.length+')</h3>'
       +(invs.length===0?'<p style="color:var(--t2);font-size:13px;padding:8px 0">Aucune facture</p>':'')
       +invs.map(function(inv){
-        return'<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">'
-          +'<div class="ii" style="flex:1"><div class="iic" style="background:'+(inv.status==='payée'?'var(--gbg)':'var(--abg)')+'">'+  (inv.status==='payée'?'✅':'⏳')+'</div>'
-          +'<div class="iim"><div class="iin">'+(inv.month||inv.mois)+'</div><div class="iis">'+inv.numero+'</div></div>'
-          +'<div style="text-align:right"><div class="iia">'+(inv.amount||0).toLocaleString()+' DT</div>'
-          +'<span class="bg '+(inv.status==='payée'?'bg-g':'bg-a')+'" style="margin-top:3px">'+(inv.status==='payée'?'✓ Payée':'⏳ Attente')+'</span></div></div>'
-          +'<button class="dbt" onclick="aDelInv(\''+inv.id+'\',\''+oid+'\')">🗑</button>'
+        var paid=inv.status==='payée';
+        return'<div style="margin-bottom:8px">'
+          +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">'
+          +'<div class="icard" style="flex:1">'
+          +'<div class="iico" style="background:'+(paid?'var(--gbg)':'var(--abg)')+'"><svg viewBox="0 0 24 24" style="stroke:'+(paid?'var(--gr)':'var(--am)')+'"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>'
+          +'<div class="imeta"><div class="iname">'+(inv.month||inv.mois)+'</div><div class="inum">'+inv.numero+'</div></div>'
+          +'<div style="text-align:right"><div class="iamt">'+(inv.amount||0).toLocaleString()+' DT</div><span class="bdg '+(paid?'bdg-g':'bdg-a')+'" style="margin-top:3px">'+(paid?'Payée':'En attente')+'</span></div>'
+          +'</div>'
+          +'<button class="dbtn" onclick="aDelInv(\''+inv.id+'\',\''+oid+'\')">'+ico('del')+'</button>'
+          +'</div>'
+          // Upload PDF pour cette facture
+          +'<div class="upzone" onclick="trigUpload(\''+inv.id+'\',\''+oid+'\')" id="upz-'+inv.id+'">'
+          +'<svg viewBox="0 0 24 24">'+ICO.up.replace(/<svg[^>]*>/,'').replace('</svg>','')+'</svg>'
+          +(inv.pdfFile?'<p style="color:var(--gr)">PDF uploadé ✓</p><small>Cliquer pour remplacer</small>':'<p>Uploader le PDF</p><small>Cliquer pour choisir un fichier</small>')
+          +'</div>'
           +'</div>';
-      }).join('');
+      }).join('')
+      +'<input type="file" id="pdfInput" accept="application/pdf" style="display:none" onchange="doUpload()"><input type="hidden" id="uploadInvId"><input type="hidden" id="uploadOwnId">';
   }
 
-  if(tab==='rev'){
+  if(t==='rev'){
     body.innerHTML=
-      // FORMULAIRE AJOUT REVENU
-      '<div class="fs2"><div class="fs2h"><span>➕</span><span class="fs2t">Publier des revenus</span></div>'
-      +'<div class="fs2b">'
-      +'<div style="display:flex;gap:8px"><input id="ar-m" class="fi" placeholder="Mois (ex: Juin)"><input id="ar-y" class="fi" type="number" placeholder="Année" value="2025"></div>'
-      +'<div style="display:flex;gap:8px"><input id="ar-b" class="fi" type="number" placeholder="Revenu brut DT"><input id="ar-n" class="fi" type="number" placeholder="Revenu net DT"></div>'
-      +'<div style="display:flex;gap:8px"><input id="ar-oc" class="fi" type="number" placeholder="Occupation %" min="0" max="100"><input id="ar-l" class="fi" type="number" placeholder="Nb locataires"></div>'
-      +'<input id="ar-ni" class="fi" type="number" placeholder="Nb nuits réservées">'
-      +'<button class="bt" style="margin-top:0" onclick="aAddRev(\''+oid+'\')">Publier les revenus</button>'
-      +'</div></div>'
-      // LISTE REVENUS
-      +'<h3 class="st">Revenus ('+revs.length+')</h3>'
+      '<div class="fsec"><div class="fsech"><svg viewBox="0 0 24 24">'+ICO.add.replace(/<svg[^>]*>/,'').replace('</svg>','')+'</svg><span class="fsect">Publier des revenus</span></div>'
+      +'<div class="fsecb">'
+      +'<div style="display:flex;gap:8px"><input id="ar-m" class="inp" placeholder="Mois (ex: Juin)"><input id="ar-y" class="inp" type="number" placeholder="Année" value="2025"></div>'
+      +'<div style="display:flex;gap:8px"><input id="ar-b" class="inp" type="number" placeholder="Revenu brut DT"><input id="ar-n" class="inp" type="number" placeholder="Revenu net DT"></div>'
+      +'<div style="display:flex;gap:8px"><input id="ar-oc" class="inp" type="number" placeholder="Occupation %" min="0" max="100"><input id="ar-l" class="inp" type="number" placeholder="Nb locataires"></div>'
+      +'<input id="ar-ni" class="inp" type="number" placeholder="Nb nuits réservées">'
+      +'<button class="btnT" style="margin-top:0" onclick="aAddRev(\''+oid+'\')">Publier les revenus</button></div></div>'
+      +'<h3 class="stitle">Revenus ('+revs.length+')</h3>'
       +(revs.length===0?'<p style="color:var(--t2);font-size:13px;padding:8px 0">Aucun revenu</p>':'')
       +revs.map(function(r){
         return'<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">'
-          +'<div class="rh" style="flex:1;margin-bottom:0;padding:13px"><div class="rl">'+r.mois+' '+r.annee+'</div>'
+          +'<div class="rhero" style="flex:1;margin-bottom:0;padding:13px"><div class="rlbl">'+r.mois+' '+r.annee+'</div>'
           +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">'
           +'<span style="font-family:var(--fs);font-size:20px;font-weight:700;color:var(--T)">'+r.revenuNet.toLocaleString()+' DT</span>'
-          +'<span class="bg bg-t">'+r.tauxOccupation+'% occ.</span></div></div>'
-          +'<button class="dbt" onclick="aDelRev(\''+r.id+'\',\''+oid+'\')">🗑</button>'
-          +'</div>';
+          +'<span class="bdg bdg-t">'+r.tauxOccupation+'% occ.</span></div>'
+          +'<div style="display:flex;gap:10px;margin-top:8px;font-size:11px;color:var(--t2)">'
+          +'<span>'+r.nbLocataires+' locataires</span><span>·</span><span>'+r.nbNuits+' nuits</span>'
+          +'</div></div>'
+          +'<button class="dbtn" onclick="aDelRev(\''+r.id+'\',\''+oid+'\')">'+ico('del')+'</button></div>';
       }).join('');
   }
 
-  if(tab==='maint'){
+  if(t==='maint'){
     body.innerHTML=
-      // FORMULAIRE AJOUT ENTRETIEN
-      '<div class="fs2"><div class="fs2h"><span>➕</span><span class="fs2t">Ajouter un entretien</span></div>'
-      +'<div class="fs2b">'
-      +'<select id="am-t" class="fi"><option>Ménage</option><option>Plomberie</option><option>Électricité</option><option>Peinture</option><option>Climatisation</option><option>Autre</option></select>'
-      +'<div style="display:flex;gap:8px"><input id="am-d" class="fi" type="date"><select id="am-s" class="fi"><option value="planifié">Planifié</option><option value="effectué">Effectué</option></select></div>'
-      +'<input id="am-te" class="fi" placeholder="Nom du technicien">'
-      +'<textarea id="am-n" class="fi" rows="2" placeholder="Description / notes"></textarea>'
-      +'<button class="bt" style="margin-top:0" onclick="aAddMaint(\''+oid+'\')">Ajouter l\'entretien</button>'
-      +'</div></div>'
-      // LISTE ENTRETIENS
-      +'<h3 class="st">Entretiens ('+maints.length+')</h3>'
+      '<div class="fsec"><div class="fsech"><svg viewBox="0 0 24 24">'+ICO.add.replace(/<svg[^>]*>/,'').replace('</svg>','')+'</svg><span class="fsect">Ajouter un entretien</span></div>'
+      +'<div class="fsecb">'
+      +'<select id="am-t" class="inp"><option>Ménage</option><option>Plomberie</option><option>Électricité</option><option>Peinture</option><option>Climatisation</option><option>Autre</option></select>'
+      +'<div style="display:flex;gap:8px"><input id="am-d" class="inp" type="date"><select id="am-s" class="inp"><option value="planifié">Planifié</option><option value="effectué">Effectué</option></select></div>'
+      +'<input id="am-te" class="inp" placeholder="Nom du technicien">'
+      +'<textarea id="am-n" class="inp" rows="2" placeholder="Description / notes"></textarea>'
+      +'<button class="btnT" style="margin-top:0" onclick="aAddMaint(\''+oid+'\')">Ajouter l\'entretien</button></div></div>'
+      +'<h3 class="stitle">Entretiens ('+maints.length+')</h3>'
       +(maints.length===0?'<p style="color:var(--t2);font-size:13px;padding:8px 0">Aucun entretien</p>':'')
       +maints.map(function(m){
+        var done2=m.statut==='effectué';
         return'<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px">'
-          +'<div class="mi" style="flex:1"><div class="mih"><div class="miw"><div class="mic" style="background:'+(m.statut==='effectué'?'var(--gbg)':'var(--TL)')+'">'+  (ic[m.type]||'🔨')+'</div>'
-          +'<div><div class="mity">'+m.type+'</div><div class="mida">'+(m.date||'').slice(0,10)+'</div></div></div>'
-          +'<span class="bg '+(m.statut==='effectué'?'bg-g':'bg-a')+'">'+(m.statut==='effectué'?'✓ Fait':'⏳ Planifié')+'</span></div>'
-          +'<p class="mino">'+(m.note||'')+'</p>'
-          +(m.technicien?'<div class="mite"><span class="tc">👤 '+m.technicien+'</span></div>':'')
-          +'</div>'
-          +'<button class="dbt" style="margin-top:3px" onclick="aDelMaint(\''+m.id+'\',\''+oid+'\')">🗑</button>'
-          +'</div>';
+          +'<div class="mcard" style="flex:1"><div class="mhead"><div class="mwrap">'
+          +'<div class="mico" style="background:'+(done2?'var(--gbg)':'var(--TL)')+'"><svg viewBox="0 0 24 24" style="stroke:'+(done2?'var(--gr)':'var(--T)')+';width:16px;height:16px;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>'
+          +'<div><div class="mtype">'+m.type+'</div><div class="mdate">'+(m.date||'').slice(0,10)+'</div></div></div>'
+          +'<span class="bdg '+(done2?'bdg-g':'bdg-t')+'">'+(done2?'Effectué':'Planifié')+'</span></div>'
+          +'<p class="mnote">'+(m.note||'')+'</p>'
+          +(m.technicien?'<div class="mtech"><span class="tchip">'+m.technicien+'</span></div>':'')
+          +'</div><button class="dbtn" style="margin-top:3px" onclick="aDelMaint(\''+m.id+'\',\''+oid+'\')">'+ico('del')+'</button></div>';
       }).join('');
   }
 
-  if(tab==='infos'){
+  if(t==='infos'){
     var i=inf||{};
     body.innerHTML=
-      '<div class="fs2"><div class="fs2h"><span>✏️</span><span class="fs2t">Informations logement</span></div>'
-      +'<div class="fs2b">'
-      +'<input id="ii-adr" class="fi" placeholder="Adresse" value="'+(i.adresse||'')+'">'
-      +'<div style="display:flex;gap:8px"><input id="ii-et" class="fi" placeholder="Étage" value="'+(i.etage||'')+'"><input id="ii-sup" class="fi" placeholder="Superficie" value="'+(i.superficie||'')+'"></div>'
-      +'<input id="ii-cl" class="fi" type="number" placeholder="Nombre de clés" value="'+(i.nbCles||'')+'">'
+      '<div class="fsec"><div class="fsech"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg><span class="fsect">Modifier les informations</span></div>'
+      +'<div class="fsecb">'
+      +'<input id="ii-adr" class="inp" placeholder="Adresse complète" value="'+(i.adresse||'')+'">'
+      +'<div style="display:flex;gap:8px"><input id="ii-et" class="inp" placeholder="Étage" value="'+(i.etage||'')+'"><input id="ii-sup" class="inp" placeholder="Superficie" value="'+(i.superficie||'')+'"></div>'
+      +'<input id="ii-cl" class="inp" type="number" placeholder="Nombre de clés" value="'+(i.nbCles||'')+'">'
       +'<div class="sep">INTERNET</div>'
-      +'<div style="display:flex;gap:8px"><input id="ii-if" class="fi" placeholder="Fournisseur" value="'+((i.internet&&i.internet.fournisseur)||'')+'"><input id="ii-in" class="fi" placeholder="N° contrat" value="'+((i.internet&&i.internet.numero)||'')+'"></div>'
-      +'<input id="ii-id" class="fi" type="date" value="'+((i.internet&&i.internet.dateFin)||'')+'">'
+      +'<div style="display:flex;gap:8px"><input id="ii-if" class="inp" placeholder="Fournisseur" value="'+((i.internet&&i.internet.fournisseur)||'')+'"><input id="ii-in" class="inp" placeholder="N° contrat" value="'+((i.internet&&i.internet.numero)||'')+'"></div>'
+      +'<input id="ii-id" class="inp" type="date" value="'+((i.internet&&i.internet.dateFin)||'')+'">'
       +'<div class="sep">TV / ABONNEMENT</div>'
-      +'<div style="display:flex;gap:8px"><input id="ii-ta" class="fi" placeholder="Abonnement" value="'+((i.tv&&i.tv.abonnement)||'')+'"><input id="ii-tr" class="fi" placeholder="Référence" value="'+((i.tv&&i.tv.reference)||'')+'"></div>'
-      +'<input id="ii-td" class="fi" type="date" value="'+((i.tv&&i.tv.dateFin)||'')+'">'
-      +'<textarea id="ii-no" class="fi" rows="2" placeholder="Notes (code digicode, etc.)">'+(i.autresInfos||'')+'</textarea>'
-      +'<button class="bt" style="margin-top:0" onclick="aSaveInfos(\''+oid+'\')">💾 Enregistrer les informations</button>'
+      +'<div style="display:flex;gap:8px"><input id="ii-ta" class="inp" placeholder="Abonnement" value="'+((i.tv&&i.tv.abonnement)||'')+'"><input id="ii-tr" class="inp" placeholder="Référence" value="'+((i.tv&&i.tv.reference)||'')+'"></div>'
+      +'<input id="ii-td" class="inp" type="date" value="'+((i.tv&&i.tv.dateFin)||'')+'">'
+      +'<textarea id="ii-no" class="inp" rows="2" placeholder="Notes (digicode, etc.)">'+(i.autresInfos||'')+'</textarea>'
+      +'<button class="btnT" style="margin-top:0" onclick="aSaveInfos(\''+oid+'\')">Enregistrer les informations</button>'
       +'</div></div>';
   }
 }
 
-// ══ ADMIN ACTIONS ══════════════════════════════════════════════════════════════
-function gv(id){var e=document.getElementById(id);return e?e.value:'';}
+// ══ PDF UPLOAD ══════════════════════════════════════════════════════════════════
+function trigUpload(invId,ownId){
+  document.getElementById('uploadInvId').value=invId;
+  document.getElementById('uploadOwnId').value=ownId;
+  document.getElementById('pdfInput').value='';
+  document.getElementById('pdfInput').click();
+}
+async function doUpload(){
+  var file=document.getElementById('pdfInput').files[0];
+  var invId=document.getElementById('uploadInvId').value;
+  if(!file||!invId)return;
+  if(file.size>10*1024*1024){toast('Fichier trop grand (max 10MB)','err');return;}
+  toast('Upload en cours...','');
+  var fd=new FormData();fd.append('file',file);
+  try{
+    var r=await apiUpload('/invoice-upload/'+invId,fd);
+    // Mettre à jour dans ownerData
+    if(ownerData&&ownerData.invoices){
+      var idx=ownerData.invoices.findIndex(function(i){return i.id===invId;});
+      if(idx!==-1)ownerData.invoices[idx].pdfFile=r.pdfFile;
+    }
+    toast('PDF uploadé avec succès','ok');
+    oSwitch('inv');
+  }catch(e){toast(e.message,'err');}
+}
 
+// ══ ADMIN ACTIONS ══════════════════════════════════════════════════════════════
 async function aAddInv(oid){
   var m=gv('ai-m'),n=gv('ai-n'),a=parseFloat(gv('ai-a'))||0,d=gv('ai-d'),s=gv('ai-s');
   if(!m||!n){toast('Remplissez la période et le numéro','err');return;}
-  try{
-    var inv=await api('POST','/invoices',{ownerId:oid,month:m,numero:n,amount:a,date:d,status:s});
-    ownerData.invoices.unshift(inv);toast('Facture envoyée ✓','ok');oTab('inv');
-  }catch(e){toast(e.message,'err');}
+  try{var inv=await api('POST','/invoices',{ownerId:oid,month:m,numero:n,amount:a,date:d,status:s});
+  ownerData.invoices.unshift(inv);toast('Facture envoyée','ok');oSwitch('inv');}catch(e){toast(e.message,'err');}
 }
 async function aDelInv(id,oid){
   if(!confirm('Supprimer cette facture ?'))return;
-  try{
-    await api('DELETE','/invoices/'+id);
-    ownerData.invoices=ownerData.invoices.filter(function(i){return i.id!==id;});
-    toast('Supprimée','ok');oTab('inv');
-  }catch(e){toast(e.message,'err');}
+  try{await api('DELETE','/invoices/'+id);ownerData.invoices=ownerData.invoices.filter(function(i){return i.id!==id;});toast('Supprimée','ok');oSwitch('inv');}catch(e){toast(e.message,'err');}
 }
 async function aAddRev(oid){
-  var m=gv('ar-m');
-  if(!m){toast('Indiquez le mois','err');return;}
-  try{
-    var rev=await api('POST','/revenues',{ownerId:oid,mois:m,annee:parseInt(gv('ar-y'))||2025,revenuBrut:parseFloat(gv('ar-b'))||0,revenuNet:parseFloat(gv('ar-n'))||0,tauxOccupation:parseInt(gv('ar-oc'))||0,nbLocataires:parseInt(gv('ar-l'))||0,nbNuits:parseInt(gv('ar-ni'))||0});
-    ownerData.revenues.push(rev);toast('Revenus publiés ✓','ok');oTab('rev');
-  }catch(e){toast(e.message,'err');}
+  var m=gv('ar-m');if(!m){toast('Indiquez le mois','err');return;}
+  try{var r=await api('POST','/revenues',{ownerId:oid,mois:m,annee:parseInt(gv('ar-y'))||2025,revenuBrut:parseFloat(gv('ar-b'))||0,revenuNet:parseFloat(gv('ar-n'))||0,tauxOccupation:parseInt(gv('ar-oc'))||0,nbLocataires:parseInt(gv('ar-l'))||0,nbNuits:parseInt(gv('ar-ni'))||0});
+  ownerData.revenues.push(r);toast('Revenus publiés','ok');oSwitch('rev');}catch(e){toast(e.message,'err');}
 }
 async function aDelRev(id,oid){
   if(!confirm('Supprimer ces revenus ?'))return;
-  try{
-    await api('DELETE','/revenues/'+id);
-    ownerData.revenues=ownerData.revenues.filter(function(r){return r.id!==id;});
-    toast('Supprimés','ok');oTab('rev');
-  }catch(e){toast(e.message,'err');}
+  try{await api('DELETE','/revenues/'+id);ownerData.revenues=ownerData.revenues.filter(function(r){return r.id!==id;});toast('Supprimés','ok');oSwitch('rev');}catch(e){toast(e.message,'err');}
 }
 async function aAddMaint(oid){
-  try{
-    var m=await api('POST','/maintenances',{ownerId:oid,type:gv('am-t'),date:gv('am-d'),statut:gv('am-s'),technicien:gv('am-te'),note:gv('am-n')});
-    ownerData.maintenances.unshift(m);toast('Entretien ajouté ✓','ok');oTab('maint');
-  }catch(e){toast(e.message,'err');}
+  try{var m=await api('POST','/maintenances',{ownerId:oid,type:gv('am-t'),date:gv('am-d'),statut:gv('am-s'),technicien:gv('am-te'),note:gv('am-n')});
+  ownerData.maintenances.unshift(m);toast('Entretien ajouté','ok');oSwitch('maint');}catch(e){toast(e.message,'err');}
 }
 async function aDelMaint(id,oid){
-  if(!confirm('Supprimer cet entretien ?'))return;
-  try{
-    await api('DELETE','/maintenances/'+id);
-    ownerData.maintenances=ownerData.maintenances.filter(function(m){return m.id!==id;});
-    toast('Supprimé','ok');oTab('maint');
-  }catch(e){toast(e.message,'err');}
+  if(!confirm('Supprimer ?'))return;
+  try{await api('DELETE','/maintenances/'+id);ownerData.maintenances=ownerData.maintenances.filter(function(m){return m.id!==id;});toast('Supprimé','ok');oSwitch('maint');}catch(e){toast(e.message,'err');}
 }
 async function aSaveInfos(oid){
-  var body={ownerId:oid,adresse:gv('ii-adr'),etage:gv('ii-et'),superficie:gv('ii-sup'),nbCles:parseInt(gv('ii-cl'))||0,
+  var b={ownerId:oid,adresse:gv('ii-adr'),etage:gv('ii-et'),superficie:gv('ii-sup'),nbCles:parseInt(gv('ii-cl'))||0,
     internet:{fournisseur:gv('ii-if'),numero:gv('ii-in'),dateFin:gv('ii-id')},
     tv:{abonnement:gv('ii-ta'),reference:gv('ii-tr'),dateFin:gv('ii-td')},
     autresInfos:gv('ii-no')};
-  try{
-    var inf=await api('PUT','/infos',body);
-    ownerData.infos=inf;toast('Informations enregistrées ✓','ok');
-  }catch(e){toast(e.message,'err');}
+  try{var inf=await api('PUT','/infos',b);ownerData.infos=inf;toast('Informations enregistrées','ok');}catch(e){toast(e.message,'err');}
 }
 
 // ══ INIT ═══════════════════════════════════════════════════════════════════════
