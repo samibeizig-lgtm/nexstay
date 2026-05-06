@@ -423,6 +423,15 @@ async function startApp(){
   // Always remove admin button first (prevents it showing for owners after admin session)
   var oldAdmin=document.getElementById('nb-admin');
   if(oldAdmin)oldAdmin.parentNode.removeChild(oldAdmin);
+
+  // Show/hide tabs based on role
+  var ownerOnlyTabs=['nb-revenues','nb-invoices','nb-maintenance','nb-infos','nb-calendar','nb-dashboard'];
+  var adminOnlyTabs=[];
+  ownerOnlyTabs.forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)el.style.display=S.user.role==='admin'?'none':'flex';
+  });
+
   if(S.user.role==='admin'){
     var nav=document.getElementById('nav');
     var b=document.createElement('button');
@@ -941,7 +950,9 @@ function renderOTab(t){
       +'</div>'
       +(calUrl2?'<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--gbg);border:1px solid rgba(61,140,110,0.2);border-radius:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--gr);flex-shrink:0"></div><span style="font-size:12px;color:var(--gr);font-weight:600">Lien iCal configuré</span></div>':'')
       +'<button class="btnT" style="margin-top:0" onclick="saveOwnerCalUrl()">Enregistrer le lien iCal</button>'
-      +'</div></div>';
+      +'</div></div>'
+      +'<div id="ownerCalPreview" style="margin-top:12px"></div>';
+    if(calUrl2)loadOwnerCalPreview(calUrl2);
   }
 }
 
@@ -1145,7 +1156,9 @@ function renderOTab(t){
       +'</div>'
       +(calUrl2?'<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--gbg);border:1px solid rgba(61,140,110,0.2);border-radius:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--gr);flex-shrink:0"></div><span style="font-size:12px;color:var(--gr);font-weight:600">Lien iCal configuré</span></div>':'')
       +'<button class="btnT" style="margin-top:0" onclick="saveOwnerCalUrl()">Enregistrer le lien iCal</button>'
-      +'</div></div>';
+      +'</div></div>'
+      +'<div id="ownerCalPreview" style="margin-top:12px"></div>';
+    if(calUrl2)loadOwnerCalPreview(calUrl2);
   }
 }
 
@@ -1238,6 +1251,65 @@ async function aDelMaint(id,oid){
   if(!confirm('Supprimer ?'))return;
   try{await api('DELETE','/maintenances/'+id);ownerData.maintenances=ownerData.maintenances.filter(function(m){return m.id!==id;});toast('Supprimé','ok');oSwitch('maint');}catch(e){toast(e.message,'err');}
 }
+async function loadOwnerCalPreview(calUrl){
+  var container=document.getElementById('ownerCalPreview');
+  if(!container)return;
+  container.innerHTML='<div class="spin"></div>';
+  var events=[];
+  try{
+    var proxyUrl='https://api.allorigins.win/raw?url='+encodeURIComponent(calUrl);
+    var resp=await fetch(proxyUrl);
+    var ical=await resp.text();
+    events=parseICal(ical);
+  }catch(e){
+    container.innerHTML='<div style="background:var(--rbg);border:1px solid rgba(192,57,43,0.15);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--re)">Impossible de charger le calendrier. Vérifiez le lien iCal.</div>';
+    return;
+  }
+  var now=new Date();
+  var year=now.getFullYear();
+  var month=now.getMonth();
+  var monthNames=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  var firstDay=(new Date(year,month,1).getDay()+6)%7;
+  var daysInMonth=new Date(year,month+1,0).getDate();
+  var h='<div style="background:var(--w);border:1px solid var(--bd);border-radius:16px;overflow:hidden;box-shadow:var(--sh)">';
+  h+='<div style="background:linear-gradient(135deg,var(--T),var(--TD));padding:13px 16px;display:flex;align-items:center;justify-content:space-between">';
+  h+='<span style="color:#fff;font-family:var(--fs);font-size:18px;font-weight:700">'+monthNames[month]+' '+year+'</span>';
+  h+='<span style="background:rgba(255,255,255,0.2);color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600">'+events.length+' rés.</span>';
+  h+='</div>';
+  h+='<div style="display:grid;grid-template-columns:repeat(7,1fr);background:var(--bg);padding:6px 4px 2px">';
+  ['Lu','Ma','Me','Je','Ve','Sa','Di'].forEach(function(d){
+    h+='<div style="text-align:center;font-size:10px;font-weight:700;color:var(--t2);padding-bottom:4px">'+d+'</div>';
+  });
+  h+='</div>';
+  h+='<div style="display:grid;grid-template-columns:repeat(7,1fr);padding:2px 4px 8px">';
+  for(var i=0;i<firstDay;i++) h+='<div></div>';
+  for(var d=1;d<=daysInMonth;d++){
+    var ds=year+'-'+(month+1<10?'0':'')+(month+1)+'-'+(d<10?'0':'')+d;
+    var occ=events.some(function(e){return ds>=e.start&&ds<e.end;});
+    var today=d===now.getDate();
+    h+='<div style="text-align:center;padding:3px 0">'
+      +'<div style="width:28px;height:28px;border-radius:50%;background:'+(occ?'var(--T)':'transparent')+';color:'+(occ?'#fff':'var(--tx)')+';display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:11px;font-weight:'+(today?'700':'400')+';border:'+(today?'2px solid var(--T)':'none')+'">'
+      +d+'</div></div>';
+  }
+  h+='</div>';
+  // Upcoming reservations
+  var upcoming=events.filter(function(e){return new Date(e.end)>=now;}).slice(0,3);
+  if(upcoming.length>0){
+    h+='<div style="border-top:1px solid var(--b2);padding:10px 14px">';
+    h+='<div style="font-size:10px;font-weight:700;color:var(--t2);letter-spacing:.8px;margin-bottom:8px">PROCHAINES RÉSERVATIONS</div>';
+    upcoming.forEach(function(e){
+      var nights=Math.round((new Date(e.end)-new Date(e.start))/(864e5));
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--b2);font-size:12px">'
+        +'<span style="color:var(--tx);font-weight:500">'+(e.summary||'Réservation')+'</span>'
+        +'<span style="color:var(--t2)">'+e.start+' · '+nights+'n</span>'
+        +'</div>';
+    });
+    h+='</div>';
+  }
+  h+='</div>';
+  container.innerHTML=h;
+}
+
 async function saveOwnerCalUrl(){
   var oid=(ownerData&&ownerData.owner)?ownerData.owner.id:null;
   if(!oid){toast('Erreur: propriétaire non trouvé','err');return;}
