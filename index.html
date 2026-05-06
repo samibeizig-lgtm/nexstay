@@ -413,7 +413,10 @@ function logout(){localStorage.removeItem('nxt');S.user=null;S.token=null;docume
 async function startApp(){
   document.getElementById('auth').style.display='none';
   document.getElementById('app').style.display='flex';
-  if(S.user.role==='admin'&&!document.getElementById('nb-admin')){
+  // Always remove admin button first (prevents it showing for owners after admin session)
+  var oldAdmin=document.getElementById('nb-admin');
+  if(oldAdmin)oldAdmin.parentNode.removeChild(oldAdmin);
+  if(S.user.role==='admin'){
     var nav=document.getElementById('nav');
     var b=document.createElement('button');
     b.className='nb';b.id='nb-admin';b.onclick=function(){goTab('admin');};
@@ -630,11 +633,11 @@ async function rAdmin(c){
     +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div><div class="sval">'+(stats.totalInvoices||0)+'</div><div class="slbl">Factures totales</div></div></div>'
     +'<div class="sgrid"><div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div><div class="sval" style="color:var(--T)">'+(stats.pendingInvoices||0)+'</div><div class="slbl">Factures en attente</div></div>'
     +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div><div class="sval" style="color:var(--am)">'+(stats.maintenancePending||0)+'</div><div class="slbl">Entretiens planifiés</div></div></div>'
-    +'<div class="tab-pills" id="agTabs">'
-    +'<button class="tab-pill active" id="ag-prop" onclick="adminGTab(&quot;prop&quot;)">Propriétaires</button>'
-    +'<button class="tab-pill" id="ag-inv" onclick="adminGTab(&quot;inv&quot;)">Factures</button>'
-    +'<button class="tab-pill" id="ag-rev" onclick="adminGTab(&quot;rev&quot;)">Revenus</button>'
-    +'<button class="tab-pill" id="ag-maint" onclick="adminGTab(&quot;maint&quot;)">Entretiens</button>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px" id="agTabs">'
+    +'<button id="ag-prop" onclick="adminGTab(&quot;prop&quot;)" style="padding:12px 8px;border-radius:12px;border:1.5px solid rgba(193,127,90,0.3);background:var(--T);color:#fff;font-size:13px;font-weight:700;font-family:var(--f);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><svg viewBox=\"0 0 24 24\" width=\"15\" height=\"15\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M20 21a8 8 0 1 0-16 0\"/></svg>Propriétaires</button>'
+    +'<button id="ag-inv" onclick="adminGTab(&quot;inv&quot;)" style="padding:12px 8px;border-radius:12px;border:1.5px solid var(--border);background:var(--w);color:var(--tx);font-size:13px;font-weight:700;font-family:var(--f);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><svg viewBox=\"0 0 24 24\" width=\"15\" height=\"15\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"/></svg>Factures</button>'
+    +'<button id="ag-rev" onclick="adminGTab(&quot;rev&quot;)" style="padding:12px 8px;border-radius:12px;border:1.5px solid var(--border);background:var(--w);color:var(--tx);font-size:13px;font-weight:700;font-family:var(--f);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><svg viewBox=\"0 0 24 24\" width=\"15\" height=\"15\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"18\" y1=\"20\" x2=\"18\" y2=\"10\"/><line x1=\"12\" y1=\"20\" x2=\"12\" y2=\"4\"/><line x1=\"6\" y1=\"20\" x2=\"6\" y2=\"14\"/></svg>Revenus</button>'
+    +'<button id="ag-maint" onclick="adminGTab(&quot;maint&quot;)" style="padding:12px 8px;border-radius:12px;border:1.5px solid var(--border);background:var(--w);color:var(--tx);font-size:13px;font-weight:700;font-family:var(--f);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><svg viewBox=\"0 0 24 24\" width=\"15\" height=\"15\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z\"/></svg>Entretiens</button>'
     +'</div>'
     +'<div id="agBody"></div>'
     +'</div>';
@@ -644,7 +647,14 @@ async function rAdmin(c){
 async function adminGTab(tab){
   ['prop','inv','rev','maint'].forEach(function(t){
     var el=document.getElementById('ag-'+t);
-    if(el)el.classList.toggle('active',t===tab);
+    if(!el)return;
+    if(t===tab){
+      el.style.background='var(--T)';el.style.color='#fff';
+      el.style.borderColor='rgba(193,127,90,0.3)';
+    } else {
+      el.style.background='var(--w)';el.style.color='var(--tx)';
+      el.style.borderColor='var(--border)';
+    }
   });
   var body=document.getElementById('agBody');
   if(!body)return;
@@ -653,18 +663,22 @@ async function adminGTab(tab){
 
   if(tab==='prop'){
     if(!owners.length){body.innerHTML='<p style="color:var(--t2);font-size:13px;margin-top:10px">Aucun propriétaire inscrit</p>';return;}
-    body.innerHTML='<h3 class="stitle">Propriétaires ('+owners.length+')</h3>'
-      +owners.map(function(o){
-        return'<div class="ocard" onclick="openOwner(this.dataset.id)" data-id="'+o.id+'">'
-          +'<div class="ohead"><div class="oavt"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div>'
-          +'<div class="oinf"><div class="oname">'+o.prenom+' '+o.nom+'</div><div class="oemail">'+o.email+'</div></div>'
-          +'<div class="ochev"><svg viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div></div>'
-          +'<div class="opills">'
-          +'<div class="opill"><div class="opval">'+(o.ville||'—')+'</div><div class="oplbl">Ville</div></div>'
-          +'<div class="opill"><div class="opval">'+(o.typeLogement||'—')+'</div><div class="oplbl">Bien</div></div>'
-          +'<div class="opill"><div class="opval" style="font-size:10px">'+(o.tel||'—')+'</div><div class="oplbl">Tél</div></div>'
-          +'</div></div>';
-      }).join('');
+    var propDiv=document.createElement('div');
+    propDiv.innerHTML='<h3 class="stitle">Propriétaires ('+owners.length+')</h3>';
+    owners.forEach(function(o,i){
+      var card=document.createElement('div');
+      card.className='ocard';
+      card.innerHTML='<div class="ohead"><div class="oavt"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--T);stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div>'
+        +'<div class="oinf"><div class="oname">'+o.prenom+' '+o.nom+'</div><div class="oemail">'+o.email+'</div></div>'
+        +'<div class="ochev"><svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:var(--t3);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round"><polyline points="9,18 15,12 9,6"/></svg></div></div>'
+        +'<div class="opills"><div class="opill"><div class="opval">'+(o.ville||'—')+'</div><div class="oplbl">Ville</div></div>'
+        +'<div class="opill"><div class="opval">'+(o.typeLogement||'—')+'</div><div class="oplbl">Bien</div></div>'
+        +'<div class="opill"><div class="opval" style="font-size:10px">'+(o.tel||'—')+'</div><div class="oplbl">Tél</div></div></div>';
+      (function(owner){card.onclick=function(){openOwner(owner.id);};})(o);
+      propDiv.appendChild(card);
+    });
+    body.innerHTML='';
+    body.appendChild(propDiv);
   }
 
   if(tab==='inv'){
@@ -684,7 +698,7 @@ async function adminGTab(tab){
           +'<div class="inv-amount">'+(inv.amount||0).toLocaleString()+' DT</div>'
           +'<span class="badge '+(paid?'badge-green':'badge-amber')+'" style="margin-top:3px">'+(paid?'✓ Payée':'⏳ Attente')+'</span>'
           +'</div></div>'
-          +'<button data-id="'+inv.id+'" onclick="agDelInv(this.dataset.id)" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.15);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0;font-size:14px">🗑</button>'
+          +'<button onclick="agDelInv(&quot;'+inv.id+'&quot;)" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.15);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0;font-size:14px">🗑</button>'
           +'</div>';
       });
       body.innerHTML=h;
@@ -707,7 +721,7 @@ async function adminGTab(tab){
           +'<span style="font-family:var(--fs);font-size:18px;font-weight:700;color:var(--T)">'+r.revenuNet.toLocaleString()+' DT</span>'
           +'<span style="font-size:11px;color:var(--t2)">'+r.nbLocataires+' loc. · '+r.nbNuits+' nuits</span>'
           +'</div></div>'
-          +'<button data-id="'+r.id+'" onclick="agDelRev(this.dataset.id)" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.15);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0;font-size:14px">🗑</button>'
+          +'<button onclick="agDelRev(&quot;'+r.id+'&quot;)" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.15);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0;font-size:14px">🗑</button>'
           +'</div>';
       });
       body.innerHTML=h;
@@ -738,7 +752,7 @@ async function adminGTab(tab){
           +'<p class="main-note">'+(m.note||'')+'</p>'
           +(m.technicien?'<div class="main-tech"><span class="tech-chip">👤 '+m.technicien+'</span></div>':'')
           +'</div>'
-          +'<button data-id="'+m.id+'" onclick="agDelMaint(this.dataset.id)" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.15);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0;font-size:14px;margin-top:3px">🗑</button>'
+          +'<button onclick="agDelMaint(&quot;'+m.id+'&quot;)" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.15);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0;font-size:14px;margin-top:3px">🗑</button>'
           +'</div>';
       });
       body.innerHTML=h;
