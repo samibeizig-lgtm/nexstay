@@ -630,10 +630,10 @@ async function rAdmin(c){
     +'<div class="sc"><div class="si">🔧</div><div class="sv" style="color:var(--amber)">'+(stats.maintenancePending||0)+'</div><div class="sl">Entretiens planifiés</div></div>'
     +'</div>'
     +'<div class="tab-pills" style="margin-top:8px">'
-    +'<button class="tab-pill active" id="ag-prop" onclick="adminGTab('prop')">Propriétaires</button>'
-    +'<button class="tab-pill" id="ag-inv" onclick="adminGTab('inv')">Factures</button>'
-    +'<button class="tab-pill" id="ag-rev" onclick="adminGTab('rev')">Revenus</button>'
-    +'<button class="tab-pill" id="ag-maint" onclick="adminGTab('maint')">Entretiens</button>'
+    +'<button class="tab-pill active" id="ag-prop" onclick="adminGTab(&quot;prop&quot;)">Propriétaires</button>'
+    +'<button class="tab-pill" id="ag-inv" onclick="adminGTab(&quot;inv&quot;)">Factures</button>'
+    +'<button class="tab-pill" id="ag-rev" onclick="adminGTab(&quot;rev&quot;)">Revenus</button>'
+    +'<button class="tab-pill" id="ag-maint" onclick="adminGTab(&quot;maint&quot;)">Entretiens</button>'
     +'</div>'
     +'<div id="agBody"></div>'
     +'</div>';
@@ -653,8 +653,9 @@ async function adminGTab(tab){
 
   if(tab==='prop'){
     if(!owners.length){body.innerHTML='<p style="color:var(--text2);font-size:13px;margin-top:10px">Aucun propriétaire inscrit</p>';return;}
-    body.innerHTML=owners.map(function(o){
-      return'<div class="owner-card" onclick="openOwner(''+o.id+'')">'
+    var h='';
+    owners.forEach(function(o){
+      h+='<div class="owner-card" style="cursor:pointer" onclick="openOwner(this.dataset.id)" data-id="'+o.id+'">'
         +'<div class="owner-card-head">'
         +'<div class="owner-avatar">👤</div>'
         +'<div class="owner-info"><div class="owner-name">'+o.prenom+' '+o.nom+'</div><div class="owner-email">'+o.email+'</div></div>'
@@ -665,16 +666,17 @@ async function adminGTab(tab){
         +'<div class="owner-stat"><div class="owner-stat-val">'+(o.typeLogement||'—')+'</div><div class="owner-stat-label">Bien</div></div>'
         +'<div class="owner-stat"><div class="owner-stat-val" style="font-size:10px">'+(o.tel||'—')+'</div><div class="owner-stat-label">Tél</div></div>'
         +'</div></div>';
-    }).join('');
+    });
+    body.innerHTML=h;
   }
 
   if(tab==='inv'){
     try{
       var invs=await api('GET','/all-invoices');
-      var s='<h3 class="section-title">Factures ('+invs.length+')</h3>';
+      var h='<h3 class="section-title">Factures ('+invs.length+')</h3>';
       invs.forEach(function(inv){
         var paid=inv.status==='payée';
-        s+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">'
+        h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">'
           +'<div class="inv-item" style="flex:1;cursor:default">'
           +'<div class="inv-icon" style="background:'+(paid?'var(--green-bg)':'var(--amber-bg)')+'">'+( paid?'✅':'⏳')+'</div>'
           +'<div class="inv-meta">'
@@ -685,19 +687,19 @@ async function adminGTab(tab){
           +'<div class="inv-amount">'+(inv.amount||0).toLocaleString()+' DT</div>'
           +'<span class="badge '+(paid?'badge-green':'badge-amber')+'" style="margin-top:3px">'+(paid?'✓ Payée':'⏳ Attente')+'</span>'
           +'</div></div>'
-          +'<button onclick="agDelInv(''+inv.id+'')" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.2);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0">🗑</button>'
+          +'<button data-id="'+inv.id+'" onclick="agDelInv(this.dataset.id)" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.2);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0;font-size:14px">🗑</button>'
           +'</div>';
       });
-      body.innerHTML=s||'<p style="color:var(--text2);font-size:13px">Aucune facture</p>';
+      body.innerHTML=h;
     }catch(e){body.innerHTML='<p style="color:var(--red)">Erreur chargement</p>';}
   }
 
   if(tab==='rev'){
     try{
       var revs=await api('GET','/all-revenues');
-      var s='<h3 class="section-title">Revenus ('+revs.length+')</h3>';
+      var h='<h3 class="section-title">Revenus ('+revs.length+')</h3>';
       revs.forEach(function(r){
-        s+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">'
+        h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">'
           +'<div class="rev-hero" style="flex:1;margin-bottom:0;padding:13px">'
           +'<div style="font-size:11px;color:var(--text2);font-weight:600;margin-bottom:3px">'+r.ownerName+'</div>'
           +'<div style="display:flex;justify-content:space-between;align-items:center">'
@@ -708,10 +710,10 @@ async function adminGTab(tab){
           +'<span style="font-family:var(--font-serif);font-size:18px;font-weight:700;color:var(--terra)">'+r.revenuNet.toLocaleString()+' DT</span>'
           +'<span style="font-size:11px;color:var(--text2)">'+r.nbLocataires+' loc. · '+r.nbNuits+' nuits</span>'
           +'</div></div>'
-          +'<button onclick="agDelRev(''+r.id+'')" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.2);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0">🗑</button>'
+          +'<button data-id="'+r.id+'" onclick="agDelRev(this.dataset.id)" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.2);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0;font-size:14px">🗑</button>'
           +'</div>';
       });
-      body.innerHTML=s||'<p style="color:var(--text2);font-size:13px">Aucun revenu</p>';
+      body.innerHTML=h;
     }catch(e){body.innerHTML='<p style="color:var(--red)">Erreur chargement</p>';}
   }
 
@@ -720,31 +722,29 @@ async function adminGTab(tab){
       var maints=await api('GET','/all-maintenances');
       var done=maints.filter(function(m){return m.statut==='effectué';}).length;
       var plan=maints.filter(function(m){return m.statut==='planifié';}).length;
-      var s='<div class="stats-row" style="margin-bottom:12px">'
+      var h='<div class="stats-row" style="margin-bottom:12px">'
         +'<div class="sc"><div class="si">✅</div><div class="sv">'+done+'</div><div class="sl">Effectués</div></div>'
         +'<div class="sc"><div class="si">📅</div><div class="sv">'+plan+'</div><div class="sl">Planifiés</div></div>'
-        +'</div>'
-        +'<h3 class="section-title">Entretiens ('+maints.length+')</h3>';
+        +'</div><h3 class="section-title">Entretiens ('+maints.length+')</h3>';
       maints.forEach(function(m){
         var d=m.statut==='effectué';
         var ic={Ménage:'🧹',Plomberie:'🔧','Électricité':'⚡',Peinture:'🎨',Climatisation:'❄️',Autre:'🔨'};
-        s+='<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:9px">'
+        h+='<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:9px">'
           +'<div class="main-item" style="flex:1">'
-          +'<div class="main-head">'
-          +'<div class="main-icon-wrap">'
+          +'<div class="main-head"><div class="main-icon-wrap">'
           +'<div class="main-icon" style="background:'+(d?'var(--green-bg)':'var(--terra-light)')+'">'+(ic[m.type]||'🔨')+'</div>'
           +'<div><div class="main-type">'+m.type+'</div>'
-          +'<div class="main-date">'+(m.date||'').slice(0,10)+' · <span style="color:var(--terra);font-weight:600">'+m.ownerName+'</span></div>'
+          +'<div class="main-date">'+(m.date||'').slice(0,10)+' · <b style="color:var(--terra)">'+m.ownerName+'</b></div>'
           +'</div></div>'
           +'<span class="badge '+(d?'badge-green':'badge-amber')+'">'+(d?'✓ Fait':'⏳ Planifié')+'</span>'
           +'</div>'
           +'<p class="main-note">'+(m.note||'')+'</p>'
           +(m.technicien?'<div class="main-tech"><span class="tech-chip">👤 '+m.technicien+'</span></div>':'')
           +'</div>'
-          +'<button onclick="agDelMaint(''+m.id+'')" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.2);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0;margin-top:3px">🗑</button>'
+          +'<button data-id="'+m.id+'" onclick="agDelMaint(this.dataset.id)" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.2);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0;font-size:14px;margin-top:3px">🗑</button>'
           +'</div>';
       });
-      body.innerHTML=s||'<p style="color:var(--text2);font-size:13px">Aucun entretien</p>';
+      body.innerHTML=h;
     }catch(e){body.innerHTML='<p style="color:var(--red)">Erreur chargement</p>';}
   }
 }
