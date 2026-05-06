@@ -464,12 +464,33 @@ function nextStep(){
   document.getElementById('reg2Card').style.display='block';
 }
 async function doRegister(){
-  try{var d=await api('POST','/auth/register',Object.assign({},S.authTmp,{adresse:gv('rad'),ville:gv('rvi'),typeLogement:gv('rty')}));
-  S.user=d.user;S.token=d.token;localStorage.setItem('nxt',d.token);startApp();}catch(e){toast(e.message,'err');}
+  var btn=document.querySelector('#reg2Card button');
+  if(btn){btn.textContent='Création...';btn.disabled=true;}
+  try{
+    var body=Object.assign({},S.authTmp,{adresse:gv('rad'),ville:gv('rvi'),typeLogement:gv('rty')});
+    var d=await api('POST','/auth/register',body);
+    S.user=d.user;S.token=d.token;
+    localStorage.setItem('nxt',d.token);
+    startApp();
+  }catch(e){
+    toast(e.message||'Erreur inscription','err');
+    if(btn){btn.textContent='Créer mon compte';btn.disabled=false;}
+  }
 }
 async function doLogin(){
-  try{var d=await api('POST','/auth/login',{email:gv('le'),password:gv('lp')});
-  S.user=d.user;S.token=d.token;localStorage.setItem('nxt',d.token);startApp();}catch(e){toast(e.message,'err');}
+  var email=gv('le'),pwd=gv('lp');
+  if(!email||!pwd){toast('Entrez votre email et mot de passe','err');return;}
+  var btn=document.querySelector('#loginCard button');
+  if(btn){btn.textContent='Connexion...';btn.disabled=true;}
+  try{
+    var d=await api('POST','/auth/login',{email:email,password:pwd});
+    S.user=d.user;S.token=d.token;
+    localStorage.setItem('nxt',d.token);
+    startApp();
+  }catch(e){
+    toast(e.message||'Erreur de connexion','err');
+    if(btn){btn.textContent='Se connecter';btn.disabled=false;}
+  }
 }
 async function tryAuto(){
   var t=localStorage.getItem('nxt');if(!t)return;
@@ -859,7 +880,10 @@ function renderOTab(t){
   var oid=(d.owner||{}).id||'';
 
   if(t==='inv'){
-    var invHtml='<div class="fsec"><div class="fsech"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--T);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span class="fsect">Nouvelle facture</span></div>'
+    // Build form
+    var form='<div class="fsec"><div class="fsech">'
+      +'<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--T);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+      +'<span class="fsect">Nouvelle facture</span></div>'
       +'<div class="fsecb">'
       +'<input id="ai-m" class="inp" placeholder="Période (ex: Mai 2025)">'
       +'<input id="ai-n" class="inp" placeholder="Numéro (ex: F-2025-005)">'
@@ -868,28 +892,31 @@ function renderOTab(t){
       +'<label style="border:1.5px dashed var(--TM);border-radius:11px;padding:14px;background:var(--TL);cursor:pointer;text-align:center;display:block">'
       +'<svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:var(--T);stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round;display:block;margin:0 auto 5px"><polyline points="16,16 12,12 8,16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>'
       +'<span id="newPdfLabel" style="font-size:12px;color:var(--T);font-weight:600;display:block">Joindre le PDF de la facture</span>'
-      +'<span style="font-size:10px;color:var(--t2)">Format PDF uniquement — max 10MB</span>'
+      +'<span style="font-size:10px;color:var(--t2)">Format PDF — max 10MB</span>'
       +'<input type="file" id="pdfNewInput" accept=".pdf,application/pdf" style="display:none" onchange="onNewPdfSelected()">'
       +'</label>'
-      +'<button class="btnT" style="margin-top:0" onclick="aAddInv(OIDTOKEN)">Envoyer la facture</button>'
-      +'</div></div>'
-      +'<h3 class="stitle">Factures (COUNTTOKEN)</h3>';
-    invHtml=invHtml.replace('OIDTOKEN',"'"+oid+"'").replace('COUNTTOKEN',invs.length);
-    var listHtml=invs.length===0?'<p style="color:var(--t2);font-size:13px;padding:8px 0">Aucune facture</p>':'';
+      +'<button class="btnT" style="margin-top:0" onclick="aAddInv(OID)">Envoyer la facture</button>'
+      +'</div></div>';
+    form=form.replace('OID',"'"+oid+"'");
+
+    var listTitle='<h3 class="stitle">Factures ('+invs.length+')</h3>';
+    var listEmpty=invs.length===0?'<p style="color:var(--t2);font-size:13px;padding:8px 0">Aucune facture</p>':'';
+    var listItems='';
     invs.forEach(function(inv){
       var paid=inv.status==='payée';
-      listHtml+='<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">'
+      var pdfBadge=inv.pdfFile?'<span class="bdg bdg-g" style="font-size:9px;padding:1px 5px;margin-left:4px">PDF</span>':'';
+      var iid=inv.id;
+      listItems+='<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">'
         +'<div class="icard" style="flex:1">'
-        +'<div class="iico" style="background:'+(paid?'var(--gbg)':'var(--abg)')+'"><svg viewBox="0 0 24 24" style="stroke:'+(paid?'var(--gr)':'var(--am)')+';width:17px;height:17px;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>'
-        +'<div class="imeta"><div class="iname">'+(inv.month||inv.mois)+'</div>'
-        +'<div class="inum">'+inv.numero+(inv.pdfFile?' <span class="bdg bdg-g" style="font-size:9px;padding:1px 5px">PDF</span>':'')+'</div></div>'
+        +'<div class="iico" style="background:'+(paid?'var(--gbg)':'var(--abg)')+';"><svg viewBox="0 0 24 24" style="stroke:'+(paid?'var(--gr)':'var(--am)')+';width:17px;height:17px;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>'
+        +'<div class="imeta"><div class="iname">'+(inv.month||inv.mois)+'</div><div class="inum">'+inv.numero+pdfBadge+'</div></div>'
         +'<div style="text-align:right"><div class="iamt">'+(inv.amount||0).toLocaleString()+' DT</div>'
         +'<span class="bdg '+(paid?'bdg-g':'bdg-a')+'" style="margin-top:3px">'+(paid?'Payée':'En attente')+'</span></div>'
         +'</div>'
-        +'<button class="dbtn" onclick="aDelInv(\''+inv.id+'\',\''+oid+'\')">'+ico('del')+'</button>'
+        +'<button class="dbtn" onclick="aDelInv(''+iid+'',''+oid+'')" title="Supprimer">'+ico('del')+'</button>'
         +'</div>';
     });
-    body.innerHTML=invHtml+listHtml+'<input type="hidden" id="uploadOwnId" value="'+oid+'">';
+    body.innerHTML=form+listTitle+listEmpty+listItems+'<input type="hidden" id="uploadOwnId" value="'+oid+'">';
   }
   if(t==='rev'){
     body.innerHTML=
