@@ -663,22 +663,28 @@ async function adminGTab(tab){
 
   if(tab==='prop'){
     if(!owners.length){body.innerHTML='<p style="color:var(--t2);font-size:13px;margin-top:10px">Aucun propriétaire inscrit</p>';return;}
-    var propDiv=document.createElement('div');
-    propDiv.innerHTML='<h3 class="stitle">Propriétaires ('+owners.length+')</h3>';
+    // Store owners globally for click access
+    window._curOwners=owners;
+    var h='<h3 class="stitle">Propriétaires ('+owners.length+')</h3>';
     owners.forEach(function(o,i){
-      var card=document.createElement('div');
-      card.className='ocard';
-      card.innerHTML='<div class="ohead"><div class="oavt"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--T);stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div>'
+      h+='<div class="ocard" data-idx="'+i+'" style="cursor:pointer">'
+        +'<div class="ohead"><div class="oavt"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--T);stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div>'
         +'<div class="oinf"><div class="oname">'+o.prenom+' '+o.nom+'</div><div class="oemail">'+o.email+'</div></div>'
         +'<div class="ochev"><svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:var(--t3);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round"><polyline points="9,18 15,12 9,6"/></svg></div></div>'
         +'<div class="opills"><div class="opill"><div class="opval">'+(o.ville||'—')+'</div><div class="oplbl">Ville</div></div>'
         +'<div class="opill"><div class="opval">'+(o.typeLogement||'—')+'</div><div class="oplbl">Bien</div></div>'
-        +'<div class="opill"><div class="opval" style="font-size:10px">'+(o.tel||'—')+'</div><div class="oplbl">Tél</div></div></div>';
-      (function(owner){card.onclick=function(){openOwner(owner.id);};})(o);
-      propDiv.appendChild(card);
+        +'<div class="opill"><div class="opval" style="font-size:10px">'+(o.tel||'—')+'</div><div class="oplbl">Tél</div></div></div>'
+        +'</div>';
     });
-    body.innerHTML='';
-    body.appendChild(propDiv);
+    body.innerHTML=h;
+    // Attach click handlers AFTER DOM insertion
+    body.querySelectorAll('.ocard[data-idx]').forEach(function(card){
+      card.addEventListener('click',function(){
+        var idx=parseInt(this.getAttribute('data-idx'));
+        var owner=window._curOwners[idx];
+        if(owner)openOwner(owner.id);
+      });
+    });
   }
 
   if(tab==='inv'){
