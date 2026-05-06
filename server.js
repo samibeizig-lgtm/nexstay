@@ -108,6 +108,36 @@ function parseMultipart(req, boundary) {
   });
 }
 
+function parseMultipart(req,boundary){
+  return new Promise((resolve,reject)=>{
+    const chunks=[];
+    req.on('data',c=>chunks.push(c));
+    req.on('end',()=>{
+      try{
+        const buf=Buffer.concat(chunks);
+        const bnd=Buffer.from('--'+boundary);
+        const result={};
+        let pos=0;
+        while(pos<buf.length){
+          const s=buf.indexOf(bnd,pos);if(s===-1)break;
+          const e=buf.indexOf(bnd,s+bnd.length);if(e===-1)break;
+          const part=buf.slice(s+bnd.length+2,e-2);
+          const he=part.indexOf('\r\n\r\n');if(he===-1){pos=e;continue;}
+          const hdr=part.slice(0,he).toString();
+          const body=part.slice(he+4);
+          const nm=hdr.match(/name="([^"]+)"/);
+          const fn=hdr.match(/filename="([^"]+)"/);
+          if(!nm){pos=e;continue;}
+          result[nm[1]]=fn?{filename:fn[1],data:body}:body.toString().trim();
+          pos=e;
+        }
+        resolve(result);
+      }catch(e){reject(e);}
+    });
+    req.on('error',reject);
+  });
+}
+
 function parseBody(req) {
   return new Promise(resolve => {
     let b='';
@@ -223,6 +253,35 @@ async function handleAPI(req, res, method, pathname, token) {
     return res.end(fs.readFileSync(fp));
   }
 
+  // PDF UPLOAD
+  if (parts[1]==='invoice-upload'&&parts[2]&&method==='POST'&&user.role==='admin') {
+    const ct=req.headers['content-type']||'';
+    const bm=ct.match(/boundary=(.+)/);
+    if (!bm) return send(res,400,{error:'Pas de boundary'});
+    const parsed=await parseMultipart(req,bm[1]);
+    const file=parsed.file;
+    if (!file||!file.data) return send(res,400,{error:'Pas de fichier'});
+    const UPD=process.env.RAILWAY_ENVIRONMENT?'/tmp/uploads':require('path').join(__dirname,'uploads');
+    if (!require('fs').existsSync(UPD)) require('fs').mkdirSync(UPD,{recursive:true});
+    const fname=parts[2]+'_'+Date.now()+'.pdf';
+    require('fs').writeFileSync(require('path').join(UPD,fname),file.data);
+    const ix=DB.invoices.findIndex(i=>i.id===parts[2]);
+    if(ix!==-1){DB.invoices[ix].pdfFile=fname;saveDB();}
+    return send(res,200,{pdfFile:fname});
+  }
+
+  // PDF DOWNLOAD
+  if (parts[1]==='invoice-pdf'&&parts[2]&&method==='GET') {
+    const inv=DB.invoices.find(i=>i.id===parts[2]);
+    if (!inv||!inv.pdfFile) return send(res,404,{error:'PDF non disponible'});
+    if (user.role!=='admin'&&inv.ownerId!==user.id) return send(res,403,{error:'Accès refusé'});
+    const UPD=process.env.RAILWAY_ENVIRONMENT?'/tmp/uploads':require('path').join(__dirname,'uploads');
+    const fp=require('path').join(UPD,inv.pdfFile);
+    if (!require('fs').existsSync(fp)) return send(res,404,{error:'Fichier introuvable'});
+    res.writeHead(200,{'Content-Type':'application/pdf','Content-Disposition':'attachment; filename="facture.pdf"','Access-Control-Allow-Origin':'*'});
+    return res.end(require('fs').readFileSync(fp));
+  }
+
   // REVENUES
   if (parts[1]==='revenues') {
     if (method==='GET') return send(res,200,DB.revenues.filter(r=>r.ownerId===user.id));
@@ -280,6 +339,30 @@ async function handleAPI(req, res, method, pathname, token) {
   // OWNERS
   if (parts[1]==='owners'&&user.role==='admin') {
     if (method==='GET') return send(res,200,DB.users.filter(u=>u.role==='owner').map(({password,...u})=>u));
+  }
+
+  // ALL INVOICES
+  if (parts[1]==='all-invoices'&&user.role==='admin'&&method==='GET') {
+    return send(res,200,DB.invoices.map(inv=>{
+      const o=DB.users.find(u=>u.id===inv.ownerId);
+      return {...inv,ownerName:o?(o.prenom+' '+o.nom):'—'};
+    }).sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)));
+  }
+
+  // ALL REVENUES
+  if (parts[1]==='all-revenues'&&user.role==='admin'&&method==='GET') {
+    return send(res,200,DB.revenues.map(r=>{
+      const o=DB.users.find(u=>u.id===r.ownerId);
+      return {...r,ownerName:o?(o.prenom+' '+o.nom):'—'};
+    }).sort((a,b)=>b.annee!==a.annee?b.annee-a.annee:0));
+  }
+
+  // ALL MAINTENANCES
+  if (parts[1]==='all-maintenances'&&user.role==='admin'&&method==='GET') {
+    return send(res,200,DB.maintenances.map(m=>{
+      const o=DB.users.find(u=>u.id===m.ownerId);
+      return {...m,ownerName:o?(o.prenom+' '+o.nom):'—'};
+    }).sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)));
   }
 
   // STATS
