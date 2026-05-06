@@ -492,7 +492,7 @@ function rRevenues(c){
     +'<h3 class="stitle">Répartition</h3>'
     +'<div class="rvbk">'
     +'<div class="rvrow"><span><span class="rvdot" style="background:var(--T)"></span><span style="color:var(--t2)">Revenus bruts Airbnb</span></span><span style="color:var(--T);font-weight:700">+'+cur.revenuBrut.toLocaleString()+' DT</span></div>'
-    +'<div class="rvrow"><span><span class="rvdot" style="background:var(--re)"></span><span style="color:var(--t2)">Charges & entretien</span></span><span style="color:var(--re);font-weight:700">-'+(cur.revenuBrut-cur.revenuNet).toLocaleString()+' DT</span></div>'
+    +'<div class="rvrow"><span><span class="rvdot" style="background:var(--re)"></span><span style="color:var(--t2)">Frais Nexstay</span></span><span style="color:var(--re);font-weight:700">-'+(cur.revenuBrut-cur.revenuNet).toLocaleString()+' DT</span></div>'
     +'<div class="rvrow" style="background:var(--bg)"><span style="font-weight:700;color:var(--tx)">Revenu net</span><span style="color:var(--T);font-weight:700;font-size:15px">'+cur.revenuNet.toLocaleString()+' DT</span></div>'
     +'</div></div>';
 }
@@ -615,25 +615,139 @@ async function rAdmin(c){
   try{var r=await Promise.all([api('GET','/stats'),api('GET','/owners')]);stats=r[0];owners=r[1];}catch(e){}
   window._ow=owners;window._st=stats;
   if(ownerData){rOwnerDetail(c,ownerData);return;}
+
+  // Admin has 4 tabs: Propriétaires, Factures, Revenus, Entretiens
   c.innerHTML='<div class="pg fu">'
     +'<div class="ahero"><div class="aheroval">'+(stats.totalRevenue||0).toLocaleString()+' DT</div><div class="aherolbl">Total revenus nets cumulés</div></div>'
     +'<div class="sgrid"><div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div><div class="sval">'+(stats.totalOwners||0)+'</div><div class="slbl">Propriétaires</div></div>'
     +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div><div class="sval">'+(stats.totalInvoices||0)+'</div><div class="slbl">Factures totales</div></div></div>'
     +'<div class="sgrid"><div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div><div class="sval" style="color:var(--T)">'+(stats.pendingInvoices||0)+'</div><div class="slbl">Factures en attente</div></div>'
     +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div><div class="sval" style="color:var(--am)">'+(stats.maintenancePending||0)+'</div><div class="slbl">Entretiens planifiés</div></div></div>'
-    +'<h3 class="stitle" style="margin-top:6px">Propriétaires ('+owners.length+')</h3>'
-    +owners.map(function(o){
-      return'<div class="ocard" onclick="openOwner(\''+o.id+'\')">'
-        +'<div class="ohead"><div class="oavt"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div>'
-        +'<div class="oinf"><div class="oname">'+o.prenom+' '+o.nom+'</div><div class="oemail">'+o.email+'</div></div>'
-        +'<div class="ochev"><svg viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div></div>'
-        +'<div class="opills">'
-        +'<div class="opill"><div class="opval">'+(o.ville||'—')+'</div><div class="oplbl">Ville</div></div>'
-        +'<div class="opill"><div class="opval">'+(o.typeLogement||'—')+'</div><div class="oplbl">Bien</div></div>'
-        +'<div class="opill"><div class="opval" style="font-size:10px">'+(o.tel||'—')+'</div><div class="oplbl">Tél</div></div>'
-        +'</div></div>';
-    }).join('')+'</div>';
+    +'<div class="tpills" id="adminGlobalTabs">'
+    +'<button class="tpill on" onclick="adminGlobalTab('owners')">Propriétaires</button>'
+    +'<button class="tpill" onclick="adminGlobalTab('invoices')">Factures</button>'
+    +'<button class="tpill" onclick="adminGlobalTab('revenues')">Revenus</button>'
+    +'<button class="tpill" onclick="adminGlobalTab('maintenances')">Entretiens</button>'
+    +'</div>'
+    +'<div id="adminGlobalBody"></div>'
+    +'</div>';
+  adminGlobalTab('owners');
 }
+
+async function adminGlobalTab(tab){
+  // Update pills
+  var pills=document.querySelectorAll('#adminGlobalTabs .tpill');
+  var tabs=['owners','invoices','revenues','maintenances'];
+  pills.forEach(function(p,i){p.classList.toggle('on',tabs[i]===tab);});
+  var body=document.getElementById('adminGlobalBody');
+  if(!body)return;
+  body.innerHTML='<div class="spin"></div>';
+  var owners=window._ow||[];
+
+  if(tab==='owners'){
+    body.innerHTML=owners.length===0?'<p style="color:var(--t2);font-size:13px;padding:8px 0">Aucun propriétaire inscrit</p>'
+      :owners.map(function(o){
+        return'<div class="ocard" onclick="openOwner(''+o.id+'')">'
+          +'<div class="ohead"><div class="oavt"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div>'
+          +'<div class="oinf"><div class="oname">'+o.prenom+' '+o.nom+'</div><div class="oemail">'+o.email+'</div></div>'
+          +'<div class="ochev"><svg viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div></div>'
+          +'<div class="opills">'
+          +'<div class="opill"><div class="opval">'+(o.ville||'—')+'</div><div class="oplbl">Ville</div></div>'
+          +'<div class="opill"><div class="opval">'+(o.typeLogement||'—')+'</div><div class="oplbl">Bien</div></div>'
+          +'<div class="opill"><div class="opval" style="font-size:10px">'+(o.tel||'—')+'</div><div class="oplbl">Tél</div></div>'
+          +'</div></div>';
+      }).join('');
+  }
+
+  if(tab==='invoices'){
+    try{
+      var invs=await api('GET','/all-invoices');
+      body.innerHTML='<h3 class="stitle">Toutes les factures ('+invs.length+')</h3>'
+        +(invs.length===0?'<p style="color:var(--t2);font-size:13px">Aucune facture</p>':'')
+        +invs.map(function(inv){
+          var paid=inv.status==='payée';
+          return'<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">'
+            +'<div class="icard" style="flex:1;cursor:default">'
+            +'<div class="iico" style="background:'+(paid?'var(--gbg)':'var(--abg)')+'"><svg viewBox="0 0 24 24" style="stroke:'+(paid?'var(--gr)':'var(--am)')+'"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>'
+            +'<div class="imeta">'
+            +'<div class="iname" style="font-size:12px;color:var(--t2)">'+inv.ownerName+'</div>'
+            +'<div style="font-size:13px;font-weight:600;color:var(--tx)">'+(inv.month||inv.mois)+' · '+inv.numero+'</div>'
+            +'</div>'
+            +'<div style="text-align:right"><div class="iamt">'+(inv.amount||0).toLocaleString()+' DT</div><span class="bdg '+(paid?'bdg-g':'bdg-a')+'" style="margin-top:3px">'+(paid?'Payée':'En attente')+'</span></div>'
+            +'</div>'
+            +'<button class="dbtn" onclick="aDelInvGlobal(''+inv.id+'')">'+ico('del')+'</button>'
+            +'</div>';
+        }).join('');
+    }catch(e){body.innerHTML='<p style="color:var(--re)">Erreur chargement</p>';}
+  }
+
+  if(tab==='revenues'){
+    try{
+      var revs=await api('GET','/all-revenues');
+      body.innerHTML='<h3 class="stitle">Tous les revenus ('+revs.length+')</h3>'
+        +(revs.length===0?'<p style="color:var(--t2);font-size:13px">Aucun revenu</p>':'')
+        +revs.map(function(r){
+          return'<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">'
+            +'<div class="rhero" style="flex:1;margin-bottom:0;padding:13px">'
+            +'<div style="font-size:11px;color:var(--t2);font-weight:600;margin-bottom:3px">'+r.ownerName+'</div>'
+            +'<div style="display:flex;justify-content:space-between;align-items:center">'
+            +'<span style="font-size:14px;font-weight:700;color:var(--tx)">'+r.mois+' '+r.annee+'</span>'
+            +'<span class="bdg bdg-t">'+r.tauxOccupation+'% occ.</span>'
+            +'</div>'
+            +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px">'
+            +'<span style="font-family:var(--fs);font-size:18px;font-weight:700;color:var(--T)">'+r.revenuNet.toLocaleString()+' DT net</span>'
+            +'<span style="font-size:11px;color:var(--t2)">'+r.nbLocataires+' loc. · '+r.nbNuits+' nuits</span>'
+            +'</div>'
+            +'</div>'
+            +'<button class="dbtn" onclick="aDelRevGlobal(''+r.id+'')">'+ico('del')+'</button>'
+            +'</div>';
+        }).join('');
+    }catch(e){body.innerHTML='<p style="color:var(--re)">Erreur chargement</p>';}
+  }
+
+  if(tab==='maintenances'){
+    try{
+      var maints=await api('GET','/all-maintenances');
+      var done2=maints.filter(function(m){return m.statut==='effectué';}).length;
+      var plan2=maints.filter(function(m){return m.statut==='planifié';}).length;
+      body.innerHTML='<div class="sgrid" style="margin-bottom:12px">'
+        +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></div><div class="sval">'+done2+'</div><div class="slbl">Effectués</div></div>'
+        +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div><div class="sval">'+plan2+'</div><div class="slbl">Planifiés</div></div></div>'
+        +'<h3 class="stitle">Tous les entretiens ('+maints.length+')</h3>'
+        +(maints.length===0?'<p style="color:var(--t2);font-size:13px">Aucun entretien</p>':'')
+        +maints.map(function(m){
+          var d=m.statut==='effectué';
+          return'<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px">'
+            +'<div class="mcard" style="flex:1">'
+            +'<div class="mhead"><div class="mwrap">'
+            +'<div class="mico" style="background:'+(d?'var(--gbg)':'var(--TL)')+'">'
+            +'<svg viewBox="0 0 24 24" style="stroke:'+(d?'var(--gr)':'var(--T)')+';width:16px;height:16px;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>'
+            +'</div>'
+            +'<div><div class="mtype">'+m.type+'</div><div class="mdate">'+(m.date||'').slice(0,10)+' · <span style="color:var(--T);font-weight:600">'+m.ownerName+'</span></div></div></div>'
+            +'<span class="bdg '+(d?'bdg-g':'bdg-t')+'">'+(d?'Effectué':'Planifié')+'</span></div>'
+            +'<p class="mnote">'+(m.note||'')+'</p>'
+            +(m.technicien?'<div class="mtech"><span class="tchip">'+m.technicien+'</span></div>':'')
+            +'</div>'
+            +'<button class="dbtn" style="margin-top:3px" onclick="aDelMaintGlobal(''+m.id+'')">'+ico('del')+'</button>'
+            +'</div>';
+        }).join('');
+    }catch(e){body.innerHTML='<p style="color:var(--re)">Erreur chargement</p>';}
+  }
+}
+
+async function aDelInvGlobal(id){
+  if(!confirm('Supprimer ?'))return;
+  try{await api('DELETE','/invoices/'+id);toast('Supprimée','ok');adminGlobalTab('invoices');}catch(e){toast(e.message,'err');}
+}
+async function aDelRevGlobal(id){
+  if(!confirm('Supprimer ?'))return;
+  try{await api('DELETE','/revenues/'+id);toast('Supprimé','ok');adminGlobalTab('revenues');}catch(e){toast(e.message,'err');}
+}
+async function aDelMaintGlobal(id){
+  if(!confirm('Supprimer ?'))return;
+  try{await api('DELETE','/maintenances/'+id);toast('Supprimé','ok');adminGlobalTab('maintenances');}catch(e){toast(e.message,'err');}
+}
+
 
 async function openOwner(id){
   var c=document.getElementById('scr');
@@ -676,39 +790,38 @@ function renderOTab(t){
   var oid=(d.owner||{}).id||'';
 
   if(t==='inv'){
-    body.innerHTML=
-      // FORM AJOUT
-      '<div class="fsec"><div class="fsech"><svg viewBox="0 0 24 24">'+ICO.add.replace(/<svg[^>]*>/,'').replace('</svg>','')+'</svg><span class="fsect">Nouvelle facture</span></div>'
+    var invHtml='<div class="fsec"><div class="fsech"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--T);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span class="fsect">Nouvelle facture</span></div>'
       +'<div class="fsecb">'
       +'<input id="ai-m" class="inp" placeholder="Période (ex: Mai 2025)">'
       +'<input id="ai-n" class="inp" placeholder="Numéro (ex: F-2025-005)">'
       +'<div style="display:flex;gap:8px"><input id="ai-a" class="inp" type="number" placeholder="Montant DT"><input id="ai-d" class="inp" type="date"></div>'
       +'<select id="ai-s" class="inp"><option value="en_attente">En attente</option><option value="payée">Payée</option></select>'
-      +'<button class="btnT" style="margin-top:0" onclick="aAddInv(\''+oid+'\')">Envoyer la facture</button></div></div>'
-      // LISTE
-      +'<h3 class="stitle">Factures ('+invs.length+')</h3>'
-      +(invs.length===0?'<p style="color:var(--t2);font-size:13px;padding:8px 0">Aucune facture</p>':'')
-      +invs.map(function(inv){
-        var paid=inv.status==='payée';
-        return'<div style="margin-bottom:8px">'
-          +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">'
-          +'<div class="icard" style="flex:1">'
-          +'<div class="iico" style="background:'+(paid?'var(--gbg)':'var(--abg)')+'"><svg viewBox="0 0 24 24" style="stroke:'+(paid?'var(--gr)':'var(--am)')+'"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>'
-          +'<div class="imeta"><div class="iname">'+(inv.month||inv.mois)+'</div><div class="inum">'+inv.numero+'</div></div>'
-          +'<div style="text-align:right"><div class="iamt">'+(inv.amount||0).toLocaleString()+' DT</div><span class="bdg '+(paid?'bdg-g':'bdg-a')+'" style="margin-top:3px">'+(paid?'Payée':'En attente')+'</span></div>'
-          +'</div>'
-          +'<button class="dbtn" onclick="aDelInv(\''+inv.id+'\',\''+oid+'\')">'+ico('del')+'</button>'
-          +'</div>'
-          // Upload PDF pour cette facture
-          +'<div class="upzone" onclick="trigUpload(\''+inv.id+'\',\''+oid+'\')" id="upz-'+inv.id+'">'
-          +'<svg viewBox="0 0 24 24">'+ICO.up.replace(/<svg[^>]*>/,'').replace('</svg>','')+'</svg>'
-          +(inv.pdfFile?'<p style="color:var(--gr)">PDF uploadé ✓</p><small>Cliquer pour remplacer</small>':'<p>Uploader le PDF</p><small>Cliquer pour choisir un fichier</small>')
-          +'</div>'
-          +'</div>';
-      }).join('')
-      +'<input type="file" id="pdfInput" accept="application/pdf" style="display:none" onchange="doUpload()"><input type="hidden" id="uploadInvId"><input type="hidden" id="uploadOwnId">';
+      +'<label style="border:1.5px dashed var(--TM);border-radius:11px;padding:14px;background:var(--TL);cursor:pointer;text-align:center;display:block">'
+      +'<svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:var(--T);stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round;display:block;margin:0 auto 5px"><polyline points="16,16 12,12 8,16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>'
+      +'<span id="newPdfLabel" style="font-size:12px;color:var(--T);font-weight:600;display:block">Joindre le PDF de la facture</span>'
+      +'<span style="font-size:10px;color:var(--t2)">Format PDF uniquement — max 10MB</span>'
+      +'<input type="file" id="pdfNewInput" accept=".pdf,application/pdf" style="display:none" onchange="onNewPdfSelected()">'
+      +'</label>'
+      +'<button class="btnT" style="margin-top:0" onclick="aAddInv(OIDTOKEN)">Envoyer la facture</button>'
+      +'</div></div>'
+      +'<h3 class="stitle">Factures (COUNTTOKEN)</h3>';
+    invHtml=invHtml.replace('OIDTOKEN',"'"+oid+"'").replace('COUNTTOKEN',invs.length);
+    var listHtml=invs.length===0?'<p style="color:var(--t2);font-size:13px;padding:8px 0">Aucune facture</p>':'';
+    invs.forEach(function(inv){
+      var paid=inv.status==='payée';
+      listHtml+='<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">'
+        +'<div class="icard" style="flex:1">'
+        +'<div class="iico" style="background:'+(paid?'var(--gbg)':'var(--abg)')+'"><svg viewBox="0 0 24 24" style="stroke:'+(paid?'var(--gr)':'var(--am)')+';width:17px;height:17px;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>'
+        +'<div class="imeta"><div class="iname">'+(inv.month||inv.mois)+'</div>'
+        +'<div class="inum">'+inv.numero+(inv.pdfFile?' <span class="bdg bdg-g" style="font-size:9px;padding:1px 5px">PDF</span>':'')+'</div></div>'
+        +'<div style="text-align:right"><div class="iamt">'+(inv.amount||0).toLocaleString()+' DT</div>'
+        +'<span class="bdg '+(paid?'bdg-g':'bdg-a')+'" style="margin-top:3px">'+(paid?'Payée':'En attente')+'</span></div>'
+        +'</div>'
+        +'<button class="dbtn" onclick="aDelInv(\''+inv.id+'\',\''+oid+'\')">'+ico('del')+'</button>'
+        +'</div>';
+    });
+    body.innerHTML=invHtml+listHtml+'<input type="hidden" id="uploadOwnId" value="'+oid+'">';
   }
-
   if(t==='rev'){
     body.innerHTML=
       '<div class="fsec"><div class="fsech"><svg viewBox="0 0 24 24">'+ICO.add.replace(/<svg[^>]*>/,'').replace('</svg>','')+'</svg><span class="fsect">Publier des revenus</span></div>'
@@ -778,37 +891,49 @@ function renderOTab(t){
 }
 
 // ══ PDF UPLOAD ══════════════════════════════════════════════════════════════════
-function trigUpload(invId,ownId){
-  document.getElementById('uploadInvId').value=invId;
-  document.getElementById('uploadOwnId').value=ownId;
-  document.getElementById('pdfInput').value='';
-  document.getElementById('pdfInput').click();
+function onNewPdfSelected(){
+  var f=document.getElementById('pdfNewInput');
+  var lbl=document.getElementById('newPdfLabel');
+  if(f&&f.files&&f.files[0]&&lbl){
+    lbl.textContent='✓ '+f.files[0].name;
+    lbl.style.color='var(--gr)';
+  }
 }
-async function doUpload(){
-  var file=document.getElementById('pdfInput').files[0];
-  var invId=document.getElementById('uploadInvId').value;
-  if(!file||!invId)return;
-  if(file.size>10*1024*1024){toast('Fichier trop grand (max 10MB)','err');return;}
-  toast('Upload en cours...','');
+async function uploadPdfForInv(invId){
+  var fi=document.getElementById('pdfNewInput');
+  if(!fi||!fi.files||!fi.files[0])return; // pas de PDF sélectionné, OK
+  var file=fi.files[0];
+  if(file.size>10*1024*1024){toast('PDF trop grand (max 10MB)','err');return;}
   var fd=new FormData();fd.append('file',file);
   try{
     var r=await apiUpload('/invoice-upload/'+invId,fd);
-    // Mettre à jour dans ownerData
     if(ownerData&&ownerData.invoices){
       var idx=ownerData.invoices.findIndex(function(i){return i.id===invId;});
       if(idx!==-1)ownerData.invoices[idx].pdfFile=r.pdfFile;
     }
-    toast('PDF uploadé avec succès','ok');
-    oSwitch('inv');
-  }catch(e){toast(e.message,'err');}
+  }catch(e){toast('Erreur upload PDF: '+e.message,'err');}
 }
 
 // ══ ADMIN ACTIONS ══════════════════════════════════════════════════════════════
 async function aAddInv(oid){
   var m=gv('ai-m'),n=gv('ai-n'),a=parseFloat(gv('ai-a'))||0,d=gv('ai-d'),s=gv('ai-s');
   if(!m||!n){toast('Remplissez la période et le numéro','err');return;}
-  try{var inv=await api('POST','/invoices',{ownerId:oid,month:m,numero:n,amount:a,date:d,status:s});
-  ownerData.invoices.unshift(inv);toast('Facture envoyée','ok');oSwitch('inv');}catch(e){toast(e.message,'err');}
+  try{
+    var inv=await api('POST','/invoices',{ownerId:oid,month:m,numero:n,amount:a,date:d,status:s});
+    ownerData.invoices.unshift(inv);
+    // Upload PDF si sélectionné
+    var fi=document.getElementById('pdfNewInput');
+    if(fi&&fi.files&&fi.files[0]){
+      toast('Envoi du PDF...','');
+      var fd=new FormData();fd.append('file',fi.files[0]);
+      try{
+        var r=await apiUpload('/invoice-upload/'+inv.id,fd);
+        inv.pdfFile=r.pdfFile;
+        ownerData.invoices[0].pdfFile=r.pdfFile;
+      }catch(e2){toast('Facture créée, PDF non uploadé: '+e2.message,'err');oSwitch('inv');return;}
+    }
+    toast('Facture envoyée','ok');oSwitch('inv');
+  }catch(e){toast(e.message,'err');}
 }
 async function aDelInv(id,oid){
   if(!confirm('Supprimer cette facture ?'))return;

@@ -282,6 +282,33 @@ async function handleAPI(req, res, method, pathname, token) {
     if (method==='GET') return send(res,200,DB.users.filter(u=>u.role==='owner').map(({password,...u})=>u));
   }
 
+  // ALL INVOICES admin
+  if (parts[1]==='all-invoices'&&user.role==='admin') {
+    const enriched=DB.invoices.map(inv=>{
+      const owner=DB.users.find(u=>u.id===inv.ownerId);
+      return {...inv,ownerName:owner?(owner.prenom+' '+owner.nom):'—'};
+    }).sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
+    return send(res,200,enriched);
+  }
+
+  // ALL REVENUES admin
+  if (parts[1]==='all-revenues'&&user.role==='admin') {
+    const enriched=DB.revenues.map(rev=>{
+      const owner=DB.users.find(u=>u.id===rev.ownerId);
+      return {...rev,ownerName:owner?(owner.prenom+' '+owner.nom):'—'};
+    }).sort((a,b)=>b.annee!==a.annee?b.annee-a.annee:0);
+    return send(res,200,enriched);
+  }
+
+  // ALL MAINTENANCES admin
+  if (parts[1]==='all-maintenances'&&user.role==='admin') {
+    const enriched=DB.maintenances.map(m=>{
+      const owner=DB.users.find(u=>u.id===m.ownerId);
+      return {...m,ownerName:owner?(owner.prenom+' '+owner.nom):'—'};
+    }).sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
+    return send(res,200,enriched);
+  }
+
   // STATS
   if (parts[1]==='stats'&&user.role==='admin') {
     return send(res,200,{
