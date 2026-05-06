@@ -341,6 +341,52 @@ async function handleAPI(req, res, method, pathname, token) {
     }
   }
 
+  // CHANGE PASSWORD
+  if (parts[1]==='change-password'&&method==='POST') {
+    const b=await parseBody(req);
+    if (!b.currentPassword||!b.newPassword) return send(res,400,{error:'Champs requis'});
+    if (user.password!==hash(b.currentPassword)) return send(res,400,{error:'Mot de passe actuel incorrect'});
+    if (b.newPassword.length<6) return send(res,400,{error:'Le nouveau mot de passe doit faire au moins 6 caractères'});
+    const idx=DB.users.findIndex(u=>u.id===user.id);
+    DB.users[idx].password=hash(b.newPassword);
+    saveDB();
+    return send(res,200,{success:true});
+  }
+
+  // ADMIN: change owner password
+  if (parts[1]==='admin-change-password'&&method==='POST'&&user.role==='admin') {
+    const b=await parseBody(req);
+    if (!b.ownerId||!b.newPassword) return send(res,400,{error:'Champs requis'});
+    if (b.newPassword.length<6) return send(res,400,{error:'Minimum 6 caractères'});
+    const idx=DB.users.findIndex(u=>u.id===b.ownerId);
+    if (idx===-1) return send(res,404,{error:'Propriétaire introuvable'});
+    DB.users[idx].password=hash(b.newPassword);
+    saveDB();
+    return send(res,200,{success:true});
+  }
+
+  // CALENDAR LINK (admin sets Airbnb iCal URL per owner)
+  if (parts[1]==='calendar'&&parts[2]) {
+    const oid=parts[2];
+    if (method==='GET') {
+      // owner can only get their own, admin can get any
+      if (user.role!=='admin'&&user.id!==oid) return send(res,403,{error:'Accès refusé'});
+      const inf=DB.infos.find(i=>i.ownerId===oid);
+      return send(res,200,{calendarUrl:inf&&inf.calendarUrl?inf.calendarUrl:null});
+    }
+    if (method==='PUT'&&user.role==='admin') {
+      const b=await parseBody(req);
+      const idx=DB.infos.findIndex(i=>i.ownerId===oid);
+      if (idx===-1) {
+        DB.infos.push({id:genId(),ownerId:oid,calendarUrl:b.calendarUrl||null,createdAt:new Date().toISOString()});
+      } else {
+        DB.infos[idx].calendarUrl=b.calendarUrl||null;
+      }
+      saveDB();
+      return send(res,200,{success:true});
+    }
+  }
+
   // OWNERS
   if (parts[1]==='owners'&&user.role==='admin') {
     if (method==='GET') return send(res,200,DB.users.filter(u=>u.role==='owner').map(({password,...u})=>u));
