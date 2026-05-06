@@ -663,11 +663,10 @@ async function adminGTab(tab){
 
   if(tab==='prop'){
     if(!owners.length){body.innerHTML='<p style="color:var(--t2);font-size:13px;margin-top:10px">Aucun propriétaire inscrit</p>';return;}
-    // Store owners globally for click access
     window._curOwners=owners;
     var h='<h3 class="stitle">Propriétaires ('+owners.length+')</h3>';
     owners.forEach(function(o,i){
-      h+='<div class="ocard" data-idx="'+i+'" style="cursor:pointer">'
+      h+='<div class="ocard" data-id="'+o.id+'" style="cursor:pointer">'
         +'<div class="ohead"><div class="oavt"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--T);stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div>'
         +'<div class="oinf"><div class="oname">'+o.prenom+' '+o.nom+'</div><div class="oemail">'+o.email+'</div></div>'
         +'<div class="ochev"><svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:var(--t3);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round"><polyline points="9,18 15,12 9,6"/></svg></div></div>'
@@ -677,13 +676,8 @@ async function adminGTab(tab){
         +'</div>';
     });
     body.innerHTML=h;
-    // Attach click handlers AFTER DOM insertion
-    body.querySelectorAll('.ocard[data-idx]').forEach(function(card){
-      card.addEventListener('click',function(){
-        var idx=parseInt(this.getAttribute('data-idx'));
-        var owner=window._curOwners[idx];
-        if(owner)openOwner(owner.id);
-      });
+    body.querySelectorAll('.ocard').forEach(function(card){
+      card.addEventListener('click',function(){openOwner(this.getAttribute('data-id'));});
     });
   }
 
@@ -770,6 +764,180 @@ async function agDelInv(id){if(!confirm('Supprimer ?'))return;try{await api('DEL
 async function agDelRev(id){if(!confirm('Supprimer ?'))return;try{await api('DELETE','/revenues/'+id);toast('Supprimé','ok');adminGTab('rev');}catch(e){toast(e.message,'err');}}
 async function agDelMaint(id){if(!confirm('Supprimer ?'))return;try{await api('DELETE','/maintenances/'+id);toast('Supprimé','ok');adminGTab('maint');}catch(e){toast(e.message,'err');}}
 
+
+function rOwnerDetail(c,d){
+  var o=d.owner||{};
+  c.innerHTML='<div class="pg fu">'
+    +'<button class="bkbtn" onclick="ownerData=null;rAdmin(document.getElementById(\'scr\'))">'+ico('back')+' Tous les propriétaires</button>'
+    +'<div class="hcard" style="margin-bottom:12px"><p class="hgreet">Propriétaire</p><h2 class="hname">'+o.prenom+' '+o.nom+'</h2>'
+    +'<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px">'
+    +'<div class="hbadge">'+ico('rev')+o.email+'</div>'
+    +'<div class="hbadge">'+ico('shield')+(o.tel||'—')+'</div>'
+    +'</div></div>'
+    +'<div class="tpills">'
+    +'<button class="tpill'+(oTab2==='inv'?' on':'')+'" onclick="oSwitch(\'inv\')">Factures</button>'
+    +'<button class="tpill'+(oTab2==='rev'?' on':'')+'" onclick="oSwitch(\'rev\')">Revenus</button>'
+    +'<button class="tpill'+(oTab2==='maint'?' on':'')+'" onclick="oSwitch(\'maint\')">Entretiens</button>'
+    +'<button class="tpill'+(oTab2==='infos'?' on':'')+'" onclick="oSwitch(\'infos\')">Infos</button>'
+    +'</div>'
+    +'<div id="ob"></div></div>';
+  renderOTab(oTab2);
+}
+
+function oSwitch(t){
+  oTab2=t;
+  document.querySelectorAll('.tpill').forEach(function(b){b.classList.remove('on');});
+  var tabs={inv:'Factures',rev:'Revenus',maint:'Entretiens',infos:'Infos'};
+  document.querySelectorAll('.tpill').forEach(function(b){if(b.textContent===tabs[t])b.classList.add('on');});
+  renderOTab(t);
+}
+
+function renderOTab(t){
+  var body=document.getElementById('ob');if(!body)return;
+  var d=ownerData||{};
+  var invs=d.invoices||[],revs=d.revenues||[],maints=d.maintenances||[],inf=d.infos||null;
+  var oid=(d.owner||{}).id||'';
+
+  if(t==='inv'){
+    body.innerHTML=
+      // FORM AJOUT
+      '<div class="fsec"><div class="fsech"><svg viewBox="0 0 24 24">'+ICO.add.replace(/<svg[^>]*>/,'').replace('</svg>','')+'</svg><span class="fsect">Nouvelle facture</span></div>'
+      +'<div class="fsecb">'
+      +'<input id="ai-m" class="inp" placeholder="Période (ex: Mai 2025)">'
+      +'<input id="ai-n" class="inp" placeholder="Numéro (ex: F-2025-005)">'
+      +'<div style="display:flex;gap:8px"><input id="ai-a" class="inp" type="number" placeholder="Montant DT"><input id="ai-d" class="inp" type="date"></div>'
+      +'<select id="ai-s" class="inp"><option value="en_attente">En attente</option><option value="payée">Payée</option></select>'
+      +'<label style="display:block;border:1.5px dashed rgba(193,127,90,0.3);border-radius:11px;padding:13px;background:rgba(193,127,90,0.06);cursor:pointer;text-align:center;margin-top:2px">'
+      +'<div style="font-size:20px;margin-bottom:4px">📎</div>'
+      +'<span id="newPdfLabel" style="font-size:12px;color:var(--terra);font-weight:600;display:block">Joindre le PDF de la facture (optionnel)</span>'
+      +'<span style="font-size:10px;color:var(--text2)">Format PDF — max 10MB</span>'
+      +'<input type="file" id="pdfNewInput" accept="application/pdf,.pdf" style="display:none" onchange="onPdfSelected()">'
+      +'</label>'
+      +'<button class="btnT" style="margin-top:0" onclick="aAddInv(\''+oid+'\')">Envoyer la facture</button></div></div>'
+      // LISTE
+      +'<h3 class="stitle">Factures ('+invs.length+')</h3>'
+      +(invs.length===0?'<p style="color:var(--t2);font-size:13px;padding:8px 0">Aucune facture</p>':'')
+      +invs.map(function(inv){
+        var paid=inv.status==='payée';
+        return'<div style="margin-bottom:8px">'
+          +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">'
+          +'<div class="icard" style="flex:1">'
+          +'<div class="iico" style="background:'+(paid?'var(--gbg)':'var(--abg)')+'"><svg viewBox="0 0 24 24" style="stroke:'+(paid?'var(--gr)':'var(--am)')+'"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>'
+          +'<div class="imeta"><div class="iname">'+(inv.month||inv.mois)+'</div><div class="inum">'+inv.numero+'</div></div>'
+          +'<div style="text-align:right"><div class="iamt">'+(inv.amount||0).toLocaleString()+' DT</div><span class="bdg '+(paid?'bdg-g':'bdg-a')+'" style="margin-top:3px">'+(paid?'Payée':'En attente')+'</span></div>'
+          +'</div>'
+          +'<button class="dbtn" onclick="aDelInv(\''+inv.id+'\',\''+oid+'\')">'+ico('del')+'</button>'
+          +'</div>'
+          // Upload PDF pour cette facture
+          +'<div class="upzone" onclick="trigUpload(\''+inv.id+'\',\''+oid+'\')" id="upz-'+inv.id+'">'
+          +'<svg viewBox="0 0 24 24">'+ICO.up.replace(/<svg[^>]*>/,'').replace('</svg>','')+'</svg>'
+          +(inv.pdfFile?'<p style="color:var(--gr)">PDF uploadé ✓</p><small>Cliquer pour remplacer</small>':'<p>Uploader le PDF</p><small>Cliquer pour choisir un fichier</small>')
+          +'</div>'
+          +'</div>';
+      }).join('')
+      +'<input type="file" id="pdfInput" accept="application/pdf" style="display:none" onchange="doUpload()"><input type="hidden" id="uploadInvId"><input type="hidden" id="uploadOwnId">';
+  }
+
+  if(t==='rev'){
+    body.innerHTML=
+      '<div class="fsec"><div class="fsech"><svg viewBox="0 0 24 24">'+ICO.add.replace(/<svg[^>]*>/,'').replace('</svg>','')+'</svg><span class="fsect">Publier des revenus</span></div>'
+      +'<div class="fsecb">'
+      +'<div style="display:flex;gap:8px"><input id="ar-m" class="inp" placeholder="Mois (ex: Juin)"><input id="ar-y" class="inp" type="number" placeholder="Année" value="2025"></div>'
+      +'<div style="display:flex;gap:8px"><input id="ar-b" class="inp" type="number" placeholder="Revenu brut DT"><input id="ar-n" class="inp" type="number" placeholder="Revenu net DT"></div>'
+      +'<div style="display:flex;gap:8px"><input id="ar-oc" class="inp" type="number" placeholder="Occupation %" min="0" max="100"><input id="ar-l" class="inp" type="number" placeholder="Nb locataires"></div>'
+      +'<input id="ar-ni" class="inp" type="number" placeholder="Nb nuits réservées">'
+      +'<button class="btnT" style="margin-top:0" onclick="aAddRev(\''+oid+'\')">Publier les revenus</button></div></div>'
+      +'<h3 class="stitle">Revenus ('+revs.length+')</h3>'
+      +(revs.length===0?'<p style="color:var(--t2);font-size:13px;padding:8px 0">Aucun revenu</p>':'')
+      +revs.map(function(r){
+        return'<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">'
+          +'<div class="rhero" style="flex:1;margin-bottom:0;padding:13px"><div class="rlbl">'+r.mois+' '+r.annee+'</div>'
+          +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">'
+          +'<span style="font-family:var(--fs);font-size:20px;font-weight:700;color:var(--T)">'+r.revenuNet.toLocaleString()+' DT</span>'
+          +'<span class="bdg bdg-t">'+r.tauxOccupation+'% occ.</span></div>'
+          +'<div style="display:flex;gap:10px;margin-top:8px;font-size:11px;color:var(--t2)">'
+          +'<span>'+r.nbLocataires+' locataires</span><span>·</span><span>'+r.nbNuits+' nuits</span>'
+          +'</div></div>'
+          +'<button class="dbtn" onclick="aDelRev(\''+r.id+'\',\''+oid+'\')">'+ico('del')+'</button></div>';
+      }).join('');
+  }
+
+  if(t==='maint'){
+    body.innerHTML=
+      '<div class="fsec"><div class="fsech"><svg viewBox="0 0 24 24">'+ICO.add.replace(/<svg[^>]*>/,'').replace('</svg>','')+'</svg><span class="fsect">Ajouter un entretien</span></div>'
+      +'<div class="fsecb">'
+      +'<select id="am-t" class="inp"><option>Ménage</option><option>Plomberie</option><option>Électricité</option><option>Peinture</option><option>Climatisation</option><option>Autre</option></select>'
+      +'<div style="display:flex;gap:8px"><input id="am-d" class="inp" type="date"><select id="am-s" class="inp"><option value="planifié">Planifié</option><option value="effectué">Effectué</option></select></div>'
+      +'<input id="am-te" class="inp" placeholder="Nom du technicien">'
+      +'<textarea id="am-n" class="inp" rows="2" placeholder="Description / notes"></textarea>'
+      +'<button class="btnT" style="margin-top:0" onclick="aAddMaint(\''+oid+'\')">Ajouter l\'entretien</button></div></div>'
+      +'<h3 class="stitle">Entretiens ('+maints.length+')</h3>'
+      +(maints.length===0?'<p style="color:var(--t2);font-size:13px;padding:8px 0">Aucun entretien</p>':'')
+      +maints.map(function(m){
+        var done2=m.statut==='effectué';
+        return'<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px">'
+          +'<div class="mcard" style="flex:1"><div class="mhead"><div class="mwrap">'
+          +'<div class="mico" style="background:'+(done2?'var(--gbg)':'var(--TL)')+'"><svg viewBox="0 0 24 24" style="stroke:'+(done2?'var(--gr)':'var(--T)')+';width:16px;height:16px;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>'
+          +'<div><div class="mtype">'+m.type+'</div><div class="mdate">'+(m.date||'').slice(0,10)+'</div></div></div>'
+          +'<span class="bdg '+(done2?'bdg-g':'bdg-t')+'">'+(done2?'Effectué':'Planifié')+'</span></div>'
+          +'<p class="mnote">'+(m.note||'')+'</p>'
+          +(m.technicien?'<div class="mtech"><span class="tchip">'+m.technicien+'</span></div>':'')
+          +'</div><button class="dbtn" style="margin-top:3px" onclick="aDelMaint(\''+m.id+'\',\''+oid+'\')">'+ico('del')+'</button></div>';
+      }).join('');
+  }
+
+  if(t==='infos'){
+    var i=inf||{};
+    body.innerHTML=
+      '<div class="fsec"><div class="fsech"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg><span class="fsect">Modifier les informations</span></div>'
+      +'<div class="fsecb">'
+      +'<input id="ii-adr" class="inp" placeholder="Adresse complète" value="'+(i.adresse||'')+'">'
+      +'<div style="display:flex;gap:8px"><input id="ii-et" class="inp" placeholder="Étage" value="'+(i.etage||'')+'"><input id="ii-sup" class="inp" placeholder="Superficie" value="'+(i.superficie||'')+'"></div>'
+      +'<input id="ii-cl" class="inp" type="number" placeholder="Nombre de clés" value="'+(i.nbCles||'')+'">'
+      +'<div class="sep">INTERNET</div>'
+      +'<div style="display:flex;gap:8px"><input id="ii-if" class="inp" placeholder="Fournisseur" value="'+((i.internet&&i.internet.fournisseur)||'')+'"><input id="ii-in" class="inp" placeholder="N° contrat" value="'+((i.internet&&i.internet.numero)||'')+'"></div>'
+      +'<input id="ii-id" class="inp" type="date" value="'+((i.internet&&i.internet.dateFin)||'')+'">'
+      +'<div class="sep">TV / ABONNEMENT</div>'
+      +'<div style="display:flex;gap:8px"><input id="ii-ta" class="inp" placeholder="Abonnement" value="'+((i.tv&&i.tv.abonnement)||'')+'"><input id="ii-tr" class="inp" placeholder="Référence" value="'+((i.tv&&i.tv.reference)||'')+'"></div>'
+      +'<input id="ii-td" class="inp" type="date" value="'+((i.tv&&i.tv.dateFin)||'')+'">'
+      +'<textarea id="ii-no" class="inp" rows="2" placeholder="Notes (digicode, etc.)">'+(i.autresInfos||'')+'</textarea>'
+      +'<button class="btnT" style="margin-top:0" onclick="aSaveInfos(\''+oid+'\')">Enregistrer les informations</button>'
+      +'</div></div>';
+  }
+}
+
+// ══ PDF UPLOAD ══════════════════════════════════════════════════════════════════
+function trigUpload(invId,ownId){
+  document.getElementById('uploadInvId').value=invId;
+  document.getElementById('uploadOwnId').value=ownId;
+  document.getElementById('pdfInput').value='';
+  document.getElementById('pdfInput').click();
+}
+async function doUpload(){
+  var file=document.getElementById('pdfInput').files[0];
+  var invId=document.getElementById('uploadInvId').value;
+  if(!file||!invId)return;
+  if(file.size>10*1024*1024){toast('Fichier trop grand (max 10MB)','err');return;}
+  toast('Upload en cours...','');
+  var fd=new FormData();fd.append('file',file);
+  try{
+    var r=await apiUpload('/invoice-upload/'+invId,fd);
+    // Mettre à jour dans ownerData
+    if(ownerData&&ownerData.invoices){
+      var idx=ownerData.invoices.findIndex(function(i){return i.id===invId;});
+      if(idx!==-1)ownerData.invoices[idx].pdfFile=r.pdfFile;
+    }
+    toast('PDF uploadé avec succès','ok');
+    oSwitch('inv');
+  }catch(e){toast(e.message,'err');}
+}
+
+async function openOwner(id){
+  var c=document.getElementById('scr');
+  c.innerHTML='<div class="pg"><div class="spin"></div></div>';
+  try{var d=await api('GET','/owner-data/'+id);ownerData=d;oTab2='inv';rOwnerDetail(c,d);}
+  catch(e){toast(e.message,'err');}
+}
 
 function rOwnerDetail(c,d){
   var o=d.owner||{};
