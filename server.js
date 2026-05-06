@@ -261,10 +261,10 @@ async function handleAPI(req, res, method, pathname, token) {
     const parsed=await parseMultipart(req,bm[1]);
     const file=parsed.file;
     if (!file||!file.data) return send(res,400,{error:'Pas de fichier'});
-    const UPD=process.env.RAILWAY_ENVIRONMENT?'/tmp/uploads':require('path').join(__dirname,'uploads');
-    if (!require('fs').existsSync(UPD)) require('fs').mkdirSync(UPD,{recursive:true});
+    const UPD=process.env.RAILWAY_ENVIRONMENT?'/tmp/uploads':path.join(__dirname,'uploads');
+    if (!fs.existsSync(UPD)) fs.mkdirSync(UPD,{recursive:true});
     const fname=parts[2]+'_'+Date.now()+'.pdf';
-    require('fs').writeFileSync(require('path').join(UPD,fname),file.data);
+    fs.writeFileSync(path.join(UPD,fname),file.data);
     const ix=DB.invoices.findIndex(i=>i.id===parts[2]);
     if(ix!==-1){DB.invoices[ix].pdfFile=fname;saveDB();}
     return send(res,200,{pdfFile:fname});
@@ -275,11 +275,11 @@ async function handleAPI(req, res, method, pathname, token) {
     const inv=DB.invoices.find(i=>i.id===parts[2]);
     if (!inv||!inv.pdfFile) return send(res,404,{error:'PDF non disponible'});
     if (user.role!=='admin'&&inv.ownerId!==user.id) return send(res,403,{error:'Accès refusé'});
-    const UPD=process.env.RAILWAY_ENVIRONMENT?'/tmp/uploads':require('path').join(__dirname,'uploads');
-    const fp=require('path').join(UPD,inv.pdfFile);
-    if (!require('fs').existsSync(fp)) return send(res,404,{error:'Fichier introuvable'});
+    const UPD=process.env.RAILWAY_ENVIRONMENT?'/tmp/uploads':path.join(__dirname,'uploads');
+    const fp=path.join(UPD,inv.pdfFile);
+    if (!fs.existsSync(fp)) return send(res,404,{error:'Fichier introuvable'});
     res.writeHead(200,{'Content-Type':'application/pdf','Content-Disposition':'attachment; filename="facture.pdf"','Access-Control-Allow-Origin':'*'});
-    return res.end(require('fs').readFileSync(fp));
+    return res.end(fs.readFileSync(fp));
   }
 
   // REVENUES

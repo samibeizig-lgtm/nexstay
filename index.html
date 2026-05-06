@@ -612,24 +612,16 @@ function rInfos(c){
 async function rAdmin(c){
   c.innerHTML='<div class="pg"><div class="spin"></div></div>';
   var stats={},owners=[];
-  try{
-    var r=await Promise.all([api('GET','/stats'),api('GET','/owners')]);
-    stats=r[0];owners=r[1];
-  }catch(e){}
+  try{var r=await Promise.all([api('GET','/stats'),api('GET','/owners')]);stats=r[0];owners=r[1];}catch(e){}
   window._ow=owners;window._st=stats;
   if(ownerData){rOwnerDetail(c,ownerData);return;}
-
-  var h='<div class="pg fu">'
-    +'<div class="sh2"><div class="stats-hero-val">'+( stats.totalRevenue||0).toLocaleString()+' DT</div><div class="stats-hero-label">Total revenus nets cumulés</div></div>'
-    +'<div class="stats-row">'
-    +'<div class="sc"><div class="si">👤</div><div class="sv">'+(stats.totalOwners||0)+'</div><div class="sl">Propriétaires</div></div>'
-    +'<div class="sc"><div class="si">🧾</div><div class="sv">'+(stats.totalInvoices||0)+'</div><div class="sl">Factures</div></div>'
-    +'</div>'
-    +'<div class="stats-row">'
-    +'<div class="sc"><div class="si">⏳</div><div class="sv" style="color:var(--T)">'+(stats.pendingInvoices||0)+'</div><div class="sl">En attente</div></div>'
-    +'<div class="sc"><div class="si">🔧</div><div class="sv" style="color:var(--amber)">'+(stats.maintenancePending||0)+'</div><div class="sl">Entretiens planifiés</div></div>'
-    +'</div>'
-    +'<div class="tab-pills" style="margin-top:8px">'
+  c.innerHTML='<div class="pg fu">'
+    +'<div class="ahero"><div class="aheroval">'+(stats.totalRevenue||0).toLocaleString()+' DT</div><div class="aherolbl">Total revenus nets cumulés</div></div>'
+    +'<div class="sgrid"><div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div><div class="sval">'+(stats.totalOwners||0)+'</div><div class="slbl">Propriétaires</div></div>'
+    +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div><div class="sval">'+(stats.totalInvoices||0)+'</div><div class="slbl">Factures totales</div></div></div>'
+    +'<div class="sgrid"><div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div><div class="sval" style="color:var(--terra)">'+(stats.pendingInvoices||0)+'</div><div class="slbl">En attente</div></div>'
+    +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div><div class="sval" style="color:var(--amber)">'+(stats.maintenancePending||0)+'</div><div class="slbl">Entretiens planifiés</div></div></div>'
+    +'<div class="tab-pills" id="agTabs">'
     +'<button class="tab-pill active" id="ag-prop" onclick="adminGTab(&quot;prop&quot;)">Propriétaires</button>'
     +'<button class="tab-pill" id="ag-inv" onclick="adminGTab(&quot;inv&quot;)">Factures</button>'
     +'<button class="tab-pill" id="ag-rev" onclick="adminGTab(&quot;rev&quot;)">Revenus</button>'
@@ -637,9 +629,9 @@ async function rAdmin(c){
     +'</div>'
     +'<div id="agBody"></div>'
     +'</div>';
-  c.innerHTML=h;
   adminGTab('prop');
 }
+
 
 async function adminGTab(tab){
   ['prop','inv','rev','maint'].forEach(function(t){
@@ -655,7 +647,7 @@ async function adminGTab(tab){
     if(!owners.length){body.innerHTML='<p style="color:var(--text2);font-size:13px;margin-top:10px">Aucun propriétaire inscrit</p>';return;}
     var h='';
     owners.forEach(function(o){
-      h+='<div class="owner-card" style="cursor:pointer" onclick="openOwner(this.dataset.id)" data-id="'+o.id+'">'
+      h+='<div class="owner-card" onclick="openOwner(this.dataset.id)" data-id="'+o.id+'">'
         +'<div class="owner-card-head">'
         +'<div class="owner-avatar">👤</div>'
         +'<div class="owner-info"><div class="owner-name">'+o.prenom+' '+o.nom+'</div><div class="owner-email">'+o.email+'</div></div>'
@@ -722,9 +714,9 @@ async function adminGTab(tab){
       var maints=await api('GET','/all-maintenances');
       var done=maints.filter(function(m){return m.statut==='effectué';}).length;
       var plan=maints.filter(function(m){return m.statut==='planifié';}).length;
-      var h='<div class="stats-row" style="margin-bottom:12px">'
-        +'<div class="sc"><div class="si">✅</div><div class="sv">'+done+'</div><div class="sl">Effectués</div></div>'
-        +'<div class="sc"><div class="si">📅</div><div class="sv">'+plan+'</div><div class="sl">Planifiés</div></div>'
+      var h='<div class="sgrid" style="margin-bottom:12px">'
+        +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></div><div class="sval">'+done+'</div><div class="slbl">Effectués</div></div>'
+        +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div><div class="sval">'+plan+'</div><div class="slbl">Planifiés</div></div>'
         +'</div><h3 class="section-title">Entretiens ('+maints.length+')</h3>';
       maints.forEach(function(m){
         var d=m.statut==='effectué';
@@ -807,7 +799,7 @@ function renderOTab(t){
       +'<div style="font-size:20px;margin-bottom:4px">📎</div>'
       +'<span id="newPdfLabel" style="font-size:12px;color:var(--terra);font-weight:600;display:block">Joindre le PDF de la facture (optionnel)</span>'
       +'<span style="font-size:10px;color:var(--text2)">Format PDF — max 10MB</span>'
-      +'<input type="file" id="pdfNewInput" accept=".pdf,application/pdf" style="display:none" onchange="onPdfSelected()">'
+      +'<input type="file" id="pdfNewInput" accept="application/pdf,.pdf" style="display:none" onchange="onPdfSelected()">'
       +'</label>'
       +'<button class="btnT" style="margin-top:0" onclick="aAddInv(\''+oid+'\')">Envoyer la facture</button></div></div>'
       // LISTE
