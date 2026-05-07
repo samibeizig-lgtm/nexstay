@@ -179,6 +179,20 @@ async function handleAPI(req, res, method, pathname, token) {
     }
   }
 
+  // PDF DOWNLOAD — handles token from header OR query string
+  if (parts[1]==='invoice-pdf'&&parts[2]&&method==='GET') {
+    const qtoken = parsed.query&&parsed.query.token ? parsed.query.token.replace('Bearer ','').trim() : '';
+    const pdfToken = token || (qtoken ? 'Bearer '+qtoken : '');
+    const pdfUser = authUser(pdfToken) || authUser('Bearer '+qtoken);
+    if (!pdfUser) return send(res,401,{error:'Autorisation requise — veuillez vous reconnecter'});
+    const inv=DB.invoices.find(i=>i.id===parts[2]);
+    if (!inv||!inv.pdfFile) return send(res,404,{error:'PDF non disponible'});
+    if (pdfUser.role!=='admin'&&inv.ownerId!==pdfUser.id) return send(res,403,{error:'Accès refusé'});
+    const fp=path.join(UPLOADS_DIR,inv.pdfFile);
+    if (!fs.existsSync(fp)) return send(res,404,{error:'Fichier introuvable sur le serveur'});
+    res.writeHead(200,{'Content-Type':'application/pdf','Content-Disposition':'attachment; filename="facture.pdf"','Access-Control-Allow-Origin':'*'});
+    return res.end(fs.readFileSync(fp));
+  }
   const user=authUser(token);
   if (!user) return send(res,401,{error:'Non autorisé'});
 
@@ -241,51 +255,6 @@ async function handleAPI(req, res, method, pathname, token) {
     return send(res,200,{pdfFile:filename});
   }
 
-  // PDF DOWNLOAD
-  if (parts[1]==='invoice-pdf'&&parts[2]&&method==='GET') {
-    const inv=DB.invoices.find(i=>i.id===parts[2]);
-    if (!inv||!inv.pdfFile) return send(res,404,{error:'PDF non disponible'});
-    // Check ownership
-    if (user.role!=='admin'&&inv.ownerId!==user.id) return send(res,403,{error:'Accès refusé'});
-    const fp=path.join(UPLOADS_DIR,inv.pdfFile);
-    if (!fs.existsSync(fp)) return send(res,404,{error:'Fichier introuvable'});
-    res.writeHead(200,{'Content-Type':'application/pdf','Content-Disposition':'attachment; filename="'+inv.pdfFile+'"','Access-Control-Allow-Origin':'*'});
-    return res.end(fs.readFileSync(fp));
-  }
-
-  // PDF UPLOAD
-  if (parts[1]==='invoice-upload'&&parts[2]&&method==='POST'&&user.role==='admin') {
-    const ct=req.headers['content-type']||'';
-    const bm=ct.match(/boundary=(.+)/);
-    if (!bm) return send(res,400,{error:'Pas de boundary'});
-    const parsed=await parseMultipart(req,bm[1]);
-    const file=parsed.file;
-    if (!file||!file.data) return send(res,400,{error:'Pas de fichier'});
-    const UPD=process.env.RAILWAY_ENVIRONMENT?'/tmp/uploads':path.join(__dirname,'uploads');
-    if (!fs.existsSync(UPD)) fs.mkdirSync(UPD,{recursive:true});
-    const fname=parts[2]+'_'+Date.now()+'.pdf';
-    fs.writeFileSync(path.join(UPD,fname),file.data);
-    const ix=DB.invoices.findIndex(i=>i.id===parts[2]);
-    if(ix!==-1){DB.invoices[ix].pdfFile=fname;saveDB();}
-    return send(res,200,{pdfFile:fname});
-  }
-
-  // PDF DOWNLOAD (token via header OR query param for direct link)
-  if (parts[1]==='invoice-pdf'&&parts[2]&&method==='GET') {
-    // Accept token from Authorization header or query string
-    const qtoken = parsed.query&&parsed.query.token ? parsed.query.token : '';
-    const authToken = token || ('Bearer '+qtoken);
-    const dlUser = authUser(authToken) || authUser('Bearer '+qtoken);
-    if (!dlUser) return send(res,401,{error:'Non autorisé'});
-    const inv=DB.invoices.find(i=>i.id===parts[2]);
-    if (!inv||!inv.pdfFile) return send(res,404,{error:'PDF non disponible'});
-    if (dlUser.role!=='admin'&&inv.ownerId!==dlUser.id) return send(res,403,{error:'Accès refusé'});
-    const UPD=process.env.RAILWAY_ENVIRONMENT?'/tmp/uploads':path.join(__dirname,'uploads');
-    const fp=path.join(UPD,inv.pdfFile);
-    if (!fs.existsSync(fp)) return send(res,404,{error:'Fichier introuvable'});
-    res.writeHead(200,{'Content-Type':'application/pdf','Content-Disposition':'attachment; filename="facture.pdf"','Access-Control-Allow-Origin':'*'});
-    return res.end(fs.readFileSync(fp));
-  }
 
   // REVENUES
   if (parts[1]==='revenues') {
