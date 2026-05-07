@@ -1331,12 +1331,13 @@ async function loadOwnerCalPreview(calUrl){
   container.innerHTML='<div class="spin"></div>';
   var events=[];
   try{
-    var proxyUrl='https://api.allorigins.win/raw?url='+encodeURIComponent(calUrl);
-    var resp=await fetch(proxyUrl);
+    var proxyUrl='/api/ical-proxy?url='+encodeURIComponent(calUrl);
+    var resp=await fetch(proxyUrl,{headers:{'Authorization':'Bearer '+(S.token||'')}});
+    if(!resp.ok)throw new Error('HTTP '+resp.status);
     var ical=await resp.text();
     events=parseICal(ical);
   }catch(e){
-    container.innerHTML='<div style="background:var(--rbg);border:1px solid rgba(192,57,43,0.15);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--re)">Impossible de charger le calendrier. Vérifiez le lien iCal.</div>';
+    container.innerHTML='<div style="background:var(--rbg);border:1px solid rgba(192,57,43,0.15);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--re)">Impossible de charger le calendrier: '+e.message+'<br>Vérifiez le lien iCal.</div>';
     return;
   }
   var now=new Date();
@@ -1440,7 +1441,7 @@ async function aSaveInfos(oid){
 }
 
 // ══ CALENDAR ══════════════════════════════════════════════════════════════════
-var _calYear=null,_calMonth=null,_calEvents=[];
+var _calYear=null,_calMonth=null,_calEvents=[],_calCacheTime=0;
 async function rCalendar(c){
   c.innerHTML='<div class="pg"><div class="spin"></div></div>';
   try{
@@ -1453,13 +1454,26 @@ async function rCalendar(c){
     var monthNames=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 
     // Parse iCal if URL available
-    if(_calEvents.length===0&&calUrl){
-      try{
-        var proxyUrl='https://api.allorigins.win/raw?url='+encodeURIComponent(calUrl);
-        var resp=await fetch(proxyUrl);
-        var ical=await resp.text();
-        _calEvents=parseICal(ical);
-      }catch(e){}
+    // Charger depuis le cache si récent (moins de 15 min)
+    var cacheAge=Date.now()-(_calCacheTime||0);
+    if(_calEvents.length===0||cacheAge>15*60*1000){
+      if(calUrl){
+        try{
+          // Utiliser le proxy serveur Railway (fiable) au lieu de allorigins.win
+          var proxyUrl='/api/ical-proxy?url='+encodeURIComponent(calUrl);
+          var resp=await fetch(proxyUrl,{headers:{'Authorization':'Bearer '+(S.token||'')}});
+          if(resp.ok){
+            var ical=await resp.text();
+            _calEvents=parseICal(ical);
+            _calCacheTime=Date.now();
+            console.log('iCal chargé:',_calEvents.length,'événements');
+          } else {
+            console.log('iCal erreur HTTP:',resp.status);
+          }
+        }catch(e){
+          console.log('iCal erreur:',e.message);
+        }
+      }
     }
     var events=_calEvents;
 
@@ -1540,7 +1554,10 @@ async function rCalendar(c){
     // Upcoming reservations list
     var upcoming=events.filter(function(e){return new Date(e.end)>=now;}).slice(0,5);
     if(upcoming.length>0){
-      h+='<h3 class="stitle">Prochaines réservations</h3>';
+      h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+      +'<h3 class="stitle" style="margin-bottom:0">Prochaines réservations</h3>'
+      +'<button onclick="_calEvents=[];_calCacheTime=0;rCalendar(document.getElementById('scr'))" style="background:var(--TL);border:1.5px solid var(--TM);color:var(--T);border-radius:9px;padding:6px 12px;font-size:12px;font-weight:600;font-family:var(--f);cursor:pointer">↻ Rafraîchir</button>'
+      +'</div>';
       upcoming.forEach(function(e){
         var nights=Math.round((new Date(e.end)-new Date(e.start))/(1000*60*60*24));
         h+='<div style="background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:14px;margin-bottom:8px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px">'

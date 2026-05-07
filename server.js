@@ -459,6 +459,50 @@ async function handleAPI(req, res, method, pathname, token) {
     }
   }
 
+  // ICAL PROXY — récupère le fichier iCal Airbnb côté serveur (évite CORS + allorigins)
+  if (parts[1]==='ical-proxy'&&method==='GET') {
+    const calUrl=parsed.query&&parsed.query.url?decodeURIComponent(parsed.query.url):null;
+    if (!calUrl) return send(res,400,{error:'URL manquante'});
+    // Vérifier que c'est bien une URL Airbnb
+    if (!calUrl.includes('airbnb.com')&&!calUrl.includes('.ics')&&!calUrl.includes('ical')) {
+      return send(res,400,{error:'URL iCal invalide'});
+    }
+    try {
+      const icalUrl=new URL(calUrl);
+      const isHttps=icalUrl.protocol==='https:';
+      const lib=isHttps?require('https'):require('http');
+      const icalData=await new Promise((resolve,reject)=>{
+        const reqOpts={
+          hostname:icalUrl.hostname,
+          path:icalUrl.pathname+(icalUrl.search||''),
+          method:'GET',
+          headers:{'User-Agent':'Mozilla/5.0 (compatible; Nexstay/1.0)'},
+          timeout:10000
+        };
+        const req2=lib.request(reqOpts,(r2)=>{
+          let data='';
+          r2.on('data',c=>data+=c);
+          r2.on('end',()=>{
+            if(r2.statusCode>=200&&r2.statusCode<400){resolve(data);}
+            else{reject(new Error('HTTP '+r2.statusCode));}
+          });
+        });
+        req2.on('error',reject);
+        req2.on('timeout',()=>{req2.destroy();reject(new Error('Timeout'));});
+        req2.end();
+      });
+      res.writeHead(200,{
+        'Content-Type':'text/calendar;charset=utf-8',
+        'Access-Control-Allow-Origin':'*',
+        'Cache-Control':'max-age=900' // Cache 15 min
+      });
+      return res.end(icalData);
+    } catch(e) {
+      console.log('iCal proxy error:', e.message);
+      return send(res,502,{error:'Impossible de récupérer le calendrier: '+e.message});
+    }
+  }
+
   // CHANGE PASSWORD
   if (parts[1]==='change-password'&&method==='POST') {
     const b=await parseBody(req);
