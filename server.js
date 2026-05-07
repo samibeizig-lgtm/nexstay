@@ -61,7 +61,9 @@ function jsonbinRequest(method, data) {
 }
 
 async function loadDB() {
+  console.log('loadDB() — USE_JSONBIN:', USE_JSONBIN);
   if (USE_JSONBIN) {
+    console.log('→ Tentative chargement depuis JSONBin...');
     try {
       const r = await jsonbinRequest('GET');
       if (r && r.record && typeof r.record === 'object') {
@@ -76,7 +78,7 @@ async function loadDB() {
           if (!DB.maintenances) DB.maintenances=[];
           if (!DB.infos) DB.infos=[];
           if (!DB.sessions) DB.sessions=[];
-          console.log('✅ DB chargée depuis JSONBin —', DB.users.length, 'utilisateurs,', DB.invoices.length, 'factures');
+          console.log('✅ DB chargée depuis JSONBin:', DB.users.length, 'users,', (DB.invoices||[]).length, 'factures,', (DB.revenues||[]).length, 'revenus');
           return;
         } else {
           console.log('⚠️ JSONBin: données invalides ou vides — fallback local');
@@ -276,6 +278,31 @@ async function handleAPI(req, res, method, pathname, token) {
     return res.end(pdfBuf);
   }
 
+
+// DEBUG (admin only - check JSONBin status)
+  if (parts[1]==='debug'&&method==='GET') {
+    const status = {
+      jsonbin_configured: USE_JSONBIN,
+      jsonbin_id: JSONBIN_ID ? JSONBIN_ID.slice(0,8)+'...' : null,
+      db_users: (DB.users||[]).length,
+      db_invoices: (DB.invoices||[]).length,
+      db_revenues: (DB.revenues||[]).length,
+      db_infos: (DB.infos||[]).length,
+      db_sessions: (DB.sessions||[]).length,
+    };
+    // Test JSONBin connectivity
+    if (USE_JSONBIN) {
+      try {
+        const r = await jsonbinRequest('GET');
+        status.jsonbin_reachable = true;
+        status.jsonbin_record_users = r&&r.record&&r.record.users ? r.record.users.length : 0;
+      } catch(e) {
+        status.jsonbin_reachable = false;
+        status.jsonbin_error = e.message;
+      }
+    }
+    return send(res,200,status);
+  }
   const user=authUser(token);
   if (!user) return send(res,401,{error:'Non autorisé'});
 
@@ -481,6 +508,14 @@ async function handleAPI(req, res, method, pathname, token) {
 
 // ── SERVEUR ───────────────────────────────────────────────────────────────────
 async function main() {
+  // ── DIAGNOSTIC DÉMARRAGE ──
+  console.log('═══════════════════════════════════════');
+  console.log('NEXSTAY - Démarrage serveur');
+  console.log('JSONBIN_ID:', process.env.JSONBIN_ID ? '✅ Configuré ('+process.env.JSONBIN_ID.slice(0,8)+'...)' : '❌ MANQUANT');
+  console.log('JSONBIN_KEY:', process.env.JSONBIN_KEY ? '✅ Configuré' : '❌ MANQUANT');
+  console.log('USE_JSONBIN:', USE_JSONBIN ? '✅ OUI' : '❌ NON - données perdues au redémarrage!');
+  console.log('═══════════════════════════════════════');
+
   await loadDB();
   ensureAdmin();
   // seedDemo() supprimé — ne pas écraser les données réelles
