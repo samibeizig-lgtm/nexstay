@@ -188,17 +188,18 @@ async function handleAPI(req, res, method, pathname, token) {
     const inv=DB.invoices.find(i=>i.id===parts[2]);
     if (!inv||!inv.pdfFile) return send(res,404,{error:'PDF non disponible'});
     if (pdfUser.role!=='admin'&&inv.ownerId!==pdfUser.id) return send(res,403,{error:'Accès refusé'});
-    const fp=path.join(UPLOADS_DIR,inv.pdfFile);
-    if (!fs.existsSync(fp)) return send(res,404,{error:'Fichier introuvable sur le serveur'});
-    const origName=(inv.numero||'facture').replace(/[^a-zA-Z0-9-_]/g,'-')+'.pdf';
+    // Read from DB (base64) - no filesystem dependency
+    if (!inv.pdfData) return send(res,404,{error:'PDF non disponible - veuillez le re-uploader'});
+    const pdfBuf = Buffer.from(inv.pdfData,'base64');
+    const fname = inv.pdfName || (inv.numero||'facture').replace(/[^a-zA-Z0-9-_.]/g,'-')+'.pdf';
     res.writeHead(200,{
       'Content-Type':'application/pdf',
-      'Content-Disposition':'attachment; filename="'+origName+'"',
-      'Content-Length':fs.statSync(fp).size,
+      'Content-Disposition':'attachment; filename="'+fname+'"',
+      'Content-Length':pdfBuf.length,
       'Access-Control-Allow-Origin':'*',
       'Access-Control-Expose-Headers':'Content-Disposition'
     });
-    return res.end(fs.readFileSync(fp));
+    return res.end(pdfBuf);
   }
   const user=authUser(token);
   if (!user) return send(res,401,{error:'Non autorisé'});
@@ -241,7 +242,7 @@ async function handleAPI(req, res, method, pathname, token) {
     }
     if (method==='DELETE'&&user.role==='admin'&&parts[2]) {
       const inv=DB.invoices.find(i=>i.id===parts[2]);
-      if (inv&&inv.pdfFile) { try { fs.unlinkSync(path.join(UPLOADS_DIR,inv.pdfFile)); } catch(e) {} }
+      // PDF stored in DB as base64 - no file to delete
       DB.invoices=DB.invoices.filter(i=>i.id!==parts[2]); saveDB();
       return send(res,200,{success:true});
     }
@@ -255,11 +256,18 @@ async function handleAPI(req, res, method, pathname, token) {
     const parsed=await parseMultipart(req,bm[1]);
     const file=parsed.file;
     if (!file||!file.data) return send(res,400,{error:'Pas de fichier'});
-    const filename=parts[2]+'_'+Date.now()+'.pdf';
-    fs.writeFileSync(path.join(UPLOADS_DIR,filename),file.data);
+    if (file.data.length > 10*1024*1024) return send(res,400,{error:'Fichier trop grand (max 10MB)'});
+    // Stocker en base64 dans la DB (pas de filesystem - compatible Railway)
+    const b64=file.data.toString('base64');
+    const origName=(file.filename||'facture.pdf').replace(/[^a-zA-Z0-9._-]/g,'_');
     const idx=DB.invoices.findIndex(i=>i.id===parts[2]);
-    if (idx!==-1) { DB.invoices[idx].pdfFile=filename; saveDB(); }
-    return send(res,200,{pdfFile:filename});
+    if (idx!==-1) {
+      DB.invoices[idx].pdfData=b64;
+      DB.invoices[idx].pdfName=origName;
+      DB.invoices[idx].pdfFile=origName;
+      saveDB();
+    }
+    return send(res,200,{pdfFile:origName,success:true});
   }
 
 
