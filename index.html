@@ -1556,7 +1556,7 @@ async function rCalendar(c){
     if(upcoming.length>0){
       h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
       +'<h3 class="stitle" style="margin-bottom:0">Prochaines réservations</h3>'
-      +'<button onclick="_calEvents=[];_calCacheTime=0;rCalendar(document.getElementById('scr'))" style="background:var(--TL);border:1.5px solid var(--TM);color:var(--T);border-radius:9px;padding:6px 12px;font-size:12px;font-weight:600;font-family:var(--f);cursor:pointer">↻ Rafraîchir</button>'
+      +'<button onclick="calRefresh()" style="background:var(--TL);border:1.5px solid var(--TM);color:var(--T);border-radius:9px;padding:6px 12px;font-size:12px;font-weight:600;font-family:var(--f);cursor:pointer">↻ Rafraîchir</button>'
       +'</div>';
       upcoming.forEach(function(e){
         var nights=Math.round((new Date(e.end)-new Date(e.start))/(1000*60*60*24));
@@ -1591,6 +1591,11 @@ function parseICal(ical){
     if(start&&end)events.push({summary:summary.trim(),start:start.trim(),end:end.trim()});
   });
   return events;
+}
+
+function calRefresh(){
+  _calEvents=[];_calCacheTime=0;
+  rCalendar(document.getElementById('scr'));
 }
 
 function calNav(dir){
