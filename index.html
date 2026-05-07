@@ -577,8 +577,10 @@ async function dlPdf(id){
       headers:{'Authorization':'Bearer '+(S.token||'')}
     });
     if(!resp.ok){
-      var err=await resp.json().catch(function(){return{error:'Erreur'};});
-      toast(err.error||'Erreur téléchargement','err');
+      var errText=await resp.text().catch(function(){return'';});
+      var errMsg='Erreur téléchargement';
+      try{var j=JSON.parse(errText);errMsg=j.error||errMsg;}catch(e){}
+      toast(errMsg,'err');
       return;
     }
     // Get filename from Content-Disposition header
@@ -1249,8 +1251,10 @@ async function dlPdf(id){
       headers:{'Authorization':'Bearer '+(S.token||'')}
     });
     if(!resp.ok){
-      var err=await resp.json().catch(function(){return{error:'Erreur'};});
-      toast(err.error||'Erreur téléchargement','err');
+      var errText=await resp.text().catch(function(){return'';});
+      var errMsg='Erreur téléchargement';
+      try{var j=JSON.parse(errText);errMsg=j.error||errMsg;}catch(e){}
+      toast(errMsg,'err');
       return;
     }
     // Get filename from Content-Disposition header

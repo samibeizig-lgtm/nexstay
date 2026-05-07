@@ -181,15 +181,16 @@ async function handleAPI(req, res, method, pathname, token) {
 
   // PDF DOWNLOAD — handles token from header OR query string
   if (parts[1]==='invoice-pdf'&&parts[2]&&method==='GET') {
-    const qtoken = parsed.query&&parsed.query.token ? parsed.query.token.replace('Bearer ','').trim() : '';
-    const pdfToken = token || (qtoken ? 'Bearer '+qtoken : '');
-    const pdfUser = authUser(pdfToken) || authUser('Bearer '+qtoken);
-    if (!pdfUser) return send(res,401,{error:'Autorisation requise — veuillez vous reconnecter'});
+    // Auth: check header token (sent by fetch) or query token (fallback)
+    var pdfUser = authUser(token);
+    if (!pdfUser && parsed.query && parsed.query.token) {
+      pdfUser = authUser('Bearer '+parsed.query.token.trim());
+    }
+    if (!pdfUser) return send(res,401,{error:'Session expirée — reconnectez-vous'});
     const inv=DB.invoices.find(i=>i.id===parts[2]);
-    if (!inv||!inv.pdfFile) return send(res,404,{error:'PDF non disponible'});
+    if (!inv) return send(res,404,{error:'Facture introuvable'});
     if (pdfUser.role!=='admin'&&inv.ownerId!==pdfUser.id) return send(res,403,{error:'Accès refusé'});
-    // Read from DB (base64) - no filesystem dependency
-    if (!inv.pdfData) return send(res,404,{error:'PDF non disponible - veuillez le re-uploader'});
+    if (!inv.pdfData) return send(res,404,{error:'PDF non disponible — l\'admin doit uploader ce fichier'});
     const pdfBuf = Buffer.from(inv.pdfData,'base64');
     const fname = inv.pdfName || (inv.numero||'facture').replace(/[^a-zA-Z0-9-_.]/g,'-')+'.pdf';
     res.writeHead(200,{
