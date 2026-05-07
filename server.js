@@ -477,9 +477,16 @@ async function main() {
       return res.end();
     }
     if (pathname.startsWith('/api/')) return handleAPI(req,res,method,pathname,token);
-    if (pathname==='/'||pathname==='/index.html') {
-      const f=path.join(__dirname,'index.html');
-      if (fs.existsSync(f)){res.writeHead(200,{'Content-Type':'text/html;charset=utf-8'});return res.end(fs.readFileSync(f));}
+    const staticMap={'/':'index.html','/index.html':'index.html','/manifest.json':'manifest.json','/sw.js':'sw.js'};
+    const mimeMap={'.html':'text/html;charset=utf-8','.json':'application/json','.js':'application/javascript','.png':'image/png'};
+    const sf=staticMap[pathname];
+    if(sf){
+      const fp=path.join(__dirname,sf);
+      if(fs.existsSync(fp)){
+        const ct=mimeMap[path.extname(fp)]||'text/plain';
+        res.writeHead(200,{'Content-Type':ct,'Cache-Control':sf==='sw.js'?'no-cache':'max-age=3600'});
+        return res.end(fs.readFileSync(fp));
+      }
     }
     res.writeHead(404);res.end('Not found');
   });

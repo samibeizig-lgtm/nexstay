@@ -1,0 +1,27 @@
+{
+  "name": "Nexstay Conciergerie",
+  "short_name": "Nexstay",
+  "description": "Espace propriétaire Airbnb - Nexstay Tunisie",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F5F2",
+  "theme_color": "#C17F5A",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["business", "productivity"]
+}

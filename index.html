@@ -5,7 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#F7F5F2">
+<meta name="theme-color" content="#C17F5A">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Nexstay">
+<meta name="application-name" content="Nexstay">
+<meta name="description" content="Nexstay Conciergerie - Espace propriétaire Airbnb Tunisie">
+<link rel="manifest" href="/manifest.json">
 <title>Nexstay</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -964,8 +969,8 @@ function renderOTab(t){
       +'<input id="ii-cal" class="inp" placeholder="https://www.airbnb.com/calendar/ical/..." value="'+(i.calendarUrl||'')+'">'
       +'<p style="font-size:10px;color:var(--t3);margin-top:2px">Airbnb → Calendrier → Paramètres → Exporter → Copier le lien iCal</p>'
       +'<div class="sep" style="margin-top:8px">MOT DE PASSE PROPRIÉTAIRE</div>'
-      +'<div style="display:flex;gap:8px"><input id="ii-pwd" class="inp" type="password" placeholder="Nouveau mot de passe"></div>'
-      +'<button class="btnT" style="margin-top:0;background:var(--t2)" id="pwdBtn-'+oid+'">Changer le mot de passe</button>'
+      +'<div style="background:var(--b2);border-radius:10px;padding:11px;font-size:12px;color:var(--t2);line-height:1.6">Le mot de passe sera réinitialisé à <b style=\"color:var(--tx)\">nexstay123@</b><br>Le propriétaire devra le modifier après connexion.</div>'
+      +'<button class="btnT" style="margin-top:0;background:var(--t2)" onclick="aChangePwd()">Réinitialiser le mot de passe</button>'
       +'<div style="height:1px;background:var(--b2);margin:4px 0"></div>'
       +'<button class="btnT" style="margin-top:0" onclick="aSaveInfos(\''+oid+'\')">Enregistrer les informations</button>'
       +'</div></div>';
@@ -1410,12 +1415,11 @@ async function saveOwnerCalUrl(){
 
 async function aChangePwd(oid){
   if(!oid)oid=window._infosOid;
-  var pwd=gv('ii-pwd');
-  if(!pwd||pwd.length<6){toast('Mot de passe trop court (min. 6 car.)','err');return;}
+  if(!oid){toast('Erreur: propriétaire non identifié','err');return;}
+  if(!confirm('Réinitialiser le mot de passe de ce propriétaire à "nexstay123@" ?'))return;
   try{
-    await api('POST','/admin-change-password',{ownerId:oid,newPassword:pwd});
-    document.getElementById('ii-pwd').value='';
-    toast('Mot de passe changé ✓','ok');
+    await api('POST','/admin-change-password',{ownerId:oid,newPassword:'nexstay123@'});
+    toast('Mot de passe réinitialisé à nexstay123@ ✓','ok');
   }catch(e){toast(e.message,'err');}
 }
 
@@ -1635,6 +1639,15 @@ async function doChangePassword(){
 // ══ INIT ═══════════════════════════════════════════════════════════════════════
 rAuth();
 tryAuto();
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('/sw.js').then(function(r){
+      console.log('SW registered');
+    }).catch(function(e){console.log('SW error',e);});
+  });
+}
 </script>
 </body>
 </html>
