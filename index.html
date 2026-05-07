@@ -1330,14 +1330,29 @@ async function loadOwnerCalPreview(calUrl){
   if(!container)return;
   container.innerHTML='<div class="spin"></div>';
   var events=[];
+  var icalText=null;
+  var proxies=[
+    'https://corsproxy.io/?'+encodeURIComponent(calUrl),
+    'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(calUrl),
+    'https://thingproxy.freeboard.io/fetch/'+encodeURIComponent(calUrl),
+  ];
+  for(var pi=0;pi<proxies.length;pi++){
+    try{
+      var resp=await fetch(proxies[pi],{signal:AbortSignal.timeout(8000)});
+      if(resp.ok){
+        var txt=await resp.text();
+        if(txt&&txt.includes('BEGIN:VCALENDAR')){icalText=txt;break;}
+      }
+    }catch(e){console.log('Proxy admin',pi,'échoué:',e.message);}
+  }
+  if(!icalText){
+    container.innerHTML='<div style="background:var(--rbg);border:1px solid rgba(192,57,43,0.15);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--re)">Impossible de charger le calendrier Airbnb.<br>Vérifiez le lien iCal ou réessayez dans quelques minutes.</div>';
+    return;
+  }
   try{
-    var proxyUrl='/api/ical-proxy?url='+encodeURIComponent(calUrl);
-    var resp=await fetch(proxyUrl,{headers:{'Authorization':'Bearer '+(S.token||'')}});
-    if(!resp.ok)throw new Error('HTTP '+resp.status);
-    var ical=await resp.text();
-    events=parseICal(ical);
+    events=parseICal(icalText);
   }catch(e){
-    container.innerHTML='<div style="background:var(--rbg);border:1px solid rgba(192,57,43,0.15);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--re)">Impossible de charger le calendrier: '+e.message+'<br>Vérifiez le lien iCal.</div>';
+    container.innerHTML='<div style="background:var(--rbg);border:1px solid rgba(192,57,43,0.15);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--re)">Erreur lecture calendrier: '+e.message+'</div>';
     return;
   }
   var now=new Date();
@@ -1458,20 +1473,34 @@ async function rCalendar(c){
     var cacheAge=Date.now()-(_calCacheTime||0);
     if(_calEvents.length===0||cacheAge>15*60*1000){
       if(calUrl){
-        try{
-          // Utiliser le proxy serveur Railway (fiable) au lieu de allorigins.win
-          var proxyUrl='/api/ical-proxy?url='+encodeURIComponent(calUrl);
-          var resp=await fetch(proxyUrl,{headers:{'Authorization':'Bearer '+(S.token||'')}});
-          if(resp.ok){
-            var ical=await resp.text();
-            _calEvents=parseICal(ical);
-            _calCacheTime=Date.now();
-            console.log('iCal chargé:',_calEvents.length,'événements');
-          } else {
-            console.log('iCal erreur HTTP:',resp.status);
+        var icalText=null;
+        // Liste de proxies CORS publics - essai en cascade
+        var proxies=[
+          'https://corsproxy.io/?'+encodeURIComponent(calUrl),
+          'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(calUrl),
+          'https://thingproxy.freeboard.io/fetch/'+encodeURIComponent(calUrl),
+        ];
+        for(var pi=0;pi<proxies.length;pi++){
+          try{
+            var resp=await fetch(proxies[pi],{signal:AbortSignal.timeout(8000)});
+            if(resp.ok){
+              var txt=await resp.text();
+              if(txt&&txt.includes('BEGIN:VCALENDAR')){
+                icalText=txt;
+                console.log('iCal chargé via proxy',pi,':',proxies[pi].split('?')[0]);
+                break;
+              }
+            }
+          }catch(e){
+            console.log('Proxy',pi,'échoué:',e.message);
           }
-        }catch(e){
-          console.log('iCal erreur:',e.message);
+        }
+        if(icalText){
+          _calEvents=parseICal(icalText);
+          _calCacheTime=Date.now();
+          console.log('iCal OK:',_calEvents.length,'événements');
+        } else {
+          console.log('Tous les proxies ont échoué');
         }
       }
     }
