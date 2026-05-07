@@ -571,7 +571,7 @@ async function main() {
       const fp=path.join(__dirname,sf);
       if(fs.existsSync(fp)){
         const ct=mimeMap[path.extname(fp)]||'text/plain';
-        res.writeHead(200,{'Content-Type':ct,'Cache-Control':sf==='sw.js'?'no-cache':'max-age=3600'});
+        res.writeHead(200,{'Content-Type':ct,'Cache-Control':sf==='index.html'?'no-store,no-cache,must-revalidate':sf==='sw.js'?'no-cache':'max-age=86400'});
         return res.end(fs.readFileSync(fp));
       }
     }
