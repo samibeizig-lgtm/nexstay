@@ -476,19 +476,52 @@ async function handleAPI(req, res, method, pathname, token) {
           hostname:icalUrl.hostname,
           path:icalUrl.pathname+(icalUrl.search||''),
           method:'GET',
-          headers:{'User-Agent':'Mozilla/5.0 (compatible; Nexstay/1.0)'},
-          timeout:10000
+          headers:{
+            'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept':'text/calendar,text/html,application/xhtml+xml,*/*;q=0.8',
+            'Accept-Language':'fr-FR,fr;q=0.9,en;q=0.8',
+            'Accept-Encoding':'identity',
+            'Cache-Control':'no-cache',
+            'Connection':'keep-alive'
+          },
+          timeout:15000
         };
         const req2=lib.request(reqOpts,(r2)=>{
+          // Suivre les redirections (301/302)
+          if((r2.statusCode===301||r2.statusCode===302)&&r2.headers.location){
+            const redir=new URL(r2.headers.location,calUrl.toString());
+            const lib2=redir.protocol==='https:'?require('https'):require('http');
+            lib2.get({
+              hostname:redir.hostname,
+              path:redir.pathname+(redir.search||''),
+              headers:reqOpts.headers,
+              timeout:10000
+            },(r3)=>{
+              let d2='';
+              r3.on('data',c=>d2+=c);
+              r3.on('end',()=>resolve(d2));
+            }).on('error',reject);
+            r2.resume();
+            return;
+          }
           let data='';
           r2.on('data',c=>data+=c);
           r2.on('end',()=>{
-            if(r2.statusCode>=200&&r2.statusCode<400){resolve(data);}
-            else{reject(new Error('HTTP '+r2.statusCode));}
+            if(r2.statusCode>=200&&r2.statusCode<400){
+              if(!data.includes('BEGIN:VCALENDAR')){
+                console.log('iCal response preview:', data.slice(0,200));
+                reject(new Error('Réponse invalide — pas un fichier iCal Airbnb'));
+                return;
+              }
+              resolve(data);
+            } else {
+              console.log('iCal HTTP error:', r2.statusCode, icalUrl.hostname);
+              reject(new Error('HTTP '+r2.statusCode+' — Airbnb a refusé la connexion'));
+            }
           });
         });
         req2.on('error',reject);
-        req2.on('timeout',()=>{req2.destroy();reject(new Error('Timeout'));});
+        req2.on('timeout',()=>{req2.destroy();reject(new Error('Timeout 15s'));});
         req2.end();
       });
       res.writeHead(200,{
