@@ -607,6 +607,21 @@ async function handleAPI(req, res, method, pathname, token) {
     DB.users[idx].password=hash(b.newPassword);saveDB();return send(res,200,{success:true});
   }
 
+  // CONFIG FIREBASE (publique - pas de secrets)
+  if (parts[1]==='firebase-config'&&method==='GET') {
+    const config = {
+      apiKey:        process.env.FCM_API_KEY         || null,
+      authDomain:    process.env.FCM_AUTH_DOMAIN     || null,
+      projectId:     process.env.FCM_PROJECT_ID      || null,
+      storageBucket: process.env.FCM_STORAGE_BUCKET  || null,
+      messagingSenderId: process.env.FCM_SENDER_ID   || null,
+      appId:         process.env.FCM_APP_ID          || null,
+      vapidKey:      process.env.FCM_VAPID_KEY       || null,
+    };
+    if (!config.apiKey) return send(res,200,{});
+    return send(res,200,config);
+  }
+
   // ENREGISTRER TOKEN FCM
   if (parts[1]==='fcm-token'&&method==='POST') {
     const b=await parseBody(req);
