@@ -64,22 +64,40 @@ async function loadDB() {
   if (USE_JSONBIN) {
     try {
       const r = await jsonbinRequest('GET');
-      if (r && r.record) {
-        DB = r.record;
-        console.log('✅ DB chargée depuis JSONBin —', DB.users.length, 'utilisateurs');
-        return;
+      if (r && r.record && typeof r.record === 'object') {
+        // Vérifier que la DB n'est pas vide avant d'accepter
+        const rec = r.record;
+        if (rec.users && Array.isArray(rec.users)) {
+          DB = rec;
+          // S'assurer que tous les champs existent
+          if (!DB.contracts) DB.contracts=[];
+          if (!DB.invoices) DB.invoices=[];
+          if (!DB.revenues) DB.revenues=[];
+          if (!DB.maintenances) DB.maintenances=[];
+          if (!DB.infos) DB.infos=[];
+          if (!DB.sessions) DB.sessions=[];
+          console.log('✅ DB chargée depuis JSONBin —', DB.users.length, 'utilisateurs,', DB.invoices.length, 'factures');
+          return;
+        } else {
+          console.log('⚠️ JSONBin: données invalides ou vides — fallback local');
+        }
       }
     } catch(e) {
       console.log('⚠️ JSONBin erreur:', e.message, '— fallback local');
     }
   }
-  // Fallback local
+  // Fallback local (sans sauvegarder vers JSONBin)
   try {
     if (fs.existsSync(DB_FILE)) {
-      DB = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
-      console.log('✅ DB chargée localement');
+      const local = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+      if (local && local.users) {
+        DB = local;
+        console.log('✅ DB chargée localement —', DB.users.length, 'utilisateurs');
+        return;
+      }
     }
-  } catch(e) { console.log('DB vide'); }
+  } catch(e) {}
+  console.log('ℹ️ DB initialisée vide');
 }
 
 function saveDB() {
@@ -91,10 +109,11 @@ function saveDB() {
     clearTimeout(_saveTimer);
     _saveTimer = setTimeout(async () => {
       try {
-        // Ne jamais envoyer une DB vide
-        if (!DB.users) DB.users=[];
-        if (!DB.sessions) DB.sessions=[];
-        if (Object.keys(DB).length === 0) return;
+        // Ne jamais écraser JSONBin avec une DB vide ou invalide
+        if (!DB || !DB.users || DB.users.length === 0) {
+          console.log('⚠️ Sauvegarde annulée: DB vide ou invalide');
+          return;
+        }
         await jsonbinRequest('PUT', DB);
         console.log('✅ DB sauvegardée sur JSONBin');
       } catch(e) {
@@ -464,7 +483,7 @@ async function handleAPI(req, res, method, pathname, token) {
 async function main() {
   await loadDB();
   ensureAdmin();
-  seedDemo();
+  // seedDemo() supprimé — ne pas écraser les données réelles
 
   const server = http.createServer(async (req, res) => {
     const parsed = url.parse(req.url, true);
