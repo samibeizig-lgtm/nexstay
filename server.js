@@ -78,7 +78,19 @@ async function loadDB() {
           if (!DB.maintenances) DB.maintenances=[];
           if (!DB.infos) DB.infos=[];
           if (!DB.sessions) DB.sessions=[];
-          console.log('✅ DB chargée depuis JSONBin:', DB.users.length, 'users,', (DB.invoices||[]).length, 'factures,', (DB.revenues||[]).length, 'revenus');
+          console.log('✅ DB chargée depuis JSONBin:', DB.users.length, 'users,', (DB.invoices||[]).length, 'factures');
+          // Restaurer les PDFs depuis le cache local si disponible
+          try {
+            if (fs.existsSync('/tmp/nexstay_pdfs.json')) {
+              const pdfs = JSON.parse(fs.readFileSync('/tmp/nexstay_pdfs.json','utf8'));
+              (DB.invoices||[]).forEach(inv => {
+                if (pdfs[inv.id]) inv.pdfData = pdfs[inv.id];
+              });
+              console.log('✅ PDFs restaurés depuis cache local:', Object.keys(pdfs).length);
+            } else {
+              console.log('ℹ️ Aucun PDF en cache local — réupload nécessaire après redémarrage');
+            }
+          } catch(e) {}
           return;
         } else {
           console.log('⚠️ JSONBin: données invalides ou vides — fallback local');
@@ -112,15 +124,33 @@ function saveDB() {
     console.log('⚠️ Sauvegarde annulée: DB invalide');
     return;
   }
-  jsonbinRequest('PUT', DB)
+  // Préparer une version allégée sans les PDFs (trop lourds pour JSONBin 100KB limit)
+  const dbLite = {
+    ...DB,
+    invoices: (DB.invoices||[]).map(inv => {
+      const {pdfData, ...rest} = inv;
+      return rest; // pdfData exclu de JSONBin
+    })
+  };
+
+  // Sauvegarder les PDFs séparément en local (réupload nécessaire après redémarrage)
+  try {
+    const pdfs = {};
+    (DB.invoices||[]).forEach(inv => { if(inv.pdfData) pdfs[inv.id]=inv.pdfData; });
+    if(Object.keys(pdfs).length>0) fs.writeFileSync('/tmp/nexstay_pdfs.json', JSON.stringify(pdfs));
+  } catch(e) {}
+
+  const dbStr = JSON.stringify(dbLite);
+  console.log('JSONBin payload size:', Math.round(dbStr.length/1024), 'KB');
+
+  jsonbinRequest('PUT', dbLite)
     .then(() => {
       console.log('✅ JSONBin OK:', DB.users.length, 'users,',
         (DB.invoices||[]).length, 'factures,',
-        (DB.infos||[]).length, 'infos,',
-        (DB.revenues||[]).length, 'revenus');
+        (DB.infos||[]).length, 'infos (PDFs exclus du cloud)');
     })
     .catch(e => {
-      console.log('⚠️ JSONBin save error:', e.message, '— données en local /tmp');
+      console.log('⚠️ JSONBin save error:', e.message);
     });
 }
 
@@ -402,6 +432,10 @@ async function handleAPI(req, res, method, pathname, token) {
       const b=await parseBody(req);
       if(!DB.infos)DB.infos=[];
       const idx=DB.infos.findIndex(i=>i.ownerId===b.ownerId);
+      // Préserver calendarUrl si non fourni dans la requête
+      if (!b.calendarUrl && idx!==-1 && DB.infos[idx].calendarUrl) {
+        b.calendarUrl = DB.infos[idx].calendarUrl;
+      }
       if (idx===-1){const it={id:genId(),...b,createdAt:new Date().toISOString()};DB.infos.push(it);saveDB();return send(res,201,it);}
       DB.infos[idx]={...DB.infos[idx],...b};saveDB();return send(res,200,DB.infos[idx]);
     }

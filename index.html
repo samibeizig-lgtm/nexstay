@@ -1430,16 +1430,11 @@ async function aSaveInfos(oid){
     internet:{fournisseur:gv('ii-if'),numero:gv('ii-in'),wifiNom:gv('ii-wn'),wifiCode:gv('ii-wc'),dateFin:gv('ii-id')},
     tv:{abonnement:gv('ii-ta'),reference:gv('ii-tr'),dateFin:gv('ii-td')},
     contrat:{numero:gv('ii-cn'),dateDebut:gv('ii-cd'),dateFin:gv('ii-cf'),commission:parseFloat(gv('ii-cc'))||0},
-    autresInfos:gv('ii-no'),
-    calendarUrl:gv('ii-cal')||null};
+    autresInfos:gv('ii-no')};
+    // Note: calendarUrl est géré séparément via l'onglet Calendrier
   try{
     var inf=await api('PUT','/infos',b);
     ownerData.infos=inf;
-    // Save calendar URL separately
-    var calUrl=gv('ii-cal');
-    if(calUrl!==undefined){
-      await api('PUT','/calendar/'+oid,{calendarUrl:calUrl||null});
-    }
     toast('Informations enregistrées ✓','ok');
   }catch(e){toast(e.message,'err');}
 }
