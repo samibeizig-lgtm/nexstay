@@ -103,29 +103,27 @@ async function loadDB() {
 }
 
 function saveDB() {
-  // Sauvegarde locale immédiate
+  // Sauvegarde locale immédiate (fallback si JSONBin indisponible)
   try { fs.writeFileSync(DB_FILE, JSON.stringify(DB, null, 2)); } catch(e) {}
 
-  // Sauvegarde JSONBin avec debounce (évite trop d'appels API)
-  if (USE_JSONBIN) {
-    clearTimeout(_saveTimer);
-    _saveTimer = setTimeout(async () => {
-      try {
-        // Ne jamais écraser JSONBin avec une DB vide ou invalide
-        if (!DB || !DB.users || DB.users.length === 0) {
-          console.log('⚠️ Sauvegarde annulée: DB vide ou invalide');
-          return;
-        }
-        await jsonbinRequest('PUT', DB);
-        console.log('✅ DB sauvegardée sur JSONBin');
-      } catch(e) {
-        console.log('⚠️ Erreur sauvegarde JSONBin:', e.message);
-      }
-    }, 2000); // Attend 2s avant d'envoyer (batch les sauvegardes)
+  // Sauvegarde JSONBin IMMÉDIATE - pas de debounce pour éviter la perte au redémarrage
+  if (!USE_JSONBIN) return;
+  if (!DB || !DB.users || DB.users.length === 0) {
+    console.log('⚠️ Sauvegarde annulée: DB invalide');
+    return;
   }
+  jsonbinRequest('PUT', DB)
+    .then(() => {
+      console.log('✅ JSONBin OK:', DB.users.length, 'users,',
+        (DB.invoices||[]).length, 'factures,',
+        (DB.infos||[]).length, 'infos,',
+        (DB.revenues||[]).length, 'revenus');
+    })
+    .catch(e => {
+      console.log('⚠️ JSONBin save error:', e.message, '— données en local /tmp');
+    });
 }
 
-// ── FONCTIONS DB ──────────────────────────────────────────────────────────────
 function genId() { return crypto.randomBytes(8).toString('hex'); }
 function hash(p) { return crypto.createHash('sha256').update(p+'nexstay2024').digest('hex'); }
 
