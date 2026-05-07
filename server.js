@@ -13,6 +13,99 @@ const https = require('https');
 
 const PORT = process.env.PORT || 3000;
 
+// ── CONFIGURATION FCM (Firebase Cloud Messaging) ─────────────────────────────
+const FCM_PROJECT_ID  = process.env.FCM_PROJECT_ID  || null;
+const FCM_CLIENT_EMAIL= process.env.FCM_CLIENT_EMAIL|| null;
+const FCM_PRIVATE_KEY = process.env.FCM_PRIVATE_KEY ? process.env.FCM_PRIVATE_KEY.replace(/\\n/g,'\n') : null;
+const USE_FCM = !!(FCM_PROJECT_ID && FCM_CLIENT_EMAIL && FCM_PRIVATE_KEY);
+
+// Génère un JWT pour l'API FCM v1
+async function getFCMToken() {
+  const now = Math.floor(Date.now()/1000);
+  const header = Buffer.from(JSON.stringify({alg:'RS256',typ:'JWT'})).toString('base64url');
+  const payload = Buffer.from(JSON.stringify({
+    iss: FCM_CLIENT_EMAIL,
+    sub: FCM_CLIENT_EMAIL,
+    aud: 'https://oauth2.googleapis.com/token',
+    iat: now,
+    exp: now + 3600,
+    scope: 'https://www.googleapis.com/auth/firebase.messaging'
+  })).toString('base64url');
+  const sign = crypto.createSign('RSA-SHA256');
+  sign.update(header+'.'+payload);
+  const sig = sign.sign(FCM_PRIVATE_KEY,'base64url');
+  const jwt = header+'.'+payload+'.'+sig;
+
+  // Échanger le JWT contre un access token
+  return new Promise((resolve,reject)=>{
+    const body='grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion='+jwt;
+    const req=require('https').request({
+      hostname:'oauth2.googleapis.com',
+      path:'/token',
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded','Content-Length':Buffer.byteLength(body)}
+    },(r)=>{
+      let d='';r.on('data',c=>d+=c);
+      r.on('end',()=>{
+        try{const j=JSON.parse(d);resolve(j.access_token);}
+        catch(e){reject(e);}
+      });
+    });
+    req.on('error',reject);
+    req.write(body);req.end();
+  });
+}
+
+// Envoyer une notification push à un token FCM
+async function sendPush(fcmToken, title, body, data={}) {
+  if (!USE_FCM || !fcmToken) return;
+  try {
+    const accessToken = await getFCMToken();
+    const msg = JSON.stringify({
+      message: {
+        token: fcmToken,
+        notification: { title, body },
+        webpush: {
+          headers: { Urgency: 'high' },
+          notification: { title, body, icon: '/icon-192.png', badge: '/icon-192.png', vibrate: [200,100,200] },
+          fcm_options: { link: '/' }
+        },
+        data: Object.fromEntries(Object.entries(data).map(([k,v])=>[k,String(v)]))
+      }
+    });
+    await new Promise((resolve,reject)=>{
+      const req=require('https').request({
+        hostname:'fcm.googleapis.com',
+        path:`/v1/projects/${FCM_PROJECT_ID}/messages:send`,
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+accessToken,'Content-Length':Buffer.byteLength(msg)}
+      },(r)=>{
+        let d='';r.on('data',c=>d+=c);
+        r.on('end',()=>{
+          const j=JSON.parse(d||'{}');
+          if(r.statusCode===200){console.log('✅ Push envoyé:',title);}
+          else{console.log('⚠️ Push erreur:',r.statusCode,d);}
+          resolve();
+        });
+      });
+      req.on('error',e=>{console.log('Push error:',e.message);resolve();});
+      req.write(msg);req.end();
+    });
+  } catch(e) {
+    console.log('FCM error:',e.message);
+  }
+}
+
+// Envoyer notification à tous les tokens d'un propriétaire
+async function notifyOwner(ownerId, title, body, data={}) {
+  if (!USE_FCM) return;
+  const owner = (DB.users||[]).find(u=>u.id===ownerId);
+  if (!owner || !owner.fcmTokens || !owner.fcmTokens.length) return;
+  for (const token of owner.fcmTokens) {
+    await sendPush(token, title, body, data);
+  }
+}
+
 // ── CONFIGURATION JSONBIN ─────────────────────────────────────────────────────
 // JSONBin.io : créez un compte gratuit sur https://jsonbin.io
 // 1. Créez un bin avec {} comme contenu initial
@@ -356,7 +449,14 @@ async function handleAPI(req, res, method, pathname, token) {
       const b=await parseBody(req);
       const inv={id:genId(),...b,pdfData:null,pdfName:null,createdAt:new Date().toISOString()};
       if(!DB.invoices)DB.invoices=[];
-      DB.invoices.push(inv);saveDB();return send(res,201,inv);
+      DB.invoices.push(inv);saveDB();
+      // Notification push au propriétaire
+      notifyOwner(b.ownerId,
+        '📄 Nouvelle facture disponible',
+        `${b.month||b.mois||''} — ${(b.amount||0).toLocaleString('fr-FR')} DT`,
+        {type:'invoice',id:inv.id}
+      );
+      return send(res,201,inv);
     }
     if (method==='PUT'&&user.role==='admin'&&parts[2]) {
       const b=await parseBody(req);
@@ -392,7 +492,14 @@ async function handleAPI(req, res, method, pathname, token) {
       const b=await parseBody(req);
       const r={id:genId(),...b,createdAt:new Date().toISOString()};
       if(!DB.revenues)DB.revenues=[];
-      DB.revenues.push(r);saveDB();return send(res,201,r);
+      DB.revenues.push(r);saveDB();
+      // Notification push au propriétaire
+      notifyOwner(b.ownerId,
+        '💰 Revenus publiés',
+        `${b.mois||''} ${b.annee||''} — Net: ${(b.revenuNet||0).toLocaleString('fr-FR')} DT`,
+        {type:'revenue',id:r.id}
+      );
+      return send(res,201,r);
     }
     if (method==='PUT'&&user.role==='admin'&&parts[2]) {
       const b=await parseBody(req);
@@ -412,7 +519,14 @@ async function handleAPI(req, res, method, pathname, token) {
       const b=await parseBody(req);
       const m={id:genId(),...b,createdAt:new Date().toISOString()};
       if(!DB.maintenances)DB.maintenances=[];
-      DB.maintenances.push(m);saveDB();return send(res,201,m);
+      DB.maintenances.push(m);saveDB();
+      // Notification push au propriétaire
+      notifyOwner(b.ownerId,
+        '🔧 Entretien planifié',
+        `${b.type||''} — ${b.date||''} (${b.statut||''})`,
+        {type:'maintenance',id:m.id}
+      );
+      return send(res,201,m);
     }
     if (method==='PUT'&&user.role==='admin'&&parts[2]) {
       const b=await parseBody(req);
@@ -460,6 +574,19 @@ async function handleAPI(req, res, method, pathname, token) {
   }
 
 
+  // ICAL-PROXY — redirige vers corsproxy.io (Railway bloque les connexions sortantes)
+  if (parts[1]==='ical-proxy'&&method==='GET') {
+    const calUrl2=parsed.query&&parsed.query.url?decodeURIComponent(parsed.query.url):null;
+    if (!calUrl2) return send(res,400,{error:'URL manquante'});
+    // Rediriger le client vers corsproxy.io - le navigateur fait la requête
+    const redirectUrl='https://corsproxy.io/?'+encodeURIComponent(calUrl2);
+    res.writeHead(302,{
+      'Location': redirectUrl,
+      'Access-Control-Allow-Origin':'*'
+    });
+    return res.end();
+  }
+
   // CHANGE PASSWORD
   if (parts[1]==='change-password'&&method==='POST') {
     const b=await parseBody(req);
@@ -478,6 +605,21 @@ async function handleAPI(req, res, method, pathname, token) {
     const idx=(DB.users||[]).findIndex(u=>u.id===b.ownerId);
     if (idx===-1) return send(res,404,{error:'Introuvable'});
     DB.users[idx].password=hash(b.newPassword);saveDB();return send(res,200,{success:true});
+  }
+
+  // ENREGISTRER TOKEN FCM
+  if (parts[1]==='fcm-token'&&method==='POST') {
+    const b=await parseBody(req);
+    if (!b.token) return send(res,400,{error:'Token manquant'});
+    const idx=(DB.users||[]).findIndex(u=>u.id===user.id);
+    if (idx===-1) return send(res,404,{error:'Utilisateur introuvable'});
+    if (!DB.users[idx].fcmTokens) DB.users[idx].fcmTokens=[];
+    // Éviter les doublons
+    if (!DB.users[idx].fcmTokens.includes(b.token)) {
+      DB.users[idx].fcmTokens.push(b.token);
+      saveDB();
+    }
+    return send(res,200,{success:true});
   }
 
   // OWNERS
@@ -564,7 +706,7 @@ async function main() {
       return res.end();
     }
     if (pathname.startsWith('/api/')) return handleAPI(req,res,method,pathname,token);
-    const staticMap={'/':'index.html','/index.html':'index.html','/manifest.json':'manifest.json','/sw.js':'sw.js','/icon-192.png':'icon-192.png','/icon-512.png':'icon-512.png'};
+    const staticMap={'/':'index.html','/index.html':'index.html','/manifest.json':'manifest.json','/sw.js':'sw.js','/icon-192.png':'icon-192.png','/icon-512.png':'icon-512.png','/firebase-messaging-sw.js':'firebase-messaging-sw.js'};
     const mimeMap={'.html':'text/html;charset=utf-8','.json':'application/json','.js':'application/javascript','.png':'image/png'};
     const sf=staticMap[pathname];
     if(sf){
