@@ -190,7 +190,14 @@ async function handleAPI(req, res, method, pathname, token) {
     if (pdfUser.role!=='admin'&&inv.ownerId!==pdfUser.id) return send(res,403,{error:'Accès refusé'});
     const fp=path.join(UPLOADS_DIR,inv.pdfFile);
     if (!fs.existsSync(fp)) return send(res,404,{error:'Fichier introuvable sur le serveur'});
-    res.writeHead(200,{'Content-Type':'application/pdf','Content-Disposition':'attachment; filename="facture.pdf"','Access-Control-Allow-Origin':'*'});
+    const origName=(inv.numero||'facture').replace(/[^a-zA-Z0-9-_]/g,'-')+'.pdf';
+    res.writeHead(200,{
+      'Content-Type':'application/pdf',
+      'Content-Disposition':'attachment; filename="'+origName+'"',
+      'Content-Length':fs.statSync(fp).size,
+      'Access-Control-Allow-Origin':'*',
+      'Access-Control-Expose-Headers':'Content-Disposition'
+    });
     return res.end(fs.readFileSync(fp));
   }
   const user=authUser(token);
