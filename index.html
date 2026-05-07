@@ -652,11 +652,20 @@ function rInfos(c){
   c.innerHTML='<div class="pg fu">'
     +(tvD!==null&&tvD<45?'<div class="alrt '+(tvD<14?'alrt-r':'alrt-a')+'"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:'+(tvD<14?'var(--re)':'var(--am)')+';stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><div><div class="atit">TV expire dans '+tvD+' jours</div><div class="asub2">Nexstay vous contactera pour le renouvellement</div></div></div>':'')
     +(netD!==null&&netD<45?'<div class="alrt '+(netD<14?'alrt-r':'alrt-a')+'"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:'+(netD<14?'var(--re)':'var(--am)')+';stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><div><div class="atit">Internet expire dans '+netD+' jours</div></div></div>':'')
-    +(con?isec('<svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7"/></svg>','Contrat',[['Numéro',con.numero,true],['Date de début',con.dateDebut],['Date de fin',con.dateFin],['Statut','<span class="bdg bdg-g">Actif</span>']]):'')
+
     +(inf?isec('<svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>','Logement',[['Nom du logement',inf.nomAppartement||'—'],['Adresse',inf.adresse||'—'],['Étage',inf.etage||'—'],['Superficie',inf.superficie||'—'],['Clés',inf.nbCles||'—'],inf.autresInfos?['Note',inf.autresInfos]:null].filter(Boolean))
       +isec('<svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>','Internet',[['Fournisseur',(inf.internet&&inf.internet.fournisseur)||'—'],['N° Contrat',(inf.internet&&inf.internet.numero)||'—',true],['Nom WiFi',(inf.internet&&inf.internet.wifiNom)||'—'],['Code WiFi',(inf.internet&&inf.internet.wifiCode)||'—',true],['Fin abonnement',(inf.internet&&inf.internet.dateFin)||'—',(netD!==null&&netD<30)]])
       +isec('<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17,2 12,7 7,2"/></svg>','TV / Abonnement',[['Abonnement',(inf.tv&&inf.tv.abonnement)||'—'],['Référence',(inf.tv&&inf.tv.reference)||'—',true],['Date de fin',(inf.tv&&inf.tv.dateFin)||'—',(tvD!==null&&tvD<30)]])
-      +(con?isec('<svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7"/></svg>','Contrat Nexstay',[['Numéro contrat',con.numero||'—',true],['Date début',con.dateDebut||'—'],['Date fin',con.dateFin||'—'],['Commission Nexstay',(con.commission||'—')+(con.commission?'%':'')]]):'' )
+      +(function(){
+        var c=inf&&inf.contrat&&inf.contrat.numero?inf.contrat:con;
+        if(!c)return'';
+        return isec('<svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7"/></svg>','Contrat Nexstay',[
+          ['Numéro contrat',(c.numero)||'—',true],
+          ['Date début',(c.dateDebut)||'—'],
+          ['Date fin',(c.dateFin)||'—'],
+          ['Commission Nexstay',(c.commission?c.commission+'%':'—')]
+        ]);
+      })()
       :'<div class="isec"><div style="text-align:center;padding:24px;color:var(--t2);font-size:13px">Informations non encore renseignées</div></div>')
     +'</div>';
 }
@@ -1013,6 +1022,7 @@ async function doUpload(){
 }
 
 async function openOwner(id){
+  window._adminCalYear=null;window._adminCalMonth=null;
   var c=document.getElementById('scr');
   c.innerHTML='<div class="pg"><div class="spin"></div></div>';
   try{
@@ -1325,15 +1335,18 @@ async function loadOwnerCalPreview(calUrl){
     return;
   }
   var now=new Date();
-  var year=now.getFullYear();
-  var month=now.getMonth();
+  if(!window._adminCalYear){window._adminCalYear=now.getFullYear();window._adminCalMonth=now.getMonth();}
+  var year=window._adminCalYear;
+  var month=window._adminCalMonth;
   var monthNames=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
   var firstDay=(new Date(year,month,1).getDay()+6)%7;
   var daysInMonth=new Date(year,month+1,0).getDate();
   var h='<div style="background:var(--w);border:1px solid var(--bd);border-radius:16px;overflow:hidden;box-shadow:var(--sh)">';
   h+='<div style="background:linear-gradient(135deg,var(--T),var(--TD));padding:13px 16px;display:flex;align-items:center;justify-content:space-between">';
-  h+='<span style="color:#fff;font-family:var(--fs);font-size:18px;font-weight:700">'+monthNames[month]+' '+year+'</span>';
-  h+='<span style="background:rgba(255,255,255,0.2);color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600">'+events.length+' rés.</span>';
+  window._lastCalUrl=calUrl;
+  h+='<button onclick="adminCalNav(-1)" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer">‹</button>';
+  h+='<div style="text-align:center"><div style="color:#fff;font-family:var(--fs);font-size:18px;font-weight:700">'+monthNames[month]+' '+year+'</div></div>';
+  h+='<button onclick="adminCalNav(1)" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer">›</button>';
   h+='</div>';
   h+='<div style="display:grid;grid-template-columns:repeat(7,1fr);background:var(--bg);padding:6px 4px 2px">';
   ['Lu','Ma','Me','Je','Ve','Sa','Di'].forEach(function(d){
@@ -1367,6 +1380,15 @@ async function loadOwnerCalPreview(calUrl){
   }
   h+='</div>';
   container.innerHTML=h;
+}
+
+function adminCalNav(dir){
+  var calUrl=window._lastCalUrl||'';
+  if(!window._adminCalYear){var n=new Date();window._adminCalYear=n.getFullYear();window._adminCalMonth=n.getMonth();}
+  window._adminCalMonth+=dir;
+  if(window._adminCalMonth>11){window._adminCalMonth=0;window._adminCalYear++;}
+  if(window._adminCalMonth<0){window._adminCalMonth=11;window._adminCalYear--;}
+  loadOwnerCalPreview(calUrl);
 }
 
 async function saveOwnerCalUrl(){
