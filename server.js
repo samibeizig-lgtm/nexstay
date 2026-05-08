@@ -427,16 +427,32 @@ async function handleAPI(req, res, method, pathname, token) {
 
   // CONFIG FIREBASE — publique, avant la vérif auth
   if (parts[1]==='firebase-config'&&method==='GET') {
+    // Log toutes les variables FCM disponibles pour diagnostic
+    console.log('FCM ENV CHECK:',{
+      FCM_API_KEY:        !!process.env.FCM_API_KEY,
+      FCM_AUTH_DOMAIN:    !!process.env.FCM_AUTH_DOMAIN,
+      FCM_PROJECT_ID:     !!process.env.FCM_PROJECT_ID,
+      FCM_STORAGE_BUCKET: !!process.env.FCM_STORAGE_BUCKET,
+      FCM_SENDER_ID:      !!process.env.FCM_SENDER_ID,
+      FCM_APP_ID:         !!process.env.FCM_APP_ID,
+      FCM_VAPID_KEY:      !!process.env.FCM_VAPID_KEY,
+    });
+    // Aussi tester d'autres noms possibles
+    const apiKey = process.env.FCM_API_KEY || process.env.FIREBASE_API_KEY || null;
     const config = {
-      apiKey:            process.env.FCM_API_KEY      || null,
-      authDomain:        process.env.FCM_AUTH_DOMAIN  || null,
-      projectId:         process.env.FCM_PROJECT_ID   || null,
-      storageBucket:     process.env.FCM_STORAGE_BUCKET || null,
-      messagingSenderId: process.env.FCM_SENDER_ID    || null,
-      appId:             process.env.FCM_APP_ID       || null,
-      vapidKey:          process.env.FCM_VAPID_KEY    || null,
+      apiKey,
+      authDomain:        process.env.FCM_AUTH_DOMAIN    || process.env.FIREBASE_AUTH_DOMAIN    || null,
+      projectId:         process.env.FCM_PROJECT_ID     || process.env.FIREBASE_PROJECT_ID     || null,
+      storageBucket:     process.env.FCM_STORAGE_BUCKET || process.env.FIREBASE_STORAGE_BUCKET || null,
+      messagingSenderId: process.env.FCM_SENDER_ID      || process.env.FIREBASE_SENDER_ID      || null,
+      appId:             process.env.FCM_APP_ID         || process.env.FIREBASE_APP_ID         || null,
+      vapidKey:          process.env.FCM_VAPID_KEY      || process.env.FIREBASE_VAPID_KEY      || null,
     };
-    if (!config.apiKey) return send(res,200,{});
+    if (!config.apiKey) {
+      // Retourner les noms des variables env disponibles pour diagnostic
+      const envKeys=Object.keys(process.env).filter(k=>k.startsWith('FCM')||k.startsWith('FIREBASE'));
+      return send(res,200,{error:'config_manquante', envKeysFound: envKeys});
+    }
     return send(res,200,config);
   }
   const user=authUser(token);
