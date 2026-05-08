@@ -424,6 +424,21 @@ async function handleAPI(req, res, method, pathname, token) {
     }
     return send(res,200,status);
   }
+
+  // CONFIG FIREBASE — publique, avant la vérif auth
+  if (parts[1]==='firebase-config'&&method==='GET') {
+    const config = {
+      apiKey:            process.env.FCM_API_KEY      || null,
+      authDomain:        process.env.FCM_AUTH_DOMAIN  || null,
+      projectId:         process.env.FCM_PROJECT_ID   || null,
+      storageBucket:     process.env.FCM_STORAGE_BUCKET || null,
+      messagingSenderId: process.env.FCM_SENDER_ID    || null,
+      appId:             process.env.FCM_APP_ID       || null,
+      vapidKey:          process.env.FCM_VAPID_KEY    || null,
+    };
+    if (!config.apiKey) return send(res,200,{});
+    return send(res,200,config);
+  }
   const user=authUser(token);
   if (!user) return send(res,401,{error:'Non autorisé'});
 
@@ -607,21 +622,6 @@ async function handleAPI(req, res, method, pathname, token) {
     DB.users[idx].password=hash(b.newPassword);saveDB();return send(res,200,{success:true});
   }
 
-  // CONFIG FIREBASE (publique - pas de secrets)
-  if (parts[1]==='firebase-config'&&method==='GET') {
-    const config = {
-      apiKey:        process.env.FCM_API_KEY         || null,
-      authDomain:    process.env.FCM_AUTH_DOMAIN     || null,
-      projectId:     process.env.FCM_PROJECT_ID      || null,
-      storageBucket: process.env.FCM_STORAGE_BUCKET  || null,
-      messagingSenderId: process.env.FCM_SENDER_ID   || null,
-      appId:         process.env.FCM_APP_ID          || null,
-      vapidKey:      process.env.FCM_VAPID_KEY       || null,
-    };
-    if (!config.apiKey) return send(res,200,{});
-    return send(res,200,config);
-  }
-
   // ENREGISTRER TOKEN FCM
   if (parts[1]==='fcm-token'&&method==='POST') {
     const b=await parseBody(req);
@@ -664,6 +664,19 @@ async function handleAPI(req, res, method, pathname, token) {
       const o=(DB.users||[]).find(u=>u.id===m.ownerId);
       return {...m,ownerName:o?(o.prenom+' '+o.nom):'—'};
     }).sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)));
+  }
+
+  // TEST NOTIFICATION PUSH
+  if (parts[1]==='test-push'&&method==='POST') {
+    const b=await parseBody(req);
+    const targetId=b.ownerId;
+    const owner=(DB.users||[]).find(u2=>u2.id===targetId);
+    if (!owner) return send(res,404,{error:'Propriétaire introuvable'});
+    if (!owner.fcmTokens||!owner.fcmTokens.length) {
+      return send(res,400,{error:'Aucun token FCM enregistré — le propriétaire doit autoriser les notifications et se reconnecter'});
+    }
+    await notifyOwner(targetId,'🔔 Test Nexstay','Les notifications fonctionnent !',{type:'test'});
+    return send(res,200,{success:true,tokens:owner.fcmTokens.length,email:owner.email});
   }
 
   // STATS
