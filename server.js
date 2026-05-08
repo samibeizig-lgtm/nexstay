@@ -384,6 +384,25 @@ async function handleAPI(req, res, method, pathname, token) {
     }
   }
 
+
+  // ENV-CHECK — diagnostic public
+  if (parts[1]==='env-check'&&method==='GET') {
+    const fcmVars={};
+    Object.keys(process.env).forEach(k=>{
+      if(k.startsWith('FCM')||k.startsWith('FIREBASE')||k.startsWith('JSONBIN')){
+        fcmVars[k]=process.env[k]?process.env[k].slice(0,8)+'...':'(vide)';
+      }
+    });
+    return send(res,200,{
+      totalEnvVars:Object.keys(process.env).length,
+      fcmVars,
+      FCM_VAPID_KEY: !!process.env.FCM_VAPID_KEY,
+      FCM_CLIENT_EMAIL: !!process.env.FCM_CLIENT_EMAIL,
+      FCM_PRIVATE_KEY: !!process.env.FCM_PRIVATE_KEY,
+      JSONBIN_ID: !!process.env.JSONBIN_ID,
+    });
+  }
+
   // PDF DOWNLOAD — avant la vérif auth globale
   if (parts[1]==='invoice-pdf'&&parts[2]&&method==='GET') {
     let pdfUser=authUser(token);
@@ -427,31 +446,18 @@ async function handleAPI(req, res, method, pathname, token) {
 
   // CONFIG FIREBASE — publique, avant la vérif auth
   if (parts[1]==='firebase-config'&&method==='GET') {
-    // Log toutes les variables FCM disponibles pour diagnostic
-    console.log('FCM ENV CHECK:',{
-      FCM_API_KEY:        !!process.env.FCM_API_KEY,
-      FCM_AUTH_DOMAIN:    !!process.env.FCM_AUTH_DOMAIN,
-      FCM_PROJECT_ID:     !!process.env.FCM_PROJECT_ID,
-      FCM_STORAGE_BUCKET: !!process.env.FCM_STORAGE_BUCKET,
-      FCM_SENDER_ID:      !!process.env.FCM_SENDER_ID,
-      FCM_APP_ID:         !!process.env.FCM_APP_ID,
-      FCM_VAPID_KEY:      !!process.env.FCM_VAPID_KEY,
-    });
-    // Aussi tester d'autres noms possibles
-    const apiKey = process.env.FCM_API_KEY || process.env.FIREBASE_API_KEY || null;
+    // Config publique Firebase (apiKey etc. sont publics par nature)
     const config = {
-      apiKey,
-      authDomain:        process.env.FCM_AUTH_DOMAIN    || process.env.FIREBASE_AUTH_DOMAIN    || null,
-      projectId:         process.env.FCM_PROJECT_ID     || process.env.FIREBASE_PROJECT_ID     || null,
-      storageBucket:     process.env.FCM_STORAGE_BUCKET || process.env.FIREBASE_STORAGE_BUCKET || null,
-      messagingSenderId: process.env.FCM_SENDER_ID      || process.env.FIREBASE_SENDER_ID      || null,
-      appId:             process.env.FCM_APP_ID         || process.env.FIREBASE_APP_ID         || null,
-      vapidKey:          process.env.FCM_VAPID_KEY      || process.env.FIREBASE_VAPID_KEY      || null,
+      apiKey:            process.env.FCM_API_KEY      || 'AIzaSyCzsSjx9i9eM-gT1LWR2fmAcp8NZqEMBsM',
+      authDomain:        process.env.FCM_AUTH_DOMAIN  || 'nexstay-3d8b5.firebaseapp.com',
+      projectId:         process.env.FCM_PROJECT_ID   || 'nexstay-3d8b5',
+      storageBucket:     process.env.FCM_STORAGE_BUCKET || 'nexstay-3d8b5.firebasestorage.app',
+      messagingSenderId: process.env.FCM_SENDER_ID    || '1056265022279',
+      appId:             process.env.FCM_APP_ID       || '1:1056265022279:web:7b697d14295d8c3b863a62',
+      vapidKey:          process.env.FCM_VAPID_KEY    || null,
     };
-    if (!config.apiKey) {
-      // Retourner les noms des variables env disponibles pour diagnostic
-      const envKeys=Object.keys(process.env).filter(k=>k.startsWith('FCM')||k.startsWith('FIREBASE'));
-      return send(res,200,{error:'config_manquante', envKeysFound: envKeys});
+    if (!config.vapidKey) {
+      console.log('⚠️ FCM_VAPID_KEY manquant dans Railway');
     }
     return send(res,200,config);
   }
@@ -681,6 +687,7 @@ async function handleAPI(req, res, method, pathname, token) {
       return {...m,ownerName:o?(o.prenom+' '+o.nom):'—'};
     }).sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)));
   }
+
 
   // TEST NOTIFICATION PUSH
   if (parts[1]==='test-push'&&method==='POST') {
