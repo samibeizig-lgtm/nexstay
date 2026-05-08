@@ -835,6 +835,7 @@ function rOwnerDetail(c,d){
     +'<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px">'
     +'<div class="hbadge">'+ico('rev')+o.email+'</div>'
     +'<div class="hbadge">'+ico('shield')+(o.tel||'—')+'</div>'
+    +'<button onclick="testPush()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:600;font-family:var(--f);cursor:pointer">🔔 Tester notif</button>'
     +'</div></div>'
     +'<div class="tpills">'
     +'<button class="tpill'+(oTab2==='inv'?' on':'')+'" onclick="oSwitch(\'inv\')">Factures</button>'
@@ -1057,6 +1058,7 @@ function rOwnerDetail(c,d){
     +'<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px">'
     +'<div class="hbadge">'+ico('rev')+o.email+'</div>'
     +'<div class="hbadge">'+ico('shield')+(o.tel||'—')+'</div>'
+    +'<button onclick="testPush()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:600;font-family:var(--f);cursor:pointer">🔔 Tester notif</button>'
     +'</div></div>'
     +'<div class="tpills">'
     +'<button class="tpill'+(oTab2==='inv'?' on':'')+'" onclick="oSwitch(\'inv\')">Factures</button>'
@@ -1695,12 +1697,12 @@ var VAPID_KEY = null; // Chargé depuis le serveur
 async function initFCM(){
   if(!('Notification' in window)||!('serviceWorker' in navigator)) return;
   try{
-    // Initialiser Firebase
-    if(!firebase.apps.length){
-      // Config Firebase chargée depuis le serveur (pas dans le code)
+    // Config Firebase chargée depuis le serveur
     var fcmConfig=await api('GET','/firebase-config');
     if(!fcmConfig||!fcmConfig.apiKey){console.log('FCM config non disponible');return;}
-    firebase.initializeApp(fcmConfig);
+    // Initialiser Firebase (une seule fois)
+    if(!firebase.apps.length){
+      firebase.initializeApp(fcmConfig);
     }
     var messaging=firebase.messaging();
 
@@ -1723,6 +1725,17 @@ async function initFCM(){
     });
   }catch(e){
     console.log('FCM init error:',e.message);
+  }
+}
+
+async function testPush(){
+  if(!ownerData||!ownerData.owner){toast('Ouvrez d\'abord une fiche propriétaire','err');return;}
+  var oid=ownerData.owner.id;
+  try{
+    var r=await api('POST','/test-push',{ownerId:oid});
+    toast('Notification envoyée — '+r.tokens+' appareil(s)','ok');
+  }catch(e){
+    toast(e.message,'err');
   }
 }
 

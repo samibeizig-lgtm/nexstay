@@ -14,10 +14,13 @@ const https = require('https');
 const PORT = process.env.PORT || 3000;
 
 // ── CONFIGURATION FCM (Firebase Cloud Messaging) ─────────────────────────────
-const FCM_PROJECT_ID  = process.env.FCM_PROJECT_ID  || null;
-const FCM_CLIENT_EMAIL= process.env.FCM_CLIENT_EMAIL|| null;
-const FCM_PRIVATE_KEY = process.env.FCM_PRIVATE_KEY ? process.env.FCM_PRIVATE_KEY.replace(/\\n/g,'\n') : null;
+const FCM_PROJECT_ID  = process.env.FCM_PROJECT_ID   || 'nexstay-3d8b5';
+const FCM_CLIENT_EMAIL= process.env.FCM_CLIENT_EMAIL  || null;
+const FCM_PRIVATE_KEY = (process.env.FCM_PRIVATE_KEY||'').replace(/\\n/g,'\n').trim() || null;
+const FCM_VAPID_KEY   = process.env.FCM_VAPID_KEY     || null;
 const USE_FCM = !!(FCM_PROJECT_ID && FCM_CLIENT_EMAIL && FCM_PRIVATE_KEY);
+if(USE_FCM) console.log('✅ FCM configuré pour:', FCM_PROJECT_ID);
+else console.log('⚠️ FCM non configuré — pas de notifications push');
 
 // Génère un JWT pour l'API FCM v1
 async function getFCMToken() {
@@ -737,9 +740,15 @@ async function main() {
   // ── DIAGNOSTIC DÉMARRAGE ──
   console.log('═══════════════════════════════════════');
   console.log('NEXSTAY - Démarrage serveur');
-  console.log('JSONBIN_ID:', process.env.JSONBIN_ID ? '✅ Configuré ('+process.env.JSONBIN_ID.slice(0,8)+'...)' : '❌ MANQUANT');
-  console.log('JSONBIN_KEY:', process.env.JSONBIN_KEY ? '✅ Configuré' : '❌ MANQUANT');
-  console.log('USE_JSONBIN:', USE_JSONBIN ? '✅ OUI' : '❌ NON - données perdues au redémarrage!');
+  console.log('JSONBIN_ID:', process.env.JSONBIN_ID ? '✅' : '❌ MANQUANT');
+  console.log('FCM vars:', {
+    FCM_CLIENT_EMAIL: !!process.env.FCM_CLIENT_EMAIL,
+    FCM_PRIVATE_KEY: !!process.env.FCM_PRIVATE_KEY,
+    FCM_VAPID_KEY: !!process.env.FCM_VAPID_KEY,
+  });
+  // Afficher TOUS les noms de variables pour debug
+  const allKeys=Object.keys(process.env).filter(k=>k.includes('FCM')||k.includes('FIREBASE'));
+  console.log('FCM/FIREBASE keys found:', allKeys);
   console.log('═══════════════════════════════════════');
 
   await loadDB();
