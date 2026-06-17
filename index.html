@@ -997,13 +997,16 @@ async function adminGTab(tab){
     window._curOwners=owners;
     var h='<h3 class="stitle">Propriétaires ('+owners.length+')</h3>';
     owners.forEach(function(o,i){
-      h+='<div class="ocard" data-id="'+o.id+'" style="cursor:pointer">'
+      h+='<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px">'
+        +'<div class="ocard" data-id="'+o.id+'" style="cursor:pointer;flex:1;margin-bottom:0">'
         +'<div class="ohead"><div class="oavt"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--T);stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div>'
         +'<div class="oinf"><div class="oname">'+o.prenom+' '+o.nom+'</div><div class="oemail">'+o.email+'</div></div>'
         +'<div class="ochev"><svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:var(--t3);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round"><polyline points="9,18 15,12 9,6"/></svg></div></div>'
         +'<div class="opills"><div class="opill"><div class="opval">'+(o.ville||'—')+'</div><div class="oplbl">Ville</div></div>'
         +'<div class="opill"><div class="opval">'+(o.typeLogement||'—')+'</div><div class="oplbl">Bien</div></div>'
         +'<div class="opill"><div class="opval" style="font-size:10px">'+(o.tel||'—')+'</div><div class="oplbl">Tél</div></div></div>'
+        +'</div>'
+        +'<button class="dbtn" data-del="'+o.id+'" style="margin-top:0;flex-shrink:0" onclick="event.stopPropagation();delOwner(\''+o.id+'\',\''+o.prenom+' '+o.nom+'\')">'+ico('del')+'</button>'
         +'</div>';
     });
     body.innerHTML=h;
@@ -1094,6 +1097,16 @@ async function adminGTab(tab){
 async function agDelInv(id){if(!confirm('Supprimer ?'))return;try{await api('DELETE','/invoices/'+id);toast('Supprimée','ok');adminGTab('inv');}catch(e){toast(e.message,'err');}}
 async function agDelRev(id){if(!confirm('Supprimer ?'))return;try{await api('DELETE','/revenues/'+id);toast('Supprimé','ok');adminGTab('rev');}catch(e){toast(e.message,'err');}}
 async function agDelMaint(id){if(!confirm('Supprimer ?'))return;try{await api('DELETE','/maintenances/'+id);toast('Supprimé','ok');adminGTab('maint');}catch(e){toast(e.message,'err');}}
+async function delOwner(id,name){
+  if(!confirm('Supprimer le propriétaire '+name+' ?\nToutes ses données (factures, revenus, entretiens) seront supprimées.'))return;
+  try{
+    await api('DELETE','/owners/'+id);
+    window._ow=(window._ow||[]).filter(function(o){return o.id!==id;});
+    ownerData=null;
+    toast(name+' supprimé','ok');
+    rAdmin(document.getElementById('scr'));
+  }catch(e){toast(e.message,'err');}
+}
 
 
 function rOwnerDetail(c,d){
@@ -1105,6 +1118,7 @@ function rOwnerDetail(c,d){
     +'<div class="hbadge">'+ico('rev')+o.email+'</div>'
     +'<div class="hbadge">'+ico('shield')+(o.tel||'—')+'</div>'
     +'<button onclick="testPush()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:600;font-family:var(--f);cursor:pointer">🔔 Tester notif</button>'
+    +'<button onclick="delOwner(\''+o.id+'\',\''+o.prenom+' '+o.nom+'\')" style="background:var(--rbg);border:1px solid rgba(192,57,43,0.2);color:var(--re);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:600;font-family:var(--f);cursor:pointer">🗑 Supprimer</button>'
     +'</div></div>'
     +'<div class="tpills">'
     +'<button class="tpill'+(oTab2==='inv'?' on':'')+'" onclick="oSwitch(\'inv\')">Factures</button>'
@@ -1362,6 +1376,7 @@ function rOwnerDetail(c,d){
     +'<div class="hbadge">'+ico('rev')+o.email+'</div>'
     +'<div class="hbadge">'+ico('shield')+(o.tel||'—')+'</div>'
     +'<button onclick="testPush()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:600;font-family:var(--f);cursor:pointer">🔔 Tester notif</button>'
+    +'<button onclick="delOwner(\''+o.id+'\',\''+o.prenom+' '+o.nom+'\')" style="background:var(--rbg);border:1px solid rgba(192,57,43,0.2);color:var(--re);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:600;font-family:var(--f);cursor:pointer">🗑 Supprimer</button>'
     +'</div></div>'
     +'<div class="tpills">'
     +'<button class="tpill'+(oTab2==='inv'?' on':'')+'" onclick="oSwitch(\'inv\')">Factures</button>'

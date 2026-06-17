@@ -719,6 +719,16 @@ async function handleAPI(req, res, method, pathname, token) {
   if (parts[1]==='owners'&&user.role==='admin'&&method==='GET') {
     return send(res,200,(DB.users||[]).filter(u=>u.role==='owner').map(({password,...u})=>u));
   }
+  if (parts[1]==='owners'&&parts[2]&&user.role==='admin'&&method==='DELETE') {
+    const oid=parts[2];
+    DB.users=(DB.users||[]).filter(u=>u.id!==oid);
+    DB.invoices=(DB.invoices||[]).filter(i=>i.ownerId!==oid);
+    DB.revenues=(DB.revenues||[]).filter(r=>r.ownerId!==oid);
+    DB.maintenances=(DB.maintenances||[]).filter(m=>m.ownerId!==oid);
+    DB.incidents=(DB.incidents||[]).filter(i=>i.ownerId!==oid);
+    saveDB();
+    return send(res,200,{success:true});
+  }
 
   // ALL INVOICES
   if (parts[1]==='all-invoices'&&user.role==='admin'&&method==='GET') {
