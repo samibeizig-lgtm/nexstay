@@ -1,0 +1,14 @@
+{
+  "appId": "com.nexstay.app",
+  "appName": "Nexstay",
+  "webDir": "www",
+  "server": {
+    "url": "SERVER_URL_PLACEHOLDER",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}

@@ -1,0 +1,88 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main, master, claude/vigilant-clarke-kzw05m]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      server_url:
+        description: 'Backend server URL (overrides secret)'
+        required: false
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Capacitor dependencies
+        run: npm install
+
+      - name: Inject server URL into Capacitor config
+        run: |
+          SERVER_URL="${{ github.event.inputs.server_url || secrets.SERVER_URL }}"
+          if [ -z "$SERVER_URL" ]; then
+            echo "ERROR: SERVER_URL secret is not set. Go to Settings → Secrets → Actions and add SERVER_URL."
+            exit 1
+          fi
+          sed -i "s|SERVER_URL_PLACEHOLDER|$SERVER_URL|g" capacitor.config.json
+          echo "Server URL injected: $SERVER_URL"
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Set Gradle wrapper permissions
+        run: chmod +x android/gradlew
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('android/**/*.gradle*', 'android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-
+
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Rename APK
+        run: |
+          VERSION="${{ github.ref_name }}"
+          DATE=$(date +%Y%m%d)
+          cp android/app/build/outputs/apk/debug/app-debug.apk nexstay-${VERSION}-${DATE}.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexstay-apk
+          path: nexstay-*.apk
+          retention-days: 30
+
+      - name: Create GitHub Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: nexstay-*.apk
+          generate_release_notes: true
+          name: "Nexstay ${{ github.ref_name }}"

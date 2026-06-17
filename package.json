@@ -4,10 +4,17 @@
   "description": "Nexstay - Conciergerie Airbnb Tunisie",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "cap:sync": "npx cap sync",
+    "cap:add:android": "npx cap add android"
   },
   "engines": {
     "node": ">=18.0.0"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "devDependencies": {
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/android": "^6.0.0"
+  }
 }
