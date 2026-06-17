@@ -124,7 +124,7 @@ const DB_FILE = path.join('/tmp', 'nexstay_db.json');
 const UPLOADS_DIR = path.join('/tmp', 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
-let DB = { users:[], contracts:[], invoices:[], revenues:[], maintenances:[], infos:[], sessions:[] };
+let DB = { users:[], contracts:[], invoices:[], revenues:[], maintenances:[], incidents:[], infos:[], sessions:[] };
 let _saveTimer = null;
 
 // ── JSONBIN HELPERS ───────────────────────────────────────────────────────────
@@ -172,6 +172,7 @@ async function loadDB() {
           if (!DB.invoices) DB.invoices=[];
           if (!DB.revenues) DB.revenues=[];
           if (!DB.maintenances) DB.maintenances=[];
+          if (!DB.incidents) DB.incidents=[];
           if (!DB.infos) DB.infos=[];
           if (!DB.sessions) DB.sessions=[];
           console.log('✅ DB chargée depuis JSONBin:', DB.users.length, 'users,', (DB.invoices||[]).length, 'factures');
@@ -304,9 +305,14 @@ function seedDemo() {
   if(!DB.maintenances)DB.maintenances=[];
   [{date:'2025-04-10',type:'Ménage',statut:'effectué',technicien:'Amira B.',note:'Appartement remis en état.'},
    {date:'2025-04-18',type:'Plomberie',statut:'effectué',technicien:'Karim D.',note:'Remplacement joint robinet.'},
-   {date:'2025-04-28',type:'Électricité',statut:'planifié',technicien:'Sami T.',note:'Vérification tableau.'},
+   {date:'2025-04-28',type:'Électricité',statut:'planifié',technicien:'Sami T.',note:'Vérification tableau électrique.'},
    {date:'2025-05-05',type:'Ménage',statut:'planifié',technicien:'Amira B.',note:'Nettoyage entre réservations.'}
   ].forEach(m=>DB.maintenances.push({id:genId(),ownerId:oid,...m,createdAt:new Date().toISOString()}));
+  if(!DB.incidents)DB.incidents=[];
+  [{titre:"Fuite d'eau robinet cuisine",description:"Le robinet de la cuisine fuit depuis 2 jours, traces d'humidité sous l'évier.",categorie:'Plomberie',priorite:'urgente',statut:'résolu',dateSignalement:'2025-04-15',dateIntervention:'2025-04-17',dateResolution:'2025-04-17',technicien:'Karim D.',noteAdmin:'Joint torique remplacé, robinet réparé. Coût pièce inclus.',cout:45},
+   {titre:'Climatisation défaillante',description:'La climatisation du salon ne refroidit plus correctement malgré fonctionnement continu.',categorie:'Climatisation',priorite:'normale',statut:'en_cours',dateSignalement:'2025-05-01',dateIntervention:'2025-05-04',dateResolution:null,technicien:'Sami T.',noteAdmin:'En attente de la pièce de remplacement (compresseur). Délai estimé 5 jours.',cout:null},
+   {titre:'Ampoule grillée chambre principale',description:"L'ampoule principale de la chambre est grillée, impossible d'allumer.",categorie:'Électricité',priorite:'basse',statut:'signalé',dateSignalement:'2025-05-10',dateIntervention:null,dateResolution:null,technicien:null,noteAdmin:null,cout:null}
+  ].forEach(m=>DB.incidents.push({id:genId(),ownerId:oid,...m,createdAt:new Date().toISOString()}));
   if(!DB.infos)DB.infos=[];
   DB.infos.push({id:genId(),ownerId:oid,nomAppartement:'Apt Les Jasmins',adresse:'Apt 4B, Rés. Les Jasmins, La Marsa, Tunis',etage:'4ème',superficie:'95 m²',nbCles:3,internet:{fournisseur:'Topnet',numero:'TPN-88341-C',wifiNom:'Jasmins_WiFi',wifiCode:'jasmin2024',dateFin:'2025-09-15'},tv:{abonnement:'Canal+ Tunisie',reference:'CPT-2024-9921',dateFin:'2025-11-30'},contrat:{numero:'NX-2024-TN-0487',dateDebut:'2024-01-01',dateFin:'2025-12-31',commission:20},autresInfos:'Code digicode : 4892#',createdAt:new Date().toISOString()});
   saveDB(); console.log('Demo créé');
@@ -579,6 +585,53 @@ async function handleAPI(req, res, method, pathname, token) {
     }
   }
 
+  // INCIDENTS
+  if (parts[1]==='incidents') {
+    if (method==='GET') {
+      const oid = user.role==='admin' ? (parts[2]||null) : user.id;
+      const incs = oid ? (DB.incidents||[]).filter(i=>i.ownerId===oid) : (DB.incidents||[]);
+      return send(res,200,incs.sort((a,b)=>new Date(b.dateSignalement||0)-new Date(a.dateSignalement||0)));
+    }
+    if (method==='POST') {
+      const b = await parseBody(req);
+      const ownerId = user.role==='admin' ? (b.ownerId||user.id) : user.id;
+      const inc = {
+        id:genId(), ownerId,
+        titre:b.titre||'', description:b.description||'',
+        categorie:b.categorie||'Autre', priorite:b.priorite||'normale',
+        statut:'signalé',
+        dateSignalement:new Date().toISOString().split('T')[0],
+        dateIntervention:null, dateResolution:null,
+        technicien:null, noteAdmin:null, cout:null,
+        createdAt:new Date().toISOString()
+      };
+      if(!DB.incidents)DB.incidents=[];
+      DB.incidents.push(inc); saveDB();
+      return send(res,201,inc);
+    }
+    if (method==='PUT' && parts[2]) {
+      if (user.role!=='admin') return send(res,403,{error:'Admin requis'});
+      const b = await parseBody(req);
+      const idx = (DB.incidents||[]).findIndex(i=>i.id===parts[2]);
+      if (idx===-1) return send(res,404,{error:'Introuvable'});
+      const old = DB.incidents[idx];
+      const prevStatut = old.statut;
+      DB.incidents[idx] = {...old, ...b};
+      saveDB();
+      if (b.statut && b.statut !== prevStatut) {
+        const labels={'en_cours':'🔧 Intervention en cours','résolu':'✅ Incident résolu','annulé':'❌ Incident annulé'};
+        const lbl = labels[b.statut];
+        if (lbl) notifyOwner(old.ownerId, lbl, old.titre, {type:'incident',id:old.id});
+      }
+      return send(res,200,DB.incidents[idx]);
+    }
+    if (method==='DELETE' && parts[2]) {
+      if (user.role!=='admin') return send(res,403,{error:'Admin requis'});
+      DB.incidents = (DB.incidents||[]).filter(i=>i.id!==parts[2]);
+      saveDB(); return send(res,200,{success:true});
+    }
+  }
+
   // INFOS
   if (parts[1]==='infos') {
     if (method==='GET') return send(res,200,(DB.infos||[]).find(i=>i.ownerId===user.id)||null);
@@ -713,6 +766,8 @@ async function handleAPI(req, res, method, pathname, token) {
       pendingInvoices:(DB.invoices||[]).filter(i=>i.status==='en_attente').length,
       totalRevenue:(DB.revenues||[]).reduce((s,r)=>s+(r.revenuNet||0),0),
       maintenancePending:(DB.maintenances||[]).filter(m=>m.statut==='planifié').length,
+      incidentsOpen:(DB.incidents||[]).filter(i=>i.statut==='signalé'||i.statut==='en_cours').length,
+      incidentsTotal:(DB.incidents||[]).length,
     });
   }
 
@@ -728,6 +783,7 @@ async function handleAPI(req, res, method, pathname, token) {
       invoices:(DB.invoices||[]).filter(i=>i.ownerId===oid).sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)),
       revenues:(DB.revenues||[]).filter(r=>r.ownerId===oid),
       maintenances:(DB.maintenances||[]).filter(m=>m.ownerId===oid).sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)),
+      incidents:(DB.incidents||[]).filter(i=>i.ownerId===oid).sort((a,b)=>new Date(b.dateSignalement||0)-new Date(a.dateSignalement||0)),
       infos:(DB.infos||[]).find(i=>i.ownerId===oid)||null,
     });
   }
