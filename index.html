@@ -1015,28 +1015,34 @@ async function adminGTab(tab){
     });
   }
 
+  var DELBTN='<button style="width:36px;height:36px;flex-shrink:0;background:var(--rbg);border:1px solid rgba(192,57,43,0.18);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0" onclick="';
+  var DELICO='"><svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:var(--re);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>';
+
   if(tab==='inv'){
     try{
       var invs=await api('GET','/all-invoices');
       var h='<h3 class="stitle">Factures ('+invs.length+')</h3>';
       invs.forEach(function(inv){
         var paid=inv.status==='payée';
-        h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">'
-          +'<div class="inv-item" style="flex:1;cursor:default">'
-          +'<div class="inv-icon" style="background:'+(paid?'var(--green-bg)':'var(--amber-bg)')+'"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:'+(paid?'var(--green)':'var(--amber)')+';stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>'
-          +'<div class="inv-meta">'
-          +'<div style="font-size:11px;color:var(--t3);font-weight:600">'+inv.ownerName+'</div>'
-          +'<div class="inv-name">'+(inv.month||inv.mois)+' · '+inv.numero+'</div>'
+        h+='<div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">'
+          +'<div style="flex:1;display:flex;align-items:center;gap:12px;background:var(--w);border:1px solid var(--bd);border-radius:var(--r);padding:12px 14px;box-shadow:var(--sh)">'
+          +'<div style="width:36px;height:36px;border-radius:10px;background:'+(paid?'var(--gbg)':'var(--abg)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'
+          +'<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:'+(paid?'var(--gr)':'var(--am)')+';stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>'
           +'</div>'
-          +'<div style="text-align:right">'
-          +'<div class="inv-amount">'+(inv.amount||0).toLocaleString()+' DT</div>'
-          +'<span class="badge '+(paid?'badge-green':'badge-amber')+'" style="margin-top:3px">'+(paid?'✓ Payée':'⏳ Attente')+'</span>'
+          +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:11px;color:var(--t3);font-weight:600;margin-bottom:2px">'+inv.ownerName+'</div>'
+          +'<div style="font-size:13px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(inv.month||inv.mois)+'</div>'
+          +'<div style="font-size:11px;color:var(--t3);margin-top:1px">'+inv.numero+'</div>'
+          +'</div>'
+          +'<div style="text-align:right;flex-shrink:0">'
+          +'<div style="font-size:14px;font-weight:700;color:var(--T)">'+(inv.amount||0).toLocaleString()+' DT</div>'
+          +'<span class="bdg '+(paid?'bdg-g':'bdg-a')+'" style="margin-top:4px">'+(paid?'Payée':'En attente')+'</span>'
           +'</div></div>'
-          +'<button onclick="agDelInv(&quot;'+inv.id+'&quot;)" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.15);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0;font-size:14px">🗑</button>'
+          +DELBTN+'agDelInv(&quot;'+inv.id+'&quot;)'+DELICO
           +'</div>';
       });
       body.innerHTML=h;
-    }catch(e){body.innerHTML='<p style="color:var(--red)">Erreur chargement</p>';}
+    }catch(e){body.innerHTML='<p style="color:var(--re);font-size:13px">Erreur chargement</p>';}
   }
 
   if(tab==='rev'){
@@ -1044,22 +1050,24 @@ async function adminGTab(tab){
       var revs=await api('GET','/all-revenues');
       var h='<h3 class="stitle">Revenus ('+revs.length+')</h3>';
       revs.forEach(function(r){
-        h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">'
-          +'<div class="rev-hero" style="flex:1;margin-bottom:0;padding:13px">'
-          +'<div style="font-size:11px;color:var(--t2);font-weight:600;margin-bottom:3px">'+r.ownerName+'</div>'
-          +'<div style="display:flex;justify-content:space-between;align-items:center">'
-          +'<span style="font-size:14px;font-weight:700;color:var(--tx)">'+r.mois+' '+r.annee+'</span>'
-          +'<span class="badge badge-terra">'+r.tauxOccupation+'% occ.</span>'
+        h+='<div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">'
+          +'<div style="flex:1;background:var(--w);border:1px solid var(--bd);border-radius:var(--r);padding:13px 14px;box-shadow:var(--sh)">'
+          +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+          +'<span style="font-size:11px;color:var(--t3);font-weight:600">'+r.ownerName+'</span>'
+          +'<span class="bdg bdg-t">'+r.tauxOccupation+'% occ.</span>'
           +'</div>'
-          +'<div style="display:flex;justify-content:space-between;margin-top:5px">'
-          +'<span style="font-family:var(--fs);font-size:18px;font-weight:700;color:var(--T)">'+r.revenuNet.toLocaleString()+' DT</span>'
-          +'<span style="font-size:11px;color:var(--t2)">'+r.nbLocataires+' loc. · '+r.nbNuits+' nuits</span>'
+          +'<div style="display:flex;justify-content:space-between;align-items:flex-end">'
+          +'<div>'
+          +'<div style="font-size:13px;font-weight:700;color:var(--tx)">'+r.mois+' '+r.annee+'</div>'
+          +'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+r.nbLocataires+' loc. · '+r.nbNuits+' nuits</div>'
+          +'</div>'
+          +'<span style="font-family:var(--fs);font-size:20px;font-weight:700;color:var(--T)">'+r.revenuNet.toLocaleString()+' DT</span>'
           +'</div></div>'
-          +'<button onclick="agDelRev(&quot;'+r.id+'&quot;)" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.15);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0;font-size:14px">🗑</button>'
+          +DELBTN+'agDelRev(&quot;'+r.id+'&quot;)'+DELICO
           +'</div>';
       });
       body.innerHTML=h;
-    }catch(e){body.innerHTML='<p style="color:var(--red)">Erreur chargement</p>';}
+    }catch(e){body.innerHTML='<p style="color:var(--re);font-size:13px">Erreur chargement</p>';}
   }
 
   if(tab==='maint'){
@@ -1073,24 +1081,29 @@ async function adminGTab(tab){
         +'</div><h3 class="stitle">Entretiens ('+maints.length+')</h3>';
       maints.forEach(function(m){
         var d=m.statut==='effectué';
-        var ic={Ménage:'🧹',Plomberie:'🔧','Électricité':'⚡',Peinture:'🎨',Climatisation:'❄️',Autre:'🔨'};
-        h+='<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:9px">'
-          +'<div class="main-item" style="flex:1">'
-          +'<div class="main-head"><div class="main-icon-wrap">'
-          +'<div class="main-icon" style="background:'+(d?'var(--green-bg)':'var(--terra-light)')+'">'+(ic[m.type]||'🔨')+'</div>'
-          +'<div><div class="main-type">'+m.type+'</div>'
-          +'<div class="main-date">'+(m.date||'').slice(0,10)+' · <b style="color:var(--T)">'+m.ownerName+'</b></div>'
+        h+='<div style="display:flex;align-items:flex-start;gap:9px;margin-bottom:9px">'
+          +'<div style="flex:1;background:var(--w);border:1px solid var(--bd);border-radius:var(--r);padding:13px 14px;box-shadow:var(--sh)">'
+          +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
+          +'<div style="display:flex;align-items:center;gap:10px">'
+          +'<div style="width:34px;height:34px;border-radius:9px;background:'+(d?'var(--gbg)':'var(--TL)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'
+          +'<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:'+(d?'var(--gr)':'var(--T)')+';stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>'
+          +'</div>'
+          +'<div>'
+          +'<div style="font-size:13px;font-weight:700;color:var(--tx)">'+m.type+'</div>'
+          +'<div style="font-size:11px;color:var(--T);font-weight:600;margin-top:1px">'+m.ownerName+'</div>'
           +'</div></div>'
-          +'<span class="badge '+(d?'badge-green':'badge-amber')+'">'+(d?'✓ Fait':'⏳ Planifié')+'</span>'
+          +'<span class="bdg '+(d?'bdg-g':'bdg-t')+'">'+(d?'Effectué':'Planifié')+'</span>'
           +'</div>'
-          +'<p class="main-note">'+(m.note||'')+'</p>'
-          +(m.technicien?'<div class="main-tech"><span class="tech-chip">👤 '+m.technicien+'</span></div>':'')
+          +'<div style="display:flex;justify-content:space-between;align-items:center">'
+          +'<span style="font-size:11px;color:var(--t3)">'+(m.date||'').slice(0,10)+(m.technicien?' · '+m.technicien:'')+'</span>'
           +'</div>'
-          +'<button onclick="agDelMaint(&quot;'+m.id+'&quot;)" style="background:var(--red-bg);border:1px solid rgba(192,57,43,0.15);color:var(--red);border-radius:9px;padding:9px 10px;cursor:pointer;flex-shrink:0;font-size:14px;margin-top:3px">🗑</button>'
+          +(m.note?'<div style="font-size:12px;color:var(--t2);margin-top:6px;line-height:1.5;padding-top:6px;border-top:1px solid var(--b2)">'+m.note+'</div>':'')
+          +'</div>'
+          +DELBTN+'agDelMaint(&quot;'+m.id+'&quot;)'+DELICO
           +'</div>';
       });
       body.innerHTML=h;
-    }catch(e){body.innerHTML='<p style="color:var(--red)">Erreur chargement</p>';}
+    }catch(e){body.innerHTML='<p style="color:var(--re);font-size:13px">Erreur chargement</p>';}
   }
 }
 
