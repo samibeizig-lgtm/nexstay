@@ -50,6 +50,24 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
+      - name: Force black status bar and navigation bar
+        run: |
+          COLORS_FILE="android/app/src/main/res/values/colors.xml"
+          cat > "$COLORS_FILE" << 'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <color name="colorPrimary">#000000</color>
+              <color name="colorPrimaryDark">#000000</color>
+              <color name="colorAccent">#CC7A69</color>
+          </resources>
+          EOF
+          STYLES_FILE="android/app/src/main/res/values/styles.xml"
+          if [ -f "$STYLES_FILE" ]; then
+            sed -i 's|<item name="android:statusBarColor">.*</item>|<item name="android:statusBarColor">#000000</item>|g' "$STYLES_FILE"
+            sed -i 's|<item name="android:navigationBarColor">.*</item>|<item name="android:navigationBarColor">#000000</item>|g' "$STYLES_FILE"
+          fi
+          echo "Colors patched to black"
+
       - name: Set Gradle wrapper permissions
         run: chmod +x android/gradlew
 
