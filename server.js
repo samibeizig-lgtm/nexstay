@@ -822,7 +822,7 @@ async function main() {
       return res.end();
     }
     if (pathname.startsWith('/api/')) return handleAPI(req,res,method,pathname,token);
-    const staticMap={'/':'index.html','/index.html':'index.html','/manifest.json':'manifest.json','/sw.js':'sw.js','/icon-192.png':'icon-192.png','/icon-512.png':'icon-512.png','/logo.png':'logo.png','/firebase-messaging-sw.js':'firebase-messaging-sw.js'};
+    const staticMap={'/':'index.html','/index.html':'index.html','/manifest.json':'manifest.json','/sw.js':'sw.js','/icon-192.png':'icon-192.png','/icon-512.png':'icon-512.png','/logo.png':'logo.png','/logoheader.png':'logoheader.png','/firebase-messaging-sw.js':'firebase-messaging-sw.js'};
     const mimeMap={'.html':'text/html;charset=utf-8','.json':'application/json','.js':'application/javascript','.png':'image/png'};
     const sf=staticMap[pathname];
     if(sf){
