@@ -480,7 +480,7 @@ async function startApp(){
   if(oldAdmin)oldAdmin.parentNode.removeChild(oldAdmin);
 
   // Show/hide tabs based on role
-  var ownerOnlyTabs=['nb-revenues','nb-invoices','nb-maintenance','nb-infos','nb-calendar','nb-dashboard'];
+  var ownerOnlyTabs=['nb-revenues','nb-invoices','nb-maintenance','nb-infos','nb-calendar','nb-dashboard','nb-interventions'];
   var adminOnlyTabs=[];
   ownerOnlyTabs.forEach(function(id){
     var el=document.getElementById(id);
@@ -1110,6 +1110,7 @@ function rOwnerDetail(c,d){
     +'<div class="tpills">'
     +'<button class="tpill'+(oTab2==='inv'?' on':'')+'" onclick="oSwitch(\'inv\')">Factures</button>'
     +'<button class="tpill'+(oTab2==='rev'?' on':'')+'" onclick="oSwitch(\'rev\')">Revenus</button>'
+    +'<button class="tpill'+(oTab2==='maint'?' on':'')+'" onclick="oSwitch(\'maint\')">Entretiens</button>'
     +'<button class="tpill'+(oTab2==='infos'?' on':'')+'" onclick="oSwitch(\'infos\')">Infos</button>'
     +'<button class="tpill'+(oTab2==='cal'?' on':'')+'" onclick="oSwitch(\'cal\')">Calendrier</button>'
     +'</div>'
@@ -1120,7 +1121,7 @@ function rOwnerDetail(c,d){
 function oSwitch(t){
   oTab2=t;
   document.querySelectorAll('.tpill').forEach(function(b){b.classList.remove('on');});
-  var tabs={inv:'Factures',rev:'Revenus',infos:'Infos',cal:'Calendrier'};
+  var tabs={inv:'Factures',rev:'Revenus',maint:'Entretiens',infos:'Infos',cal:'Calendrier'};
   document.querySelectorAll('.tpill').forEach(function(b){if(b.textContent===tabs[t])b.classList.add('on');});
   renderOTab(t);
 }
@@ -1366,6 +1367,7 @@ function rOwnerDetail(c,d){
     +'<div class="tpills">'
     +'<button class="tpill'+(oTab2==='inv'?' on':'')+'" onclick="oSwitch(\'inv\')">Factures</button>'
     +'<button class="tpill'+(oTab2==='rev'?' on':'')+'" onclick="oSwitch(\'rev\')">Revenus</button>'
+    +'<button class="tpill'+(oTab2==='maint'?' on':'')+'" onclick="oSwitch(\'maint\')">Entretiens</button>'
     +'<button class="tpill'+(oTab2==='infos'?' on':'')+'" onclick="oSwitch(\'infos\')">Infos</button>'
     +'<button class="tpill'+(oTab2==='cal'?' on':'')+'" onclick="oSwitch(\'cal\')">Calendrier</button>'
     +'</div>'
@@ -1376,7 +1378,7 @@ function rOwnerDetail(c,d){
 function oSwitch(t){
   oTab2=t;
   document.querySelectorAll('.tpill').forEach(function(b){b.classList.remove('on');});
-  var tabs={inv:'Factures',rev:'Revenus',infos:'Infos',cal:'Calendrier'};
+  var tabs={inv:'Factures',rev:'Revenus',maint:'Entretiens',infos:'Infos',cal:'Calendrier'};
   document.querySelectorAll('.tpill').forEach(function(b){if(b.textContent===tabs[t])b.classList.add('on');});
   renderOTab(t);
 }
