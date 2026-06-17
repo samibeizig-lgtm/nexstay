@@ -214,6 +214,42 @@ select.inp option{background:#fff}
 .dlbtn svg{width:15px;height:15px;stroke:var(--T);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .dlbtn.disabled{opacity:.45;cursor:default}
 
+/* ══ TIMELINE INCIDENTS ════════════════════════════════════════════════════ */
+.timeline{display:flex;flex-direction:column}
+.tstep{display:flex;gap:14px;position:relative;padding-bottom:18px}
+.tstep:not(:last-child)::after{content:'';position:absolute;left:13px;top:28px;width:2px;bottom:0;background:var(--b3)}
+.tstep.tdone::after{background:var(--T)}
+.tdot{width:28px;height:28px;border-radius:50%;border:2px solid var(--b3);background:var(--w);display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1}
+.tdot svg{width:11px;height:11px;stroke:var(--t3);stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.tstep.tdone .tdot{background:var(--T);border-color:var(--T)}
+.tstep.tdone .tdot svg{stroke:#fff}
+.tstep.tact .tdot{background:var(--am);border-color:var(--am)}
+.tstep.tact .tdot svg{stroke:#fff}
+.tlab{font-size:13px;font-weight:700;color:var(--t2);margin-top:3px}
+.tstep.tdone .tlab,.tstep.tact .tlab{color:var(--tx)}
+.tdate{font-size:11px;color:var(--t3);margin-top:2px}
+.tnote{font-size:12px;color:var(--t2);line-height:1.5;background:var(--bg);border-radius:8px;padding:8px 10px;margin-top:6px}
+/* ══ MODAL SHEET ════════════════════════════════════════════════════════════ */
+#modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+#modal.show{opacity:1;pointer-events:all}
+.msheet{background:var(--w);border-radius:22px 22px 0 0;width:100%;max-width:480px;padding:22px 18px calc(28px + env(safe-area-inset-bottom,0px));max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1)}
+#modal.show .msheet{transform:translateY(0)}
+.msh-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.msh-title{font-family:var(--fs);font-size:20px;font-weight:700}
+.mclose{width:32px;height:32px;border-radius:50%;background:var(--b2);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--t2)}
+/* ══ PRIORITY PILLS ═════════════════════════════════════════════════════════ */
+.ppills{display:flex;gap:7px;margin-bottom:2px}
+.ppill{flex:1;padding:9px 4px;border-radius:10px;border:1.5px solid var(--b3);background:var(--w);color:var(--t2);font-size:12px;font-weight:700;font-family:var(--f);cursor:pointer;text-align:center;transition:all .15s}
+.ppill.on.pu{background:var(--rbg);border-color:var(--re);color:var(--re)}
+.ppill.on.pn{background:var(--abg);border-color:var(--am);color:var(--am)}
+.ppill.on.pb{background:var(--gbg);border-color:var(--gr);color:var(--gr)}
+/* ══ FAB ════════════════════════════════════════════════════════════════════ */
+.fab{position:fixed;bottom:calc(68px + env(safe-area-inset-bottom,0px));right:16px;width:52px;height:52px;border-radius:26px;background:var(--T);border:none;box-shadow:0 4px 16px rgba(193,127,90,0.45);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:50;transition:transform .15s}
+.fab:active{transform:scale(0.93)}
+.fab svg{width:22px;height:22px;stroke:#fff;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+/* ══ TEXTAREA ═══════════════════════════════════════════════════════════════ */
+textarea.inp{resize:none;height:78px;line-height:1.5}
+
 /* ══ ADMIN ═════════════════════════════════════════════════════════════════ */
 .tpills{display:flex;background:var(--b2);border-radius:11px;padding:3px;margin-bottom:12px;gap:2px}
 .tpill{flex:1;text-align:center;padding:8px 2px;border-radius:9px;border:none;background:transparent;color:var(--t2);font-size:11px;font-weight:700;font-family:var(--f);cursor:pointer;transition:all .15s}
@@ -309,9 +345,9 @@ select.inp option{background:#fff}
       <span>Factures</span>
       <span class="ndot2" id="idot" style="display:none"></span>
     </button>
-    <button class="nb" id="nb-maintenance" onclick="goTab('maintenance')">
+    <button class="nb" id="nb-interventions" onclick="goTab('interventions')">
       <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-      <span>Entretiens</span>
+      <span>Interventions</span>
     </button>
     <button class="nb" id="nb-infos" onclick="goTab('infos')">
       <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -348,8 +384,8 @@ function ico(k,cls){return'<svg viewBox="0 0 24 24" class="'+(cls||'')+'" style=
 
 // ══ STATE ══════════════════════════════════════════════════════════════════════
 var S={user:null,token:null,authMode:'login',authStep:1,authTmp:{}};
-var D={invoices:[],revenues:[],maintenances:[],infos:null,contract:null};
-var selInv=null,selRevIdx=null,ownerData=null,oTab2='inv';
+var D={invoices:[],revenues:[],maintenances:[],incidents:[],infos:null,contract:null};
+var selInv=null,selRevIdx=null,selInc=null,intSubTab='incidents',ownerData=null,oTab2='inv';
 
 // ══ API ════════════════════════════════════════════════════════════════════════
 async function api(method,path,body){
@@ -456,8 +492,8 @@ async function startApp(){
 }
 async function loadData(){
   try{
-    var r=await Promise.all([api('GET','/invoices'),api('GET','/revenues'),api('GET','/maintenances'),api('GET','/infos'),api('GET','/contract')]);
-    D.invoices=r[0];D.revenues=r[1];D.maintenances=r[2];D.infos=r[3];D.contract=r[4];
+    var r=await Promise.all([api('GET','/invoices'),api('GET','/revenues'),api('GET','/maintenances'),api('GET','/infos'),api('GET','/contract'),api('GET','/incidents')]);
+    D.invoices=r[0];D.revenues=r[1];D.maintenances=r[2];D.infos=r[3];D.contract=r[4];D.incidents=r[5]||[];
     selRevIdx=D.revenues.length-1;
     var p=D.invoices.filter(function(i){return i.status==='en_attente';}).length;
     document.getElementById('idot').style.display=p>0?'block':'none';
@@ -467,12 +503,12 @@ async function loadData(){
 
 // ══ NAV ════════════════════════════════════════════════════════════════════════
 function goTab(tab){
-  selInv=null;ownerData=null;
+  selInv=null;selInc=null;ownerData=null;
   document.querySelectorAll('.nb').forEach(function(b){b.classList.remove('on');});
   var nb=document.getElementById('nb-'+tab);if(nb)nb.classList.add('on');
   var c=document.getElementById('scr');c.scrollTop=0;c.innerHTML='';
   if(tab!=='calendar'){_calYear=null;_calMonth=null;_calEvents=[];}
-  ({dashboard:rDash,revenues:rRevenues,invoices:rInvoices,maintenance:rMaint,infos:rInfos,admin:rAdmin,calendar:rCalendar,password:rPassword})[tab]&&({dashboard:rDash,revenues:rRevenues,invoices:rInvoices,maintenance:rMaint,infos:rInfos,admin:rAdmin,calendar:rCalendar,password:rPassword})[tab](c);
+  ({dashboard:rDash,revenues:rRevenues,invoices:rInvoices,maintenance:rMaint,interventions:rInterventions,infos:rInfos,admin:rAdmin,calendar:rCalendar,password:rPassword})[tab]&&({dashboard:rDash,revenues:rRevenues,invoices:rInvoices,maintenance:rMaint,interventions:rInterventions,infos:rInfos,admin:rAdmin,calendar:rCalendar,password:rPassword})[tab](c);
 }
 
 // ══ DASHBOARD ══════════════════════════════════════════════════════════════════
@@ -492,6 +528,9 @@ function rDash(c){
     +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="sval" style="font-size:16px">'+(lr?lr.revenuNet.toLocaleString()+' DT':'—')+'</div><div class="slbl">Revenu net · '+(lr?lr.mois:'')+'</div></div>'
     +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div class="sval" style="color:'+(pend>0?'var(--T)':'var(--gr)')+'">'+pend+'</div><div class="slbl">Factures en attente</div></div>'
     +'</div>'
+    +(D.incidents.filter(function(i){return i.statut==='signalé'||i.statut==='en_cours';}).length>0
+      ?'<div class="alrt alrt-r" style="cursor:pointer" onclick="goTab(\'interventions\')"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--re);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><div><div class="atit">'+D.incidents.filter(function(i){return i.statut==='signalé'||i.statut==='en_cours';}).length+' incident'+(D.incidents.filter(function(i){return i.statut==='signalé'||i.statut==='en_cours';}).length>1?'s':'')+' en cours</div><div class="asub2">Appuyez pour voir le détail</div></div></div>'
+      :'')
     +'<h3 class="stitle" style="margin-top:6px">Activité récente</h3><div class="fcard">'
     +[].concat(
       D.invoices.slice(0,2).map(function(i){return{svgk:'inv',tx:'Facture '+(i.month||i.mois)+' — '+(i.amount||0).toLocaleString()+' DT',tm:(i.date||'').slice(0,10),col:'var(--T)',bg:'var(--TL)'};}),
@@ -649,6 +688,238 @@ async function dMaint(id){
   if(!confirm('Supprimer ?'))return;
   try{await api('DELETE','/maintenances/'+id);D.maintenances=D.maintenances.filter(function(m){return m.id!==id;});toast('Supprimé','ok');rMaint(document.getElementById('scr'));}
   catch(e){toast(e.message,'err');}
+}
+
+// ══ INTERVENTIONS (incidents + entretiens) ══════════════════════════════════════
+function rInterventions(c){
+  if(selInc){rIncidentDetail(c,selInc);return;}
+  var openInc=D.incidents.filter(function(i){return i.statut==='signalé'||i.statut==='en_cours';}).length;
+  c.innerHTML='<div class="pg fu">'
+    +'<div class="tpills">'
+    +'<button class="tpill'+(intSubTab==='incidents'?' on':'')+'" onclick="intSubTab=\'incidents\';rInterventions(document.getElementById(\'scr\'))">Incidents'+(openInc>0?' ('+openInc+')':'')+'</button>'
+    +'<button class="tpill'+(intSubTab==='entretiens'?' on':'')+'" onclick="intSubTab=\'entretiens\';rInterventions(document.getElementById(\'scr\'))">Entretiens</button>'
+    +'</div>'
+    +(intSubTab==='incidents'?buildIncidentsList():buildEntretiensList())
+    +'</div>';
+  if(S.user.role==='owner'){
+    var fab=document.createElement('button');
+    fab.className='fab';fab.title='Signaler un incident';
+    fab.innerHTML='<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+    fab.onclick=function(){openReportModal();};
+    c.appendChild(fab);
+  }
+}
+
+function buildIncidentsList(){
+  var incs=D.incidents,isA=S.user.role==='admin';
+  if(!incs.length)return '<div class="alrt alrt-t"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--T);stroke-width:2;fill:none"><polyline points="20,6 9,17 4,12"/></svg><div><div class="atit">Aucun incident signalé</div><div class="asub2">'+(isA?'Aucun incident pour ce propriétaire':'Appuyez sur + pour signaler un problème')+'</div></div></div>';
+  return '<h3 class="stitle">Signalements ('+incs.length+')</h3>'
+    +incs.map(function(inc){
+      var sc=incStatutStyle(inc.statut),pc=incPrioClass(inc.priorite);
+      return'<div style="display:flex;gap:7px;margin-bottom:8px;align-items:flex-start">'
+        +'<div style="flex:1;background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:13px;cursor:pointer;box-shadow:var(--sh);transition:border-color .15s" onclick="selInc=D.incidents.find(function(x){return x.id===\''+inc.id+'\';});rInterventions(document.getElementById(\'scr\'))">'
+        +'<div style="display:flex;align-items:flex-start;gap:10px">'
+        +'<div style="width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:'+sc.bg+'">'
+        +'<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:'+sc.col+';stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round">'+incCatIcon(inc.categorie)+'</svg>'
+        +'</div>'
+        +'<div style="flex:1;min-width:0">'
+        +'<div style="font-size:14px;font-weight:700;line-height:1.3;margin-bottom:5px">'+inc.titre+'</div>'
+        +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+        +'<span class="bdg '+sc.cls+'">'+incStatutLabel(inc.statut)+'</span>'
+        +'<span class="bdg '+pc+'">'+incPrioLabel(inc.priorite)+'</span>'
+        +'<span style="font-size:10px;color:var(--t3)">'+inc.categorie+' · '+(inc.dateSignalement||'').slice(0,10)+'</span>'
+        +'</div>'
+        +(inc.technicien?'<div style="margin-top:6px"><span class="tchip">'+inc.technicien+'</span></div>':'')
+        +'</div></div></div>'
+        +(isA?'<button class="dbtn" style="margin-top:3px" onclick="dInc(\''+inc.id+'\')">'+ico('del')+'</button>':'')
+        +'</div>';
+    }).join('');
+}
+
+function buildEntretiensList(){
+  var maints=D.maintenances,isA=S.user.role==='admin';
+  var done=maints.filter(function(m){return m.statut==='effectué';}).length;
+  var plan=maints.filter(function(m){return m.statut==='planifié';}).length;
+  if(!maints.length)return '<p style="color:var(--t2);text-align:center;padding:30px;font-size:13px">Aucun entretien planifié</p>';
+  return'<div class="sgrid" style="margin-bottom:10px">'
+    +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></div><div class="sval">'+done+'</div><div class="slbl">Effectués</div></div>'
+    +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div><div class="sval">'+plan+'</div><div class="slbl">Planifiés</div></div></div>'
+    +'<h3 class="stitle">Journal des entretiens</h3>'
+    +maints.map(function(m){
+      var done2=m.statut==='effectué';
+      return'<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px">'
+        +'<div class="mcard" style="flex:1"><div class="mhead"><div class="mwrap">'
+        +'<div class="mico" style="background:'+(done2?'var(--gbg)':'var(--TL)')+'"><svg viewBox="0 0 24 24" style="stroke:'+(done2?'var(--gr)':'var(--T)')+';width:16px;height:16px;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>'
+        +'<div><div class="mtype">'+m.type+'</div><div class="mdate">'+(m.date||'').slice(0,10)+'</div></div></div>'
+        +'<span class="bdg '+(done2?'bdg-g':'bdg-t')+'">'+(done2?'Effectué':'Planifié')+'</span></div>'
+        +'<p class="mnote">'+(m.note||'')+'</p>'
+        +(m.technicien?'<div class="mtech"><span class="tchip">'+m.technicien+'</span></div>':'')
+        +'</div>'
+        +(isA?'<button class="dbtn" style="margin-top:3px" onclick="dMaint(\''+m.id+'\')">'+ico('del')+'</button>':'')
+        +'</div>';
+    }).join('');
+}
+
+function incStatutStyle(s){
+  if(s==='signalé')return{bg:'var(--abg)',col:'var(--am)',cls:'bdg-a'};
+  if(s==='en_cours')return{bg:'var(--TL)',col:'var(--T)',cls:'bdg-t'};
+  if(s==='résolu')return{bg:'var(--gbg)',col:'var(--gr)',cls:'bdg-g'};
+  return{bg:'var(--b2)',col:'var(--t3)',cls:''};
+}
+function incStatutLabel(s){return{'signalé':'Signalé','en_cours':'En cours','résolu':'Résolu','annulé':'Annulé'}[s]||s;}
+function incPrioClass(p){return p==='urgente'?'bdg-r':p==='normale'?'bdg-a':'bdg-g';}
+function incPrioLabel(p){return{'urgente':'Urgente','normale':'Normale','basse':'Basse'}[p]||p;}
+function incCatIcon(cat){
+  var icons={
+    'Plomberie':'<circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>',
+    'Électricité':'<polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>',
+    'Ménage':'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/>',
+    'Peinture':'<polygon points="18,2 22,6 12,16 8,16 8,12 18,2"/><line x1="2" y1="22" x2="8" y2="16"/>',
+    'Climatisation':'<line x1="12" y1="2" x2="12" y2="22"/><path d="M6 9l6 3 6-3"/><path d="M6 15l6-3 6 3"/>',
+    'Serrurerie':'<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+    'Autre':'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>'
+  };
+  return icons[cat]||icons['Autre'];
+}
+
+function rIncidentDetail(c,inc){
+  var isA=S.user.role==='admin';
+  var sc=incStatutStyle(inc.statut);
+  var step2done=inc.statut==='résolu'||inc.statut==='annulé';
+  var step2act=inc.statut==='en_cours';
+  var step3done=inc.statut==='résolu';
+  c.innerHTML='<div class="dpage fu">'
+    +'<button class="bkbtn" onclick="selInc=null;rInterventions(document.getElementById(\'scr\'))">'+ICO.back+' Retour aux interventions</button>'
+    +'<div class="dcard">'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">'
+    +'<div style="flex:1;margin-right:10px"><div style="font-family:var(--fs);font-size:19px;font-weight:700;line-height:1.3">'+inc.titre+'</div>'
+    +'<div style="font-size:12px;color:var(--t2);margin-top:3px">'+inc.categorie+' · signalé le '+(inc.dateSignalement||'').slice(0,10)+'</div></div>'
+    +'<span class="bdg '+incPrioClass(inc.priorite)+'">'+incPrioLabel(inc.priorite)+'</span>'
+    +'</div>'
+    +(inc.description?'<div style="background:var(--b2);border-radius:10px;padding:11px 13px;font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:16px">'+inc.description+'</div>':'')
+    +'<div style="font-size:11px;font-weight:700;color:var(--t2);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px">Suivi de l\'incident</div>'
+    +'<div class="timeline">'
+    // Step 1: Signalé
+    +'<div class="tstep tdone">'
+    +'<div class="tdot"><svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></div>'
+    +'<div style="flex:1"><div class="tlab">Incident signalé</div><div class="tdate">'+(inc.dateSignalement||'—')+'</div></div>'
+    +'</div>'
+    // Step 2: En cours
+    +'<div class="tstep'+(step2done?' tdone':step2act?' tact':'')+'">'
+    +'<div class="tdot"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>'
+    +'<div style="flex:1"><div class="tlab">Intervention'+(step2act||step2done?' assignée':' en attente')+'</div>'
+    +(inc.dateIntervention?'<div class="tdate">'+inc.dateIntervention+'</div>':'')
+    +(inc.technicien?'<div style="margin-top:6px"><span class="tchip">'+inc.technicien+'</span></div>':'')
+    +((inc.noteAdmin&&(step2act||step2done))?'<div class="tnote">'+inc.noteAdmin+'</div>':'')
+    +'</div></div>'
+    // Step 3: Résolu
+    +'<div class="tstep'+(step3done?' tdone':'')+'" style="padding-bottom:0">'
+    +'<div class="tdot"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div>'
+    +'<div style="flex:1"><div class="tlab">Incident résolu</div>'
+    +(inc.dateResolution?'<div class="tdate">'+inc.dateResolution+'</div>':'<div class="tdate" style="color:var(--t3)">En attente</div>')
+    +(inc.cout?'<div style="margin-top:6px;font-size:13px;font-weight:700;color:var(--gr)">Coût : '+inc.cout+' DT</div>':'')
+    +(inc.noteAdmin&&step3done?'<div class="tnote">'+inc.noteAdmin+'</div>':'')
+    +'</div></div>'
+    +'</div>'
+    // Admin actions
+    +(isA?'<div style="margin-top:16px;border-top:1px solid var(--b2);padding-top:14px">'
+      +'<div style="font-size:11px;font-weight:700;color:var(--t2);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Actions</div>'
+      +'<div style="display:flex;flex-direction:column;gap:8px">'
+      +(inc.statut==='signalé'?'<button class="btnT" style="margin-top:0;background:var(--am)" onclick="updateIncident(\''+inc.id+'\',{statut:\'en_cours\',dateIntervention:new Date().toISOString().split(\'T\')[0]})">🔧 Démarrer l\'intervention</button>':'')
+      +(inc.statut==='en_cours'?'<button class="btnT" style="margin-top:0" onclick="updateIncident(\''+inc.id+'\',{statut:\'résolu\',dateResolution:new Date().toISOString().split(\'T\')[0]})">✅ Marquer résolu</button>':'')
+      +(inc.statut!=='résolu'&&inc.statut!=='annulé'?'<button class="btnT" style="margin-top:0;background:var(--t2)" onclick="openAdminIncModal(\''+inc.id+'\')">✏️ Modifier détails</button>':'')
+      +'<button class="dbtn" style="width:100%;justify-content:center;padding:10px;font-size:13px;font-weight:700;gap:6px;display:flex" onclick="dInc(\''+inc.id+'\')">'+ico('del')+' Supprimer</button>'
+      +'</div></div>'
+      :'')
+    +'</div></div>';
+}
+
+async function updateIncident(id,changes){
+  try{
+    var updated=await api('PUT','/incidents/'+id,changes);
+    var idx=D.incidents.findIndex(function(i){return i.id===id;});
+    if(idx!==-1)D.incidents[idx]=updated;
+    selInc=updated;
+    rInterventions(document.getElementById('scr'));
+    toast('Incident mis à jour','ok');
+  }catch(e){toast(e.message,'err');}
+}
+async function dInc(id){
+  if(!confirm('Supprimer cet incident ?'))return;
+  try{
+    await api('DELETE','/incidents/'+id);
+    D.incidents=D.incidents.filter(function(i){return i.id!==id;});
+    selInc=null;toast('Supprimé','ok');
+    rInterventions(document.getElementById('scr'));
+  }catch(e){toast(e.message,'err');}
+}
+
+function openReportModal(){
+  var m=document.getElementById('modal');
+  m.querySelector('.msheet').innerHTML=
+    '<div class="msh-head"><span class="msh-title">Signaler un incident</span>'
+    +'<button class="mclose" onclick="closeModal()"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>'
+    +'<div class="fgrp">'
+    +'<input id="inc-titre" class="inp" placeholder="Titre de l\'incident *" maxlength="80">'
+    +'<select id="inc-cat" class="inp"><option value="">Catégorie *</option><option>Plomberie</option><option>Électricité</option><option>Ménage</option><option>Peinture</option><option>Climatisation</option><option>Serrurerie</option><option>Autre</option></select>'
+    +'<div><div style="font-size:12px;color:var(--t2);margin-bottom:7px;font-weight:600">Priorité</div>'
+    +'<div class="ppills">'
+    +'<button class="ppill pb" onclick="setPrio(this,\'basse\')">Basse</button>'
+    +'<button class="ppill pn on" onclick="setPrio(this,\'normale\')">Normale</button>'
+    +'<button class="ppill pu" onclick="setPrio(this,\'urgente\')">Urgente</button>'
+    +'</div></div>'
+    +'<input type="hidden" id="inc-prio" value="normale">'
+    +'<textarea id="inc-desc" class="inp" placeholder="Description du problème (optionnel)"></textarea>'
+    +'<button class="btnT" onclick="submitReport()">Signaler l\'incident</button>'
+    +'</div>';
+  m.classList.add('show');
+}
+function setPrio(btn,val){
+  document.getElementById('inc-prio').value=val;
+  document.querySelectorAll('.ppill').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+}
+function closeModal(){document.getElementById('modal').classList.remove('show');}
+async function submitReport(){
+  var titre=(document.getElementById('inc-titre').value||'').trim();
+  var cat=document.getElementById('inc-cat').value;
+  var prio=document.getElementById('inc-prio').value;
+  var desc=(document.getElementById('inc-desc').value||'').trim();
+  if(!titre||!cat){toast('Titre et catégorie requis','err');return;}
+  try{
+    var inc=await api('POST','/incidents',{titre:titre,categorie:cat,priorite:prio,description:desc});
+    D.incidents.unshift(inc);
+    closeModal();intSubTab='incidents';
+    rInterventions(document.getElementById('scr'));
+    toast('Incident signalé ✓','ok');
+  }catch(e){toast(e.message,'err');}
+}
+
+function openAdminIncModal(id){
+  var inc=D.incidents.find(function(i){return i.id===id;});if(!inc)return;
+  var m=document.getElementById('modal');
+  m.querySelector('.msheet').innerHTML=
+    '<div class="msh-head"><span class="msh-title">Modifier l\'incident</span>'
+    +'<button class="mclose" onclick="closeModal()"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>'
+    +'<div class="fgrp">'
+    +'<input id="ai-tech" class="inp" placeholder="Technicien assigné" value="'+(inc.technicien||'')+'">'
+    +'<div><label style="font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:5px">Date d\'intervention</label>'
+    +'<input id="ai-date" class="inp" type="date" value="'+(inc.dateIntervention||'')+'"></div>'
+    +'<textarea id="ai-note" class="inp" placeholder="Note visible par le propriétaire">'+(inc.noteAdmin||'')+'</textarea>'
+    +'<div><label style="font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:5px">Coût de l\'intervention (DT)</label>'
+    +'<input id="ai-cout" class="inp" type="number" placeholder="Montant DT" value="'+(inc.cout||'')+'"></div>'
+    +'<button class="btnT" style="margin-top:4px" onclick="submitAdminInc(\''+id+'\')">Enregistrer</button>'
+    +'</div>';
+  m.classList.add('show');
+}
+async function submitAdminInc(id){
+  var changes={
+    technicien:(document.getElementById('ai-tech').value||'').trim()||null,
+    dateIntervention:document.getElementById('ai-date').value||null,
+    noteAdmin:(document.getElementById('ai-note').value||'').trim()||null,
+    cout:parseFloat(document.getElementById('ai-cout').value)||null
+  };
+  await updateIncident(id,changes);closeModal();
 }
 
 // ══ INFOS ══════════════════════════════════════════════════════════════════════
@@ -841,6 +1112,7 @@ function rOwnerDetail(c,d){
     +'<button class="tpill'+(oTab2==='inv'?' on':'')+'" onclick="oSwitch(\'inv\')">Factures</button>'
     +'<button class="tpill'+(oTab2==='rev'?' on':'')+'" onclick="oSwitch(\'rev\')">Revenus</button>'
     +'<button class="tpill'+(oTab2==='maint'?' on':'')+'" onclick="oSwitch(\'maint\')">Entretiens</button>'
+    +'<button class="tpill'+(oTab2==='inc'?' on':'')+'" onclick="oSwitch(\'inc\')">Incidents</button>'
     +'<button class="tpill'+(oTab2==='infos'?' on':'')+'" onclick="oSwitch(\'infos\')">Infos</button>'
     +'<button class="tpill'+(oTab2==='cal'?' on':'')+'" onclick="oSwitch(\'cal\')">Calendrier</button>'
     +'</div>'
@@ -851,7 +1123,7 @@ function rOwnerDetail(c,d){
 function oSwitch(t){
   oTab2=t;
   document.querySelectorAll('.tpill').forEach(function(b){b.classList.remove('on');});
-  var tabs={inv:'Factures',rev:'Revenus',maint:'Entretiens',infos:'Infos',cal:'Calendrier'};
+  var tabs={inv:'Factures',rev:'Revenus',maint:'Entretiens',inc:'Incidents',infos:'Infos',cal:'Calendrier'};
   document.querySelectorAll('.tpill').forEach(function(b){if(b.textContent===tabs[t])b.classList.add('on');});
   renderOTab(t);
 }
@@ -947,6 +1219,40 @@ function renderOTab(t){
           +'<p class="mnote">'+(m.note||'')+'</p>'
           +(m.technicien?'<div class="mtech"><span class="tchip">'+m.technicien+'</span></div>':'')
           +'</div><button class="dbtn" style="margin-top:3px" onclick="aDelMaint(\''+m.id+'\',\''+oid+'\')">'+ico('del')+'</button></div>';
+      }).join('');
+  }
+
+  if(t==='inc'){
+    var incs=(d.incidents||[]);
+    var oIncId=oid;
+    body.innerHTML=
+      '<div class="fsec"><div class="fsech"><svg viewBox="0 0 24 24">'+ICO.warn.replace(/<svg[^>]*>/,'').replace('</svg>','')+'</svg><span class="fsect">Signaler un incident</span></div>'
+      +'<div class="fsecb">'
+      +'<input id="oi-titre" class="inp" placeholder="Titre de l\'incident *" maxlength="80">'
+      +'<select id="oi-cat" class="inp"><option value="">Catégorie *</option><option>Plomberie</option><option>Électricité</option><option>Ménage</option><option>Peinture</option><option>Climatisation</option><option>Serrurerie</option><option>Autre</option></select>'
+      +'<div style="display:flex;gap:8px"><select id="oi-prio" class="inp"><option value="normale">Priorité normale</option><option value="urgente">Urgente</option><option value="basse">Basse</option></select></div>'
+      +'<textarea id="oi-desc" class="inp" placeholder="Description du problème"></textarea>'
+      +'<button class="btnT" style="margin-top:0" onclick="oAddInc(\''+oIncId+'\')">Signaler l\'incident</button></div></div>'
+      +'<h3 class="stitle">Incidents ('+incs.length+')</h3>'
+      +(incs.length===0?'<p style="color:var(--t2);font-size:13px;padding:8px 0">Aucun incident</p>':'')
+      +incs.map(function(inc){
+        var sc=incStatutStyle(inc.statut);
+        return'<div style="display:flex;gap:7px;margin-bottom:8px;align-items:flex-start">'
+          +'<div style="flex:1;background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:13px;box-shadow:var(--sh)">'
+          +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">'
+          +'<div style="font-size:14px;font-weight:700;flex:1;margin-right:8px;line-height:1.3">'+inc.titre+'</div>'
+          +'<span class="bdg '+sc.cls+'">'+incStatutLabel(inc.statut)+'</span>'
+          +'</div>'
+          +'<div style="font-size:11px;color:var(--t3);margin-bottom:8px">'+inc.categorie+' · '+incPrioLabel(inc.priorite)+' · '+(inc.dateSignalement||'').slice(0,10)+'</div>'
+          +(inc.technicien?'<div style="margin-bottom:8px"><span class="tchip">'+inc.technicien+'</span></div>':'')
+          // Quick status update buttons
+          +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
+          +(inc.statut==='signalé'?'<button onclick="oUpdateInc(\''+inc.id+'\',{statut:\'en_cours\',dateIntervention:new Date().toISOString().split(\'T\')[0]})" style="flex:1;padding:7px;border-radius:8px;border:none;background:var(--abg);color:var(--am);font-size:11px;font-weight:700;font-family:var(--f);cursor:pointer">🔧 Démarrer</button>':'')
+          +(inc.statut==='en_cours'?'<button onclick="oUpdateInc(\''+inc.id+'\',{statut:\'résolu\',dateResolution:new Date().toISOString().split(\'T\')[0]})" style="flex:1;padding:7px;border-radius:8px;border:none;background:var(--gbg);color:var(--gr);font-size:11px;font-weight:700;font-family:var(--f);cursor:pointer">✅ Résolu</button>':'')
+          +'<button onclick="openAdminIncFromOwner(\''+inc.id+'\')" style="flex:1;padding:7px;border-radius:8px;border:1.5px solid var(--b3);background:var(--w);color:var(--t2);font-size:11px;font-weight:700;font-family:var(--f);cursor:pointer">✏️ Modifier</button>'
+          +'</div></div>'
+          +'<button class="dbtn" style="margin-top:3px" onclick="oDelInc(\''+inc.id+'\')">'+ico('del')+'</button>'
+          +'</div>';
       }).join('');
   }
 
@@ -1064,6 +1370,7 @@ function rOwnerDetail(c,d){
     +'<button class="tpill'+(oTab2==='inv'?' on':'')+'" onclick="oSwitch(\'inv\')">Factures</button>'
     +'<button class="tpill'+(oTab2==='rev'?' on':'')+'" onclick="oSwitch(\'rev\')">Revenus</button>'
     +'<button class="tpill'+(oTab2==='maint'?' on':'')+'" onclick="oSwitch(\'maint\')">Entretiens</button>'
+    +'<button class="tpill'+(oTab2==='inc'?' on':'')+'" onclick="oSwitch(\'inc\')">Incidents</button>'
     +'<button class="tpill'+(oTab2==='infos'?' on':'')+'" onclick="oSwitch(\'infos\')">Infos</button>'
     +'<button class="tpill'+(oTab2==='cal'?' on':'')+'" onclick="oSwitch(\'cal\')">Calendrier</button>'
     +'</div>'
@@ -1074,7 +1381,7 @@ function rOwnerDetail(c,d){
 function oSwitch(t){
   oTab2=t;
   document.querySelectorAll('.tpill').forEach(function(b){b.classList.remove('on');});
-  var tabs={inv:'Factures',rev:'Revenus',maint:'Entretiens',infos:'Infos',cal:'Calendrier'};
+  var tabs={inv:'Factures',rev:'Revenus',maint:'Entretiens',inc:'Incidents',infos:'Infos',cal:'Calendrier'};
   document.querySelectorAll('.tpill').forEach(function(b){if(b.textContent===tabs[t])b.classList.add('on');});
   renderOTab(t);
 }
@@ -1333,6 +1640,58 @@ async function aAddMaint(oid){
 async function aDelMaint(id,oid){
   if(!confirm('Supprimer ?'))return;
   try{await api('DELETE','/maintenances/'+id);ownerData.maintenances=ownerData.maintenances.filter(function(m){return m.id!==id;});toast('Supprimé','ok');oSwitch('maint');}catch(e){toast(e.message,'err');}
+}
+async function oAddInc(oid){
+  var titre=(gv('oi-titre')||'').trim(),cat=gv('oi-cat'),prio=gv('oi-prio'),desc=(gv('oi-desc')||'').trim();
+  if(!titre||!cat){toast('Titre et catégorie requis','err');return;}
+  try{
+    var inc=await api('POST','/incidents',{ownerId:oid,titre:titre,categorie:cat,priorite:prio,description:desc});
+    if(!ownerData.incidents)ownerData.incidents=[];
+    ownerData.incidents.unshift(inc);toast('Incident créé','ok');oSwitch('inc');
+  }catch(e){toast(e.message,'err');}
+}
+async function oUpdateInc(id,changes){
+  try{
+    var updated=await api('PUT','/incidents/'+id,changes);
+    if(ownerData.incidents){var idx=ownerData.incidents.findIndex(function(i){return i.id===id;});if(idx!==-1)ownerData.incidents[idx]=updated;}
+    // Also update D.incidents if present
+    var gi=D.incidents.findIndex(function(i){return i.id===id;});if(gi!==-1)D.incidents[gi]=updated;
+    toast('Incident mis à jour','ok');oSwitch('inc');
+  }catch(e){toast(e.message,'err');}
+}
+function openAdminIncFromOwner(id){
+  var inc=(ownerData.incidents||[]).find(function(i){return i.id===id;});
+  if(!inc){toast('Incident introuvable','err');return;}
+  // Temporarily sync to D.incidents for the modal
+  if(!D.incidents.find(function(i){return i.id===id;}))D.incidents.push(inc);
+  openAdminIncModal(id);
+  // Override submitAdminInc to refresh owner tab
+  window._oIncId=id;
+  document.querySelector('.msheet .btnT').onclick=function(){
+    submitAdminIncOwner(id);
+  };
+}
+async function submitAdminIncOwner(id){
+  var changes={
+    technicien:(document.getElementById('ai-tech').value||'').trim()||null,
+    dateIntervention:document.getElementById('ai-date').value||null,
+    noteAdmin:(document.getElementById('ai-note').value||'').trim()||null,
+    cout:parseFloat(document.getElementById('ai-cout').value)||null
+  };
+  try{
+    var updated=await api('PUT','/incidents/'+id,changes);
+    if(ownerData.incidents){var idx=ownerData.incidents.findIndex(function(i){return i.id===id;});if(idx!==-1)ownerData.incidents[idx]=updated;}
+    closeModal();toast('Incident mis à jour','ok');oSwitch('inc');
+  }catch(e){toast(e.message,'err');}
+}
+async function oDelInc(id){
+  if(!confirm('Supprimer cet incident ?'))return;
+  try{
+    await api('DELETE','/incidents/'+id);
+    if(ownerData.incidents)ownerData.incidents=ownerData.incidents.filter(function(i){return i.id!==id;});
+    D.incidents=D.incidents.filter(function(i){return i.id!==id;});
+    toast('Supprimé','ok');oSwitch('inc');
+  }catch(e){toast(e.message,'err');}
 }
 async function loadOwnerCalPreview(calUrl){
   var container=document.getElementById('ownerCalPreview');
@@ -1743,6 +2102,7 @@ async function testPush(){
 rAuth();
 tryAuto();
 </script>
+<div id="modal" onclick="if(event.target===this)closeModal()"><div class="msheet"></div></div>
 <script>
 if('serviceWorker' in navigator){
   window.addEventListener('load',function(){
