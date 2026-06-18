@@ -1730,9 +1730,9 @@ async function loadOwnerCalPreview(calUrl){
   var events=[];
   var icalText=null;
   var proxies=[
+    '/api/ical-proxy?url='+encodeURIComponent(calUrl),
     'https://corsproxy.io/?'+encodeURIComponent(calUrl),
     'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(calUrl),
-    'https://thingproxy.freeboard.io/fetch/'+encodeURIComponent(calUrl),
   ];
   for(var pi=0;pi<proxies.length;pi++){
     try{

@@ -667,17 +667,48 @@ async function handleAPI(req, res, method, pathname, token) {
   }
 
 
-  // ICAL-PROXY — redirige vers corsproxy.io (Railway bloque les connexions sortantes)
+  // ICAL-PROXY — fetch iCal côté serveur pour éviter CORS
   if (parts[1]==='ical-proxy'&&method==='GET') {
     const calUrl2=parsed.query&&parsed.query.url?decodeURIComponent(parsed.query.url):null;
     if (!calUrl2) return send(res,400,{error:'URL manquante'});
-    // Rediriger le client vers corsproxy.io - le navigateur fait la requête
-    const redirectUrl='https://corsproxy.io/?'+encodeURIComponent(calUrl2);
-    res.writeHead(302,{
-      'Location': redirectUrl,
-      'Access-Control-Allow-Origin':'*'
-    });
-    return res.end();
+    try {
+      const urlObj=new URL(calUrl2);
+      if (!['http:','https:'].includes(urlObj.protocol)) return send(res,400,{error:'URL invalide'});
+      const mod=urlObj.protocol==='https:'?https:require('http');
+      const options={
+        hostname:urlObj.hostname,
+        path:urlObj.pathname+(urlObj.search||''),
+        method:'GET',
+        headers:{
+          'User-Agent':'Mozilla/5.0 (compatible; Nexstay/1.0; +https://nexstay.tn)',
+          'Accept':'text/calendar,*/*'
+        },
+        timeout:15000
+      };
+      const proxyReq=mod.request(options,(proxyRes)=>{
+        // Suivre les redirections (max 3)
+        if([301,302,303,307,308].includes(proxyRes.statusCode)&&proxyRes.headers.location){
+          const loc=proxyRes.headers.location;
+          const redirUrl=loc.startsWith('http')?loc:urlObj.origin+loc;
+          const rObj=new URL(redirUrl);
+          const rMod=rObj.protocol==='https:'?https:require('http');
+          const rOpts={hostname:rObj.hostname,path:rObj.pathname+(rObj.search||''),method:'GET',headers:options.headers,timeout:15000};
+          const rReq=rMod.request(rOpts,(rRes)=>{
+            res.writeHead(200,{'Content-Type':'text/calendar; charset=utf-8','Access-Control-Allow-Origin':'*','Cache-Control':'no-cache'});
+            rRes.pipe(res);
+          });
+          rReq.on('error',(e)=>send(res,502,{error:e.message}));
+          rReq.end();
+          return;
+        }
+        res.writeHead(200,{'Content-Type':'text/calendar; charset=utf-8','Access-Control-Allow-Origin':'*','Cache-Control':'no-cache'});
+        proxyRes.pipe(res);
+      });
+      proxyReq.on('error',(e)=>send(res,502,{error:e.message}));
+      proxyReq.on('timeout',()=>{proxyReq.destroy();send(res,504,{error:'Timeout'});});
+      proxyReq.end();
+    } catch(e){return send(res,500,{error:e.message});}
+    return;
   }
 
   // CHANGE PASSWORD
