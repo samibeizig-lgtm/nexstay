@@ -1023,9 +1023,23 @@ async function adminGTab(tab){
   var owners=window._ow||[];
 
   if(tab==='prop'){
-    if(!owners.length){body.innerHTML='<p style="color:var(--t2);font-size:13px;margin-top:10px">Aucun propriétaire inscrit</p>';return;}
     window._curOwners=owners;
-    var h='<h3 class="stitle">Propriétaires ('+owners.length+')</h3>';
+    var h='<button class="btnT" style="margin-bottom:14px" onclick="showAddOwnerForm()"><svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:#fff;stroke-width:2.5;fill:none;vertical-align:middle;margin-right:6px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Ajouter un propriétaire</button>'
+      +'<div id="addOwnerForm" style="display:none;background:var(--w);border:1px solid var(--bd);border-radius:var(--r2);padding:16px;margin-bottom:16px;box-shadow:var(--sh)">'
+      +'<div style="font-size:13px;font-weight:700;color:var(--tx);margin-bottom:12px">Nouveau propriétaire</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'
+      +'<input id="ao-pr" class="inp" placeholder="Prénom *" style="margin:0">'
+      +'<input id="ao-no" class="inp" placeholder="Nom *" style="margin:0">'
+      +'</div>'
+      +'<input id="ao-em" class="inp" placeholder="Email *" type="email">'
+      +'<input id="ao-pw" class="inp" placeholder="Mot de passe provisoire *" type="text">'
+      +'<input id="ao-te" class="inp" placeholder="Téléphone">'
+      +'<div style="display:flex;gap:8px;margin-top:4px">'
+      +'<button class="btnT" style="margin:0;flex:1" onclick="doAddOwner()">Créer le compte</button>'
+      +'<button style="padding:0 16px;border-radius:var(--r);border:1px solid var(--bd);background:var(--w);color:var(--t2);font-family:var(--f);font-size:13px;cursor:pointer" onclick="document.getElementById(\'addOwnerForm\').style.display=\'none\'">Annuler</button>'
+      +'</div></div>'
+      +'<h3 class="stitle">Propriétaires ('+owners.length+')</h3>';
+    if(!owners.length){h+='<p style="color:var(--t2);font-size:13px">Aucun propriétaire</p>';}
     owners.forEach(function(o,i){
       h+='<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px">'
         +'<div class="ocard" data-id="'+o.id+'" style="cursor:pointer;flex:1;margin-bottom:0">'
@@ -1146,6 +1160,26 @@ async function agDelRev(id){if(!confirm('Supprimer ?'))return;try{await api('DEL
 async function agDelMaint(id){if(!confirm('Supprimer ?'))return;try{await api('DELETE','/maintenances/'+id);toast('Supprimé','ok');adminGTab('maint');}catch(e){toast(e.message,'err');}}
 async function agMarkInvPaid(id){try{await api('PUT','/invoices/'+id,{status:'payée'});toast('Facture marquée payée','ok');adminGTab('inv');}catch(e){toast(e.message,'err');}}
 async function agMarkMaintDone(id,ownerId){try{await api('PUT','/maintenances/'+id,{statut:'effectué',ownerId:ownerId});toast('Entretien marqué effectué','ok');adminGTab('maint');}catch(e){toast(e.message,'err');}}
+function showAddOwnerForm(){
+  var f=document.getElementById('addOwnerForm');
+  if(f)f.style.display=f.style.display==='none'?'block':'none';
+}
+async function doAddOwner(){
+  var pr=document.getElementById('ao-pr').value.trim();
+  var no=document.getElementById('ao-no').value.trim();
+  var em=document.getElementById('ao-em').value.trim();
+  var pw=document.getElementById('ao-pw').value.trim();
+  var te=document.getElementById('ao-te').value.trim();
+  if(!pr||!no||!em||!pw){toast('Prénom, nom, email et mot de passe requis','err');return;}
+  try{
+    await api('POST','/admin/create-owner',{prenom:pr,nom:no,email:em,password:pw,tel:te});
+    toast(pr+' '+no+' créé avec succès','ok');
+    document.getElementById('addOwnerForm').style.display='none';
+    var r=await Promise.all([api('GET','/stats'),api('GET','/owners')]);
+    window._ow=r[1];window._st=r[0];
+    adminGTab('prop');
+  }catch(e){toast(e.message,'err');}
+}
 async function delOwner(id,name){
   if(!confirm('Supprimer le propriétaire '+name+' ?\nToutes ses données (factures, revenus, entretiens) seront supprimées.'))return;
   try{

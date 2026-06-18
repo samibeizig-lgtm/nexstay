@@ -612,6 +612,18 @@ async function handleAPI(req, res, method, pathname, token) {
   const user=authUser(token);
   if (!user) return send(res,401,{error:'Non autorisé'});
 
+  // ADMIN CREATE OWNER
+  if (parts[1]==='admin'&&parts[2]==='create-owner'&&method==='POST'&&user.role==='admin') {
+    const b=await parseBody(req);
+    if (!b.email||!b.password||!b.prenom||!b.nom) return send(res,400,{error:'Champs requis manquants'});
+    if ((DB.users||[]).find(u=>u.email===b.email)) return send(res,400,{error:'Email déjà utilisé'});
+    const u={id:genId(),role:'owner',nom:b.nom,prenom:b.prenom,email:b.email,password:hash(b.password),tel:b.tel||'',adresse:b.adresse||'',ville:b.ville||'',typeLogement:b.typeLogement||'',createdAt:new Date().toISOString()};
+    if(!DB.users)DB.users=[];
+    DB.users.push(u);saveDB();
+    const {password:_,...safe}=u;
+    return send(res,201,{user:safe});
+  }
+
   // CONTRACT
   if (parts[1]==='contract') {
     if (method==='GET') return send(res,200,(DB.contracts||[]).find(c=>c.ownerId===user.id)||null);
