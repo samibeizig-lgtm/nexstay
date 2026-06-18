@@ -439,8 +439,7 @@ function rAuth(){
     c.innerHTML='<h2 class="atitle">Connexion</h2><p class="asub">Accédez à votre espace propriétaire</p>'
       +'<div class="fgrp"><input id="le" class="inp" type="email" placeholder="Adresse email">'
       +'<input id="lp" class="inp" type="password" placeholder="Mot de passe"></div>'
-      +'<button class="btnT" onclick="doLogin()">Se connecter</button>'
-      +'<p class="alink">Pas encore inscrit ? <b onclick="swAuth(\'register\')">Créer un compte</b></p>';
+      +'<button class="btnT" onclick="doLogin()">Se connecter</button>';
   } else {
     var s=S.authStep;
     c.innerHTML='<div class="pbar"><i class="'+(s>=1?'on':'')+'"></i><i class="'+(s>=2?'on':'')+'"></i></div>'
