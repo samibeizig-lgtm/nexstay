@@ -1,5 +1,5 @@
 // Nexstay Service Worker
-const CACHE = 'nexstay-v1';
+const CACHE = 'nexstay-v2';
 const ASSETS = ['/', '/index.html', '/manifest.json'];
 
 self.addEventListener('install', e => {
