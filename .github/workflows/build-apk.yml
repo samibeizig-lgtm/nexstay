@@ -70,12 +70,22 @@ jobs:
 
       - name: Update targetSdkVersion to 35
         run: |
+          # Capacitor 5+ uses variables.gradle; fallback to app/build.gradle
+          if [ -f "android/variables.gradle" ]; then
+            sed -i -E 's/minSdkVersion = [0-9]+/minSdkVersion = 24/' android/variables.gradle
+            sed -i -E 's/compileSdkVersion = [0-9]+/compileSdkVersion = 35/' android/variables.gradle
+            sed -i -E 's/targetSdkVersion = [0-9]+/targetSdkVersion = 35/' android/variables.gradle
+            echo "Patched variables.gradle:"
+            grep -E "SdkVersion" android/variables.gradle
+          fi
           GRADLE_FILE="android/app/build.gradle"
-          sed -i 's/targetSdkVersion [0-9]*/targetSdkVersion 35/g' "$GRADLE_FILE"
-          sed -i 's/compileSdkVersion [0-9]*/compileSdkVersion 35/g' "$GRADLE_FILE"
-          sed -i 's/minSdkVersion [0-9]*/minSdkVersion 24/g' "$GRADLE_FILE"
-          echo "SDK versions patched:"
-          grep -E "targetSdkVersion|compileSdkVersion|minSdkVersion" "$GRADLE_FILE"
+          if grep -qE 'targetSdkVersion [0-9]+' "$GRADLE_FILE" 2>/dev/null; then
+            sed -i -E 's/targetSdkVersion [0-9]+/targetSdkVersion 35/g' "$GRADLE_FILE"
+            sed -i -E 's/compileSdkVersion [0-9]+/compileSdkVersion 35/g' "$GRADLE_FILE"
+            sed -i -E 's/minSdkVersion [0-9]+/minSdkVersion 24/g' "$GRADLE_FILE"
+            echo "Patched build.gradle:"
+            grep -E "SdkVersion" "$GRADLE_FILE"
+          fi
 
       - name: Set Gradle wrapper permissions
         run: chmod +x android/gradlew
