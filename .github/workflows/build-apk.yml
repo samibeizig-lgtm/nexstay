@@ -68,20 +68,20 @@ jobs:
           fi
           echo "Colors patched to black"
 
-      - name: Update targetSdkVersion to 35
+      - name: Update targetSdkVersion to 34
         run: |
           # Capacitor 5+ uses variables.gradle; fallback to app/build.gradle
           if [ -f "android/variables.gradle" ]; then
             sed -i -E 's/minSdkVersion = [0-9]+/minSdkVersion = 24/' android/variables.gradle
-            sed -i -E 's/compileSdkVersion = [0-9]+/compileSdkVersion = 35/' android/variables.gradle
-            sed -i -E 's/targetSdkVersion = [0-9]+/targetSdkVersion = 35/' android/variables.gradle
+            sed -i -E 's/compileSdkVersion = [0-9]+/compileSdkVersion = 34/' android/variables.gradle
+            sed -i -E 's/targetSdkVersion = [0-9]+/targetSdkVersion = 34/' android/variables.gradle
             echo "Patched variables.gradle:"
             grep -E "SdkVersion" android/variables.gradle
           fi
           GRADLE_FILE="android/app/build.gradle"
           if grep -qE 'targetSdkVersion [0-9]+' "$GRADLE_FILE" 2>/dev/null; then
-            sed -i -E 's/targetSdkVersion [0-9]+/targetSdkVersion 35/g' "$GRADLE_FILE"
-            sed -i -E 's/compileSdkVersion [0-9]+/compileSdkVersion 35/g' "$GRADLE_FILE"
+            sed -i -E 's/targetSdkVersion [0-9]+/targetSdkVersion 34/g' "$GRADLE_FILE"
+            sed -i -E 's/compileSdkVersion [0-9]+/compileSdkVersion 34/g' "$GRADLE_FILE"
             sed -i -E 's/minSdkVersion [0-9]+/minSdkVersion 24/g' "$GRADLE_FILE"
             echo "Patched build.gradle:"
             grep -E "SdkVersion" "$GRADLE_FILE"
