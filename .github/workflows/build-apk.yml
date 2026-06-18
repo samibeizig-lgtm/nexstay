@@ -68,6 +68,15 @@ jobs:
           fi
           echo "Colors patched to black"
 
+      - name: Update targetSdkVersion to 35
+        run: |
+          GRADLE_FILE="android/app/build.gradle"
+          sed -i 's/targetSdkVersion [0-9]*/targetSdkVersion 35/g' "$GRADLE_FILE"
+          sed -i 's/compileSdkVersion [0-9]*/compileSdkVersion 35/g' "$GRADLE_FILE"
+          sed -i 's/minSdkVersion [0-9]*/minSdkVersion 24/g' "$GRADLE_FILE"
+          echo "SDK versions patched:"
+          grep -E "targetSdkVersion|compileSdkVersion|minSdkVersion" "$GRADLE_FILE"
+
       - name: Set Gradle wrapper permissions
         run: chmod +x android/gradlew
 
