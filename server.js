@@ -545,7 +545,7 @@ async function handleAPI(req, res, method, pathname, token) {
           return send(res,200,{otpRequired:true,userId:u.id,email:u.email.replace(/(.{2}).+(@.+)/,'$1***$2')});
         } catch(e) {
           console.log('OTP email error:',e.message);
-          return send(res,500,{error:'Impossible d\'envoyer le code OTP. Réessayez.'});
+          return send(res,500,{error:'Erreur envoi OTP: '+e.message});
         }
       }
       const {password:_,...safe}=u;
