@@ -161,6 +161,113 @@ async function sendOTPEmail(toEmail, code) {
 
 function genOTP() { return String(Math.floor(100000 + Math.random() * 900000)); }
 
+async function sendWelcomeEmail(toEmail, prenom, nom, password) {
+  const appUrl = process.env.APP_URL || 'https://app.nexstay.tn';
+  const body = JSON.stringify({
+    from: OTP_FROM_EMAIL,
+    to: [toEmail],
+    subject: 'Bienvenue sur Nexstay — Vos accès',
+    html: `<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#0f0f0f;font-family:'Helvetica Neue',Arial,sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f0f0f;padding:40px 16px">
+    <tr><td align="center">
+      <table width="100%" style="max-width:520px;background:#1a1a1a;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.07)">
+
+        <!-- HEADER -->
+        <tr>
+          <td style="background:#000;padding:32px 40px;text-align:center;border-bottom:1px solid rgba(204,122,105,0.25)">
+            <div style="font-size:28px;font-weight:800;letter-spacing:-0.5px">
+              <span style="color:#ffffff">Nex</span><span style="color:#CC7A69">stay</span>
+            </div>
+            <div style="color:#888;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin-top:4px">Conciergerie</div>
+          </td>
+        </tr>
+
+        <!-- BODY -->
+        <tr>
+          <td style="padding:36px 40px">
+            <p style="color:#CC7A69;font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin:0 0 8px">Bienvenue</p>
+            <h1 style="color:#ffffff;font-size:24px;font-weight:700;margin:0 0 16px;line-height:1.3">
+              Bonjour ${prenom} ${nom},
+            </h1>
+            <p style="color:#aaa;font-size:15px;line-height:1.7;margin:0 0 28px">
+              Votre espace propriétaire <strong style="color:#fff">Nexstay Conciergerie</strong> est prêt. Retrouvez vos factures, revenus, entretiens et calendrier Airbnb en un seul endroit.
+            </p>
+
+            <!-- ACCÈS -->
+            <div style="background:#111;border:1px solid rgba(204,122,105,0.2);border-radius:12px;padding:24px;margin-bottom:28px">
+              <p style="color:#CC7A69;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 16px">Vos identifiants</p>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding-bottom:12px">
+                    <div style="color:#666;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Email</div>
+                    <div style="color:#fff;font-size:15px;font-weight:500">${toEmail}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="border-top:1px solid rgba(255,255,255,0.07);padding-top:12px">
+                    <div style="color:#666;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Mot de passe provisoire</div>
+                    <div style="color:#fff;font-size:15px;font-weight:500;font-family:monospace;background:#1f1f1f;padding:8px 12px;border-radius:8px;display:inline-block">${password}</div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+
+            <!-- CTA -->
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td align="center" style="padding-bottom:28px">
+                  <a href="${appUrl}" style="display:inline-block;background:#CC7A69;color:#fff;font-size:15px;font-weight:700;text-decoration:none;padding:14px 40px;border-radius:12px;letter-spacing:0.3px">
+                    Accéder à mon espace
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <p style="color:#555;font-size:12px;line-height:1.6;margin:0;text-align:center">
+              Pensez à modifier votre mot de passe après la première connexion.<br>
+              <a href="${appUrl}" style="color:#CC7A69;text-decoration:none">${appUrl}</a>
+            </p>
+          </td>
+        </tr>
+
+        <!-- FOOTER -->
+        <tr>
+          <td style="background:#111;padding:20px 40px;text-align:center;border-top:1px solid rgba(255,255,255,0.06)">
+            <p style="color:#444;font-size:11px;margin:0">© ${new Date().getFullYear()} Nexstay Conciergerie — Tunisie</p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+  });
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname: 'api.resend.com',
+      path: '/emails',
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + RESEND_API_KEY,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body)
+      }
+    }, (r) => {
+      let d = ''; r.on('data', c => d += c);
+      r.on('end', () => {
+        if (r.statusCode === 200 || r.statusCode === 201) resolve(true);
+        else reject(new Error('Resend ' + r.statusCode + ': ' + d));
+      });
+    });
+    req.on('error', reject);
+    req.write(body); req.end();
+  });
+}
+
 // Fallback local (dev uniquement)
 const DB_FILE = path.join('/tmp', 'nexstay_db.json');
 
@@ -620,6 +727,10 @@ async function handleAPI(req, res, method, pathname, token) {
     const u={id:genId(),role:'owner',nom:b.nom,prenom:b.prenom,email:b.email,password:hash(b.password),tel:b.tel||'',adresse:b.adresse||'',ville:b.ville||'',typeLogement:b.typeLogement||'',createdAt:new Date().toISOString()};
     if(!DB.users)DB.users=[];
     DB.users.push(u);saveDB();
+    // Envoyer email de bienvenue si Resend configuré
+    if (USE_OTP) {
+      sendWelcomeEmail(b.email, b.prenom, b.nom, b.password).catch(e=>console.log('Welcome email error:',e.message));
+    }
     const {password:_,...safe}=u;
     return send(res,201,{user:safe});
   }
