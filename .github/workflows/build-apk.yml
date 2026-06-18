@@ -50,41 +50,14 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Force black status bar and navigation bar
+      - name: Patch colors for black status bar
         run: |
           COLORS_FILE="android/app/src/main/res/values/colors.xml"
-          cat > "$COLORS_FILE" << 'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-              <color name="colorPrimary">#000000</color>
-              <color name="colorPrimaryDark">#000000</color>
-              <color name="colorAccent">#CC7A69</color>
-          </resources>
-          EOF
-          STYLES_FILE="android/app/src/main/res/values/styles.xml"
-          if [ -f "$STYLES_FILE" ]; then
-            sed -i 's|<item name="android:statusBarColor">.*</item>|<item name="android:statusBarColor">#000000</item>|g' "$STYLES_FILE"
-            sed -i 's|<item name="android:navigationBarColor">.*</item>|<item name="android:navigationBarColor">#000000</item>|g' "$STYLES_FILE"
-          fi
-          echo "Colors patched to black"
-
-      - name: Update targetSdkVersion to 34
-        run: |
-          # Capacitor 5+ uses variables.gradle; fallback to app/build.gradle
-          if [ -f "android/variables.gradle" ]; then
-            sed -i -E 's/minSdkVersion = [0-9]+/minSdkVersion = 24/' android/variables.gradle
-            sed -i -E 's/compileSdkVersion = [0-9]+/compileSdkVersion = 34/' android/variables.gradle
-            sed -i -E 's/targetSdkVersion = [0-9]+/targetSdkVersion = 34/' android/variables.gradle
-            echo "Patched variables.gradle:"
-            grep -E "SdkVersion" android/variables.gradle
-          fi
-          GRADLE_FILE="android/app/build.gradle"
-          if grep -qE 'targetSdkVersion [0-9]+' "$GRADLE_FILE" 2>/dev/null; then
-            sed -i -E 's/targetSdkVersion [0-9]+/targetSdkVersion 34/g' "$GRADLE_FILE"
-            sed -i -E 's/compileSdkVersion [0-9]+/compileSdkVersion 34/g' "$GRADLE_FILE"
-            sed -i -E 's/minSdkVersion [0-9]+/minSdkVersion 24/g' "$GRADLE_FILE"
-            echo "Patched build.gradle:"
-            grep -E "SdkVersion" "$GRADLE_FILE"
+          if [ -f "$COLORS_FILE" ]; then
+            sed -i 's|<color name="colorPrimary">.*</color>|<color name="colorPrimary">#000000</color>|' "$COLORS_FILE"
+            sed -i 's|<color name="colorPrimaryDark">.*</color>|<color name="colorPrimaryDark">#000000</color>|' "$COLORS_FILE"
+            echo "Colors patched:"
+            cat "$COLORS_FILE"
           fi
 
       - name: Set Gradle wrapper permissions
