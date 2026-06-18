@@ -169,7 +169,10 @@ async function sendWelcomeEmail(toEmail, prenom, nom, password) {
     subject: 'Bienvenue sur Nexstay — Vos accès',
     html: `<!DOCTYPE html>
 <html lang="fr">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@800&display=swap" rel="stylesheet">
+<style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@800&display=swap');</style>
+</head>
 <body style="margin:0;padding:0;background:#0f0f0f;font-family:'Helvetica Neue',Arial,sans-serif">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f0f0f;padding:40px 16px">
     <tr><td align="center">
@@ -178,10 +181,10 @@ async function sendWelcomeEmail(toEmail, prenom, nom, password) {
         <!-- HEADER -->
         <tr>
           <td style="background:#000;padding:32px 40px;text-align:center;border-bottom:1px solid rgba(204,122,105,0.25)">
-            <div style="font-size:28px;font-weight:800;letter-spacing:-0.5px">
+            <div style="font-family:'Playfair Display',Georgia,'Times New Roman',serif;font-size:32px;font-weight:800;letter-spacing:0px;line-height:1">
               <span style="color:#ffffff">Nex</span><span style="color:#CC7A69">stay</span>
             </div>
-            <div style="color:#888;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin-top:4px">Conciergerie</div>
+            <div style="color:#888;font-size:10px;letter-spacing:4px;text-transform:uppercase;margin-top:6px;font-family:'Helvetica Neue',Arial,sans-serif">Conciergerie</div>
           </td>
         </tr>
 
