@@ -415,7 +415,8 @@ async function handleAPI(req, res, method, pathname, token) {
   // PDF DOWNLOAD — avant la vérif auth globale
   if (parts[1]==='invoice-pdf'&&parts[2]&&method==='GET') {
     let pdfUser=authUser(token);
-    if (!pdfUser&&parsed.query&&parsed.query.token) pdfUser=authUser('Bearer '+parsed.query.token.trim());
+    const pdfParsed=url.parse(req.url,true);
+    if (!pdfUser&&pdfParsed.query&&pdfParsed.query.token) pdfUser=authUser('Bearer '+pdfParsed.query.token.trim());
     if (!pdfUser) return send(res,401,{error:'Session expirée — reconnectez-vous'});
     const inv=(DB.invoices||[]).find(i=>i.id===parts[2]);
     if (!inv) return send(res,404,{error:'Facture introuvable'});
@@ -473,7 +474,8 @@ async function handleAPI(req, res, method, pathname, token) {
 
   // ICAL-PROXY — fetch iCal côté serveur (avant auth, le token ical est dans l'URL Airbnb)
   if (parts[1]==='ical-proxy'&&method==='GET') {
-    const calUrl2=parsed.query&&parsed.query.url?decodeURIComponent(parsed.query.url):null;
+    const reqParsed=url.parse(req.url,true);
+    const calUrl2=reqParsed.query&&reqParsed.query.url?decodeURIComponent(reqParsed.query.url):null;
     if (!calUrl2) return send(res,400,{error:'URL manquante'});
     try {
       const urlObj=new URL(calUrl2);
