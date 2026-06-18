@@ -4,11 +4,10 @@
   "webDir": "www",
   "server": {
     "url": "SERVER_URL_PLACEHOLDER",
-    "cleartext": false
+    "cleartext": true
   },
   "android": {
-    "allowMixedContent": false,
-    "captureInput": true,
-    "webContentsDebuggingEnabled": false
+    "allowMixedContent": true,
+    "webContentsDebuggingEnabled": true
   }
 }
