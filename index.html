@@ -424,6 +424,17 @@ function toast(msg,type){
 // ══ AUTH ═══════════════════════════════════════════════════════════════════════
 function rAuth(){
   var c=document.getElementById('ac');
+  if(S.authMode==='otp'){
+    c.innerHTML='<h2 class="atitle">Vérification</h2>'
+      +'<p class="asub">Code envoyé à <b>'+S.otpEmail+'</b></p>'
+      +'<div class="fgrp"><input id="otpcode" class="inp" type="number" placeholder="Code à 6 chiffres" maxlength="6" style="letter-spacing:6px;font-size:22px;text-align:center" oninput="if(this.value.length>6)this.value=this.value.slice(0,6)">'
+      +'</div>'
+      +'<button class="btnT" onclick="doVerifyOtp()">Confirmer</button>'
+      +'<p class="alink" id="otpresend">Pas reçu ? <b onclick="doResendOtp()">Renvoyer le code</b></p>'
+      +'<p class="alink"><b onclick="S.authMode=\'login\';rAuth()">← Retour</b></p>';
+    setTimeout(function(){var el=document.getElementById('otpcode');if(el)el.focus();},100);
+    return;
+  }
   if(S.authMode==='login'){
     c.innerHTML='<h2 class="atitle">Connexion</h2><p class="asub">Accédez à votre espace propriétaire</p>'
       +'<div class="fgrp"><input id="le" class="inp" type="email" placeholder="Adresse email">'
@@ -460,8 +471,28 @@ async function doRegister(){
   S.user=d.user;S.token=d.token;localStorage.setItem('nxt',d.token);startApp();}catch(e){toast(e.message,'err');}
 }
 async function doLogin(){
-  try{var d=await api('POST','/auth/login',{email:gv('le'),password:gv('lp')});
-  S.user=d.user;S.token=d.token;localStorage.setItem('nxt',d.token);startApp();}catch(e){toast(e.message,'err');}
+  try{
+    var d=await api('POST','/auth/login',{email:gv('le'),password:gv('lp')});
+    if(d.otpRequired){
+      S.otpUserId=d.userId;S.otpEmail=d.email;S.authMode='otp';rAuth();
+    } else {
+      S.user=d.user;S.token=d.token;localStorage.setItem('nxt',d.token);startApp();
+    }
+  }catch(e){toast(e.message,'err');}
+}
+async function doVerifyOtp(){
+  var code=gv('otpcode');
+  if(!code||code.length!==6){toast('Entrez le code à 6 chiffres','err');return;}
+  try{
+    var d=await api('POST','/auth/verify-otp',{userId:S.otpUserId,code:code});
+    S.user=d.user;S.token=d.token;localStorage.setItem('nxt',d.token);S.otpUserId=null;S.otpEmail=null;startApp();
+  }catch(e){toast(e.message,'err');}
+}
+async function doResendOtp(){
+  try{
+    await api('POST','/auth/resend-otp',{userId:S.otpUserId});
+    toast('Code renvoyé','ok');
+  }catch(e){toast(e.message,'err');}
 }
 async function tryAuto(){
   var t=localStorage.getItem('nxt');if(!t)return;

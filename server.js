@@ -118,13 +118,56 @@ const JSONBIN_ID  = process.env.JSONBIN_ID  || null;
 const JSONBIN_KEY = process.env.JSONBIN_KEY || null;
 const USE_JSONBIN = !!(JSONBIN_ID && JSONBIN_KEY);
 
+// ── CONFIGURATION OTP / RESEND ────────────────────────────────────────────────
+const RESEND_API_KEY = process.env.RESEND_API_KEY || null;
+const OTP_FROM_EMAIL = process.env.OTP_FROM_EMAIL || 'Nexstay <noreply@nexstay.tn>';
+const USE_OTP = !!RESEND_API_KEY;
+if (USE_OTP) console.log('✅ OTP email configuré via Resend');
+else console.log('⚠️ RESEND_API_KEY non configuré — OTP désactivé');
+
+async function sendOTPEmail(toEmail, code) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({
+      from: OTP_FROM_EMAIL,
+      to: [toEmail],
+      subject: 'Code de connexion Nexstay',
+      html: `<div style="font-family:sans-serif;max-width:400px;margin:0 auto;padding:32px">
+        <h2 style="color:#CC7A69;margin-bottom:8px">Nexstay Conciergerie</h2>
+        <p style="color:#555;margin-bottom:24px">Votre code de connexion :</p>
+        <div style="background:#f5f5f5;border-radius:12px;padding:24px;text-align:center;letter-spacing:8px;font-size:32px;font-weight:700;color:#1a1a1b">${code}</div>
+        <p style="color:#999;font-size:12px;margin-top:20px">Ce code expire dans 10 minutes. Ne le partagez pas.</p>
+      </div>`
+    });
+    const req = https.request({
+      hostname: 'api.resend.com',
+      path: '/emails',
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + RESEND_API_KEY,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body)
+      }
+    }, (r) => {
+      let d = ''; r.on('data', c => d += c);
+      r.on('end', () => {
+        if (r.statusCode === 200 || r.statusCode === 201) resolve(true);
+        else reject(new Error('Resend error ' + r.statusCode + ': ' + d));
+      });
+    });
+    req.on('error', reject);
+    req.write(body); req.end();
+  });
+}
+
+function genOTP() { return String(Math.floor(100000 + Math.random() * 900000)); }
+
 // Fallback local (dev uniquement)
 const DB_FILE = path.join('/tmp', 'nexstay_db.json');
 
 const UPLOADS_DIR = path.join('/tmp', 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
-let DB = { users:[], contracts:[], invoices:[], revenues:[], maintenances:[], incidents:[], infos:[], sessions:[] };
+let DB = { users:[], contracts:[], invoices:[], revenues:[], maintenances:[], incidents:[], infos:[], sessions:[], otps:[] };
 let _saveTimer = null;
 
 // ── JSONBIN HELPERS ───────────────────────────────────────────────────────────
@@ -382,8 +425,58 @@ async function handleAPI(req, res, method, pathname, token) {
       const b=await parseBody(req);
       const u=(DB.users||[]).find(u=>u.email===b.email&&u.password===hash(b.password));
       if (!u) return send(res,401,{error:'Email ou mot de passe incorrect'});
+      // OTP requis pour les propriétaires si Resend configuré
+      if (USE_OTP && u.role==='owner') {
+        const code=genOTP();
+        const expiresAt=Date.now()+10*60*1000;
+        if(!DB.otps)DB.otps=[];
+        DB.otps=DB.otps.filter(o=>o.userId!==u.id); // supprimer ancien OTP
+        DB.otps.push({userId:u.id,code,expiresAt});
+        saveDB();
+        try {
+          await sendOTPEmail(u.email,code);
+          return send(res,200,{otpRequired:true,userId:u.id,email:u.email.replace(/(.{2}).+(@.+)/,'$1***$2')});
+        } catch(e) {
+          console.log('OTP email error:',e.message);
+          return send(res,500,{error:'Impossible d\'envoyer le code OTP. Réessayez.'});
+        }
+      }
       const {password:_,...safe}=u;
       return send(res,200,{user:safe,token:genToken(u.id)});
+    }
+    if (parts[2]==='verify-otp'&&method==='POST') {
+      const b=await parseBody(req);
+      if (!b.userId||!b.code) return send(res,400,{error:'Données manquantes'});
+      if(!DB.otps)DB.otps=[];
+      const otp=DB.otps.find(o=>o.userId===b.userId&&o.code===String(b.code));
+      if (!otp) return send(res,401,{error:'Code incorrect'});
+      if (Date.now()>otp.expiresAt) {
+        DB.otps=DB.otps.filter(o=>o.userId!==b.userId);saveDB();
+        return send(res,401,{error:'Code expiré — reconnectez-vous'});
+      }
+      DB.otps=DB.otps.filter(o=>o.userId!==b.userId);saveDB();
+      const u=(DB.users||[]).find(u=>u.id===b.userId);
+      if (!u) return send(res,404,{error:'Utilisateur introuvable'});
+      const {password:_,...safe}=u;
+      return send(res,200,{user:safe,token:genToken(u.id)});
+    }
+    if (parts[2]==='resend-otp'&&method==='POST') {
+      const b=await parseBody(req);
+      if (!b.userId) return send(res,400,{error:'Données manquantes'});
+      const u=(DB.users||[]).find(u=>u.id===b.userId);
+      if (!u) return send(res,404,{error:'Utilisateur introuvable'});
+      const code=genOTP();
+      const expiresAt=Date.now()+10*60*1000;
+      if(!DB.otps)DB.otps=[];
+      DB.otps=DB.otps.filter(o=>o.userId!==u.id);
+      DB.otps.push({userId:u.id,code,expiresAt});
+      saveDB();
+      try {
+        await sendOTPEmail(u.email,code);
+        return send(res,200,{success:true});
+      } catch(e) {
+        return send(res,500,{error:'Impossible d\'envoyer le code'});
+      }
     }
     if (parts[2]==='me'&&method==='GET') {
       const u=authUser(token);
