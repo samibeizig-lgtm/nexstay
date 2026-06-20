@@ -711,7 +711,7 @@ function rMaint(c){
       return'<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px">'
         +'<div class="mcard" style="flex:1"><div class="mhead">'
         +'<div class="mwrap"><div class="mico" style="background:'+(done2?'var(--gbg)':'var(--TL)')+';"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:'+(done2?'var(--gr)':'var(--T)')+';stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round">'+tic.replace(/<svg[^>]*>/,'').replace('</svg>','')+'</svg></div>'
-        +'<div><div class="mtype">'+m.type+'</div><div class="mdate">'+(m.date||'').slice(0,10)+'</div></div></div>'
+        +'<div><div class="mtype">'+m.type+'</div><div class="mdate">📅 '+(m.date?(new Date(m.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})):'—')+'</div></div></div>'
         +'<span class="bdg '+(done2?'bdg-g':'bdg-t')+'">'+(done2?'Effectué':'Planifié')+'</span></div>'
         +'<p class="mnote">'+(m.note||'')+'</p>'
         +(m.technicien?'<div class="mtech"><span class="tchip">'+m.technicien+'</span></div>':'')
@@ -778,7 +778,7 @@ function buildEntretiensList(){
       return'<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px">'
         +'<div class="mcard" style="flex:1"><div class="mhead"><div class="mwrap">'
         +'<div class="mico" style="background:'+(done2?'var(--gbg)':'var(--TL)')+'"><svg viewBox="0 0 24 24" style="stroke:'+(done2?'var(--gr)':'var(--T)')+';width:16px;height:16px;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>'
-        +'<div><div class="mtype">'+m.type+'</div><div class="mdate">'+(m.date||'').slice(0,10)+'</div></div></div>'
+        +'<div><div class="mtype">'+m.type+'</div><div class="mdate">📅 '+(m.date?(new Date(m.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})):'—')+'</div></div></div>'
         +'<span class="bdg '+(done2?'bdg-g':'bdg-t')+'">'+(done2?'Effectué':'Planifié')+'</span></div>'
         +'<p class="mnote">'+(m.note||'')+'</p>'
         +(m.technicien?'<div class="mtech"><span class="tchip">'+m.technicien+'</span></div>':'')
@@ -1308,7 +1308,7 @@ function renderOTab(t){
         return'<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px">'
           +'<div class="mcard" style="flex:1"><div class="mhead"><div class="mwrap">'
           +'<div class="mico" style="background:'+(done2?'var(--gbg)':'var(--TL)')+'"><svg viewBox="0 0 24 24" style="stroke:'+(done2?'var(--gr)':'var(--T)')+';width:16px;height:16px;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>'
-          +'<div><div class="mtype">'+m.type+'</div><div class="mdate">'+(m.date||'').slice(0,10)+'</div></div></div>'
+          +'<div><div class="mtype">'+m.type+'</div><div class="mdate">📅 '+(m.date?(new Date(m.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})):'—')+'</div></div></div>'
           +'<span class="bdg '+(done2?'bdg-g':'bdg-t')+'">'+(done2?'Effectué':'Planifié')+'</span></div>'
           +'<p class="mnote">'+(m.note||'')+'</p>'
           +(m.technicien?'<div class="mtech"><span class="tchip">'+m.technicien+'</span></div>':'')
@@ -1566,7 +1566,7 @@ function renderOTab(t){
         return'<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:8px">'
           +'<div class="mcard" style="flex:1"><div class="mhead"><div class="mwrap">'
           +'<div class="mico" style="background:'+(done2?'var(--gbg)':'var(--TL)')+'"><svg viewBox="0 0 24 24" style="stroke:'+(done2?'var(--gr)':'var(--T)')+';width:16px;height:16px;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>'
-          +'<div><div class="mtype">'+m.type+'</div><div class="mdate">'+(m.date||'').slice(0,10)+'</div></div></div>'
+          +'<div><div class="mtype">'+m.type+'</div><div class="mdate">📅 '+(m.date?(new Date(m.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})):'—')+'</div></div></div>'
           +'<span class="bdg '+(done2?'bdg-g':'bdg-t')+'">'+(done2?'Effectué':'Planifié')+'</span></div>'
           +'<p class="mnote">'+(m.note||'')+'</p>'
           +(m.technicien?'<div class="mtech"><span class="tchip">'+m.technicien+'</span></div>':'')
