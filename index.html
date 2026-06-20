@@ -1936,25 +1936,30 @@ async function rCalendar(c){
     if(_calEvents.length===0||cacheAge>15*60*1000){
       if(calUrl){
         var icalText=null;
-        // Liste de proxies CORS publics - essai en cascade
-        var proxies=[
-          'https://corsproxy.io/?'+encodeURIComponent(calUrl),
-          'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(calUrl),
-          'https://thingproxy.freeboard.io/fetch/'+encodeURIComponent(calUrl),
-        ];
-        for(var pi=0;pi<proxies.length;pi++){
-          try{
-            var resp=await fetch(proxies[pi],{signal:AbortSignal.timeout(8000)});
-            if(resp.ok){
-              var txt=await resp.text();
-              if(txt&&txt.includes('BEGIN:VCALENDAR')){
-                icalText=txt;
-                console.log('iCal chargé via proxy',pi,':',proxies[pi].split('?')[0]);
-                break;
+        // Utilise le proxy backend (même que la vue admin)
+        try{
+          var resp=await fetch('/api/ical-proxy?url='+encodeURIComponent(calUrl),{signal:AbortSignal.timeout(10000)});
+          if(resp.ok){
+            var txt=await resp.text();
+            if(txt&&txt.includes('BEGIN:VCALENDAR')) icalText=txt;
+          }
+        }catch(e){
+          console.log('ical-proxy échoué:',e.message);
+        }
+        // Fallback proxies publics
+        if(!icalText){
+          var proxies=[
+            'https://corsproxy.io/?'+encodeURIComponent(calUrl),
+            'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(calUrl),
+          ];
+          for(var pi=0;pi<proxies.length;pi++){
+            try{
+              var resp=await fetch(proxies[pi],{signal:AbortSignal.timeout(8000)});
+              if(resp.ok){
+                var txt=await resp.text();
+                if(txt&&txt.includes('BEGIN:VCALENDAR')){icalText=txt;break;}
               }
-            }
-          }catch(e){
-            console.log('Proxy',pi,'échoué:',e.message);
+            }catch(e){}
           }
         }
         if(icalText){
