@@ -102,7 +102,7 @@ select.inp option{background:#fff}
 .scard{flex:1;min-width:0;background:var(--w);border:1px solid var(--bd);border-radius:var(--r);padding:14px 13px;box-shadow:var(--sh);transition:box-shadow .2s}
 .sico{width:30px;height:30px;border-radius:9px;background:var(--TL);display:flex;align-items:center;justify-content:center;margin-bottom:9px}
 .sico svg{width:14px;height:14px;stroke:var(--T);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
-.sval{font-size:21px;font-weight:700;line-height:1;color:var(--tx);font-family:var(--fs)}
+.sval{font-size:21px;font-weight:700;line-height:1;color:var(--tx);font-family:var(--f)}
 .slbl{font-size:10px;color:var(--t3);margin-top:4px;line-height:1.4;font-weight:500}
 .ssub{font-size:10px;font-weight:700;margin-top:3px}
 
@@ -157,7 +157,7 @@ select.inp option{background:#fff}
 /* ══ REV HERO ══════════════════════════════════════════════════════════════ */
 .rhero{background:var(--w);border:1px solid var(--bd);border-radius:15px;padding:18px;margin-bottom:10px;box-shadow:var(--sh)}
 .rlbl{color:var(--t3);font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}
-.rval{font-family:var(--fs);font-size:32px;font-weight:700;color:var(--tx);line-height:1.1;margin:4px 0 3px}
+.rval{font-family:var(--f);font-size:32px;font-weight:700;color:var(--tx);line-height:1.1;margin:4px 0 3px}
 .rval span{color:var(--T)}
 
 /* ══ BARS ══════════════════════════════════════════════════════════════════ */
@@ -207,12 +207,12 @@ select.inp option{background:#fff}
 .bkbtn svg{width:15px;height:15px;stroke:var(--T);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .dcard{background:var(--w);border:1px solid var(--bd);border-radius:18px;padding:20px;box-shadow:var(--shm)}
 .dlbl{color:var(--t3);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
-.dnum{font-family:var(--fs);font-size:20px;font-weight:700}
+.dnum{font-family:var(--f);font-size:20px;font-weight:700}
 .ddash{border-top:1px dashed var(--b3);border-bottom:1px dashed var(--b3);padding:11px 0;margin:14px 0}
 .drow{display:flex;justify-content:space-between;padding:6px 0;font-size:13px}
 .dtot{display:flex;justify-content:space-between;align-items:center;padding-top:2px}
-.dtotl{font-family:var(--fs);font-size:18px;font-weight:700}
-.dtota{font-family:var(--fs);font-size:26px;font-weight:700;color:var(--T)}
+.dtotl{font-family:var(--f);font-size:18px;font-weight:700}
+.dtota{font-family:var(--f);font-size:26px;font-weight:700;color:var(--T)}
 .dlbtn{width:100%;margin-top:14px;padding:12px;background:var(--TL);border:1.5px solid var(--TM);border-radius:11px;color:var(--T);font-size:14px;font-weight:700;font-family:var(--f);display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer}
 .dlbtn svg{width:15px;height:15px;stroke:var(--T);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .dlbtn.disabled{opacity:.45;cursor:default}
@@ -260,7 +260,7 @@ textarea.inp{resize:none;height:78px;line-height:1.5}
 .tpill{flex:1;text-align:center;padding:8px 2px;border-radius:9px;border:none;background:transparent;color:var(--t3);font-size:11px;font-weight:700;font-family:var(--f);cursor:pointer;transition:all .18s}
 .tpill.on{background:var(--w);color:var(--T);box-shadow:var(--sh)}
 .ahero{background:linear-gradient(135deg,#525254 0%,#2A2A2C 100%);border-radius:var(--r2);padding:20px;color:#fff;margin-bottom:10px;box-shadow:0 6px 24px rgba(30,30,32,0.30)}
-.aheroval{font-family:var(--fs);font-size:30px;font-weight:700}
+.aheroval{font-family:var(--f);font-size:30px;font-weight:700}
 .aherolbl{font-size:11px;opacity:.8;margin-top:2px}
 .ocard{background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:13px;margin-bottom:8px;box-shadow:var(--sh);cursor:pointer;transition:border-color .15s}
 .ocard:active{border-color:var(--T)}
@@ -1108,7 +1108,7 @@ async function adminGTab(tab){
           +'<div style="font-size:13px;font-weight:700;color:var(--tx)">'+r.mois+' '+r.annee+'</div>'
           +'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+r.nbLocataires+' loc. · '+r.nbNuits+' nuits</div>'
           +'</div>'
-          +'<span style="font-family:var(--fs);font-size:20px;font-weight:700;color:var(--T)">'+r.revenuNet.toLocaleString()+' DT</span>'
+          +'<span style="font-family:var(--f);font-size:20px;font-weight:700;color:var(--T)">'+r.revenuNet.toLocaleString()+' DT</span>'
           +'</div></div>'
           +DELBTN+'agDelRev(&quot;'+r.id+'&quot;)'+DELICO
           +'</div>';
@@ -1283,7 +1283,7 @@ function renderOTab(t){
         return'<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">'
           +'<div class="rhero" style="flex:1;margin-bottom:0;padding:13px"><div class="rlbl">'+r.mois+' '+r.annee+'</div>'
           +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">'
-          +'<span style="font-family:var(--fs);font-size:20px;font-weight:700;color:var(--T)">'+r.revenuNet.toLocaleString()+' DT</span>'
+          +'<span style="font-family:var(--f);font-size:20px;font-weight:700;color:var(--T)">'+r.revenuNet.toLocaleString()+' DT</span>'
           +'<span class="bdg bdg-t">'+r.tauxOccupation+'% occ.</span></div>'
           +'<div style="display:flex;gap:10px;margin-top:8px;font-size:11px;color:var(--t2)">'
           +'<span>'+r.nbLocataires+' locataires</span><span>·</span><span>'+r.nbNuits+' nuits</span>'
@@ -1541,7 +1541,7 @@ function renderOTab(t){
         return'<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">'
           +'<div class="rhero" style="flex:1;margin-bottom:0;padding:13px"><div class="rlbl">'+r.mois+' '+r.annee+'</div>'
           +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">'
-          +'<span style="font-family:var(--fs);font-size:20px;font-weight:700;color:var(--T)">'+r.revenuNet.toLocaleString()+' DT</span>'
+          +'<span style="font-family:var(--f);font-size:20px;font-weight:700;color:var(--T)">'+r.revenuNet.toLocaleString()+' DT</span>'
           +'<span class="bdg bdg-t">'+r.tauxOccupation+'% occ.</span></div>'
           +'<div style="display:flex;gap:10px;margin-top:8px;font-size:11px;color:var(--t2)">'
           +'<span>'+r.nbLocataires+' locataires</span><span>·</span><span>'+r.nbNuits+' nuits</span>'
