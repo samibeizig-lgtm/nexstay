@@ -769,7 +769,7 @@ function buildEntretiensList(){
   var done=maints.filter(function(m){return m.statut==='effectué';}).length;
   var plan=maints.filter(function(m){return m.statut==='planifié';}).length;
   if(!maints.length)return '<p style="color:var(--t2);text-align:center;padding:30px;font-size:13px">Aucun entretien planifié</p>';
-  return'<div class="sgrid" style="margin-bottom:10px">'
+  return'<div class="sgrid" style="margin-bottom:16px;gap:9px">'
     +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></div><div class="sval">'+done+'</div><div class="slbl">Effectués</div></div>'
     +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div><div class="sval">'+plan+'</div><div class="slbl">Planifiés</div></div></div>'
     +'<h3 class="stitle">Journal des entretiens</h3>'
@@ -1122,7 +1122,7 @@ async function adminGTab(tab){
       var maints=await api('GET','/all-maintenances');
       var done=maints.filter(function(m){return m.statut==='effectué';}).length;
       var plan=maints.filter(function(m){return m.statut==='planifié';}).length;
-      var h='<div class="sgrid" style="margin-bottom:12px">'
+      var h='<div class="sgrid" style="margin-bottom:16px;gap:9px">'
         +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></div><div class="sval">'+done+'</div><div class="slbl">Effectués</div></div>'
         +'<div class="scard"><div class="sico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div><div class="sval">'+plan+'</div><div class="slbl">Planifiés</div></div>'
         +'</div><h3 class="stitle">Entretiens ('+maints.length+')</h3>';
