@@ -206,7 +206,7 @@ async function sendWelcomeEmail(toEmail, prenom, nom, password) {
                 <tr>
                   <td style="padding-bottom:12px">
                     <div style="color:#666;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Email</div>
-                    <div style="color:#fff;font-size:15px;font-weight:500;font-family:monospace;background:#1f1f1f;padding:8px 12px;border-radius:8px;display:inline-block">${toEmail}</div>
+                    <div style="color:#fff;font-size:15px;font-weight:500;font-family:monospace;background:#1f1f1f;padding:8px 12px;border-radius:8px;display:inline-block"><a href="#" x-apple-data-detectors="false" style="color:#fff;text-decoration:none;pointer-events:none">${toEmail}</a></div>
                   </td>
                 </tr>
                 <tr>
